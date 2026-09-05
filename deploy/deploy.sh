@@ -46,6 +46,6 @@ fi
 
 echo "→ Vérification"
 curl -fsS http://127.0.0.1:4100/health > /dev/null && echo "  API : OK"
-curl -fsS -o /dev/null https://ascambere.sn/ && echo "  Site : OK"
+curl -fsS -o /dev/null https://ascamberene.sn/ && echo "  Site : OK"
 
 echo "✓ Déploiement terminé"

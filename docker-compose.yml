@@ -31,7 +31,7 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?renseigner JWT_REFRESH_SECRET dans .env.docker}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-2h}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-30d}
-      CORS_ORIGINS: ${SITE_URL:-https://ascambere.sn}
+      CORS_ORIGINS: ${SITE_URL:-https://ascamberene.sn}
       UPLOAD_DIR: uploads
       # Deux proxys devant l'API : l'Apache de l'hôte, puis celui du conteneur.
       # Sans ce nombre, la limite de débit compterait tout le trafic comme
@@ -49,7 +49,7 @@ services:
       args:
         # Figée dans le bundle à la construction : changer SITE_URL impose de
         # reconstruire l'image, pas seulement de redémarrer le conteneur.
-        VITE_SITE_API_URL: ${SITE_URL:-https://ascambere.sn}
+        VITE_SITE_API_URL: ${SITE_URL:-https://ascamberene.sn}
         VITE_API_URL: ${FCONNECT_URL:-}
         VITE_CLUB_ID: ${CLUB_ID:-}
     restart: unless-stopped

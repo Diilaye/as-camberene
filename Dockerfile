@@ -13,7 +13,7 @@ RUN npm ci
 
 # L'adresse de l'API est figée à la construction : Vite l'inscrit dans le
 # bundle, elle ne peut pas être changée au démarrage du conteneur.
-ARG VITE_SITE_API_URL=https://ascambere.sn
+ARG VITE_SITE_API_URL=https://ascamberene.sn
 ARG VITE_API_URL=
 ARG VITE_CLUB_ID=
 ENV VITE_SITE_API_URL=$VITE_SITE_API_URL \

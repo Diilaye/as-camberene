@@ -1,4 +1,4 @@
-# Déploiement sur VPS — ascambere.sn
+# Déploiement sur VPS — ascamberene.sn
 
 Deux voies, au choix :
 
@@ -117,7 +117,7 @@ sudo a2ensite ascambere && sudo a2dissite 000-default
 sudo apache2ctl configtest && sudo systemctl reload apache2
 
 sudo apt install -y certbot python3-certbot-apache
-sudo certbot --apache -d ascambere.sn -d www.ascambere.sn
+sudo certbot --apache -d ascamberene.sn -d www.ascamberene.sn
 ```
 
 Reprendre ensuite dans le vhost 443 généré par certbot les deux en-têtes
@@ -127,7 +127,7 @@ visiteurs derrière le proxy.
 ### 6. Premier compte et contenu
 
 ```bash
-./deploy/docker.sh superadmin direction@ascambere.sn
+./deploy/docker.sh superadmin direction@ascamberene.sn
 ./deploy/docker.sh seed          # facultatif : contenu de démonstration
 ```
 
@@ -174,6 +174,7 @@ processus de l'hôte.
 
 | Symptôme | Où regarder |
 |---|---|
+| **Apache sert un autre site** | `apache2ctl -S` : voir plus bas |
 | `docker: command not found` | Docker n'est pas installé — voir [§1](#1-sur-le-vps) |
 | Une correction du script ne s'applique pas | `deploy` se relance seul si le script a changé ; sinon relancer la commande |
 | `Le démon Docker ne répond pas` | `sudo systemctl enable --now docker` |
@@ -185,6 +186,44 @@ processus de l'hôte.
 | Site vide alors que la base existe | le nom de la base manque dans `MONGODB_URI` |
 | `authentication failed` | mot de passe non encodé, ou utilisateur sans droits |
 | Images 403 | droits des fichiers ; l'image les normalise, reconstruire avec `--no-cache` |
+
+### Apache sert un autre site que le vôtre
+
+Symptôme : `https://ascamberene.sn` affiche un tout autre site hébergé sur la
+même machine.
+
+Apache ne rend pas d'erreur quand aucun vhost ne correspond au domaine
+demandé : il sert **le premier de la liste**, par ordre alphabétique de fichier
+dans `sites-enabled`. Un `ServerName` mal orthographié, un site non activé ou
+un vhost absent en HTTPS produisent donc tous le même symptôme — le site d'un
+voisin.
+
+```bash
+apache2ctl -S
+```
+
+La sortie liste, port par port, quel vhost répond à quel nom. Y chercher trois
+choses :
+
+1. **`ascamberene.sn` figure-t-il en `*:443` ?** S'il n'apparaît qu'en `*:80`,
+   certbot n'a pas encore créé le vhost HTTPS — c'est lui qui le génère :
+
+   ```bash
+   sudo certbot --apache -d ascamberene.sn -d www.ascamberene.sn
+   ```
+
+2. **Le nom est-il exactement le bon ?** Une lettre de différence suffit à ce
+   qu'aucun vhost ne corresponde.
+
+3. **Le site est-il activé ?**
+
+   ```bash
+   ls -l /etc/apache2/sites-enabled/
+   sudo a2ensite ascamberene && sudo systemctl reload apache2
+   ```
+
+La ligne `default server` de la sortie indique qui répond quand rien ne
+correspond : c'est le site que vous voyez à tort.
 
 ---
 
@@ -209,13 +248,13 @@ Deux enregistrements A vers l'IP du VPS :
 
 | Type | Nom | Valeur |
 |---|---|---|
-| A | `ascambere.sn` | `<IP du VPS>` |
+| A | `ascamberene.sn` | `<IP du VPS>` |
 | A | `www` | `<IP du VPS>` |
 
 Attendre la propagation avant l'étape du certificat :
 
 ```bash
-dig +short ascambere.sn
+dig +short ascamberene.sn
 ```
 
 ## 2. Paquets
@@ -278,7 +317,7 @@ PORT=4100
 MONGODB_URI=mongodb+srv://<user>:<mdp>@<cluster>.mongodb.net/asc_camberene?retryWrites=true&w=majority
 JWT_ACCESS_SECRET=<premier secret>
 JWT_REFRESH_SECRET=<second secret>
-CORS_ORIGINS=https://ascambere.sn,https://www.ascambere.sn
+CORS_ORIGINS=https://ascamberene.sn,https://www.ascamberene.sn
 ```
 
 > Le serveur refuse de démarrer si un secret a gardé sa valeur d'exemple et que
@@ -314,7 +353,7 @@ curl -s http://127.0.0.1:4100/health
 ## 7. Apache
 
 ```bash
-sudo cp /var/www/as-camberene/deploy/apache-ascambere.conf \
+sudo cp /var/www/as-camberene/deploy/apache-ascamberene.conf \
         /etc/apache2/sites-available/ascambere.conf
 sudo a2ensite ascambere
 sudo a2dissite 000-default
@@ -325,7 +364,7 @@ sudo apache2ctl configtest && sudo systemctl reload apache2
 
 ```bash
 sudo apt install -y certbot python3-certbot-apache
-sudo certbot --apache -d ascambere.sn -d www.ascambere.sn
+sudo certbot --apache -d ascamberene.sn -d www.ascamberene.sn
 ```
 
 Certbot crée le vhost 443 et la redirection depuis le port 80. Le
@@ -348,11 +387,11 @@ Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains
 
 ```bash
 cd /var/www/as-camberene/server
-sudo -u www-data npm run create:superadmin -- direction@ascambere.sn --password 'un-mot-de-passe-long'
+sudo -u www-data npm run create:superadmin -- direction@ascamberene.sn --password 'un-mot-de-passe-long'
 ```
 
-Puis connexion sur `https://ascambere.sn/login` — les autres comptes se créent
-depuis `https://ascambere.sn/admin/utilisateurs`.
+Puis connexion sur `https://ascamberene.sn/login` — les autres comptes se créent
+depuis `https://ascamberene.sn/admin/utilisateurs`.
 
 Pour partir avec le contenu de démonstration (actualités, boutique, légendes,
 frise) :
