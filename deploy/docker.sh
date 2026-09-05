@@ -44,8 +44,53 @@ uses_local_db() { [ -f "$ENV_FILE" ] && grep -qE '^LOCAL_DB=1' "$ENV_FILE"; }
 # Valeur d'une clé du fichier d'environnement.
 env_value() { grep -E "^$1=" "$ENV_FILE" 2>/dev/null | head -1 | cut -d= -f2- || true; }
 
-require_env() {
+# Docker est-il là, et utilisable ? Sans cette vérification, la première
+# commande échouait sur un « docker: command not found » au milieu d'une étape,
+# sans dire quoi installer.
+require_docker() {
+  if ! command -v docker > /dev/null 2>&1; then
+    red "✗ Docker n'est pas installé sur cette machine."
+    cat <<'INSTALL'
+
+  Installation (Debian / Ubuntu), script officiel — installe aussi le
+  greffon Compose v2 :
+
+    curl -fsSL https://get.docker.com | sh
+    systemctl enable --now docker
+
+  Puis vérifier :
+
+    docker version && docker compose version
+
+INSTALL
+    exit 1
+  fi
+
+  if ! docker info > /dev/null 2>&1; then
+    red "✗ Le démon Docker ne répond pas."
+    echo "  Le démarrer :  systemctl enable --now docker"
+    echo "  Si vous n'êtes pas root, vous rejoindre au groupe docker :"
+    echo "      usermod -aG docker \"\$USER\"   puis se reconnecter"
+    exit 1
+  fi
+
+  if ! docker compose version > /dev/null 2>&1; then
+    red "✗ Le greffon Docker Compose v2 est absent."
+    echo "  Sur Debian / Ubuntu :  apt install -y docker-compose-plugin"
+    echo "  Ou réinstaller Docker :  curl -fsSL https://get.docker.com | sh"
+    exit 1
+  fi
+}
+
+# Le fichier d'environnement seul : Compose en a besoin pour toute commande,
+# même celles qui ne démarrent rien.
+require_env_file() {
+  require_docker
   [ -f "$ENV_FILE" ] || die "$ENV_FILE est absent. Le créer :  cp .env.docker.example .env.docker"
+}
+
+require_env() {
+  require_env_file
 
   # Un secret vide passerait la substitution Compose et ne serait rattrapé
   # qu'au démarrage du conteneur, dans un journal. Autant le dire ici.
@@ -75,6 +120,7 @@ cmd_up() {
 }
 
 cmd_down() {
+  require_env_file
   step "Arrêt de la pile"
   # Les volumes sont conservés : `down` ne doit jamais effacer la base.
   compose down
@@ -83,9 +129,9 @@ cmd_down() {
 
 cmd_restart() { require_env; compose restart "$@"; cmd_wait; }
 
-cmd_logs()   { compose logs -f --tail=100 "$@"; }
-cmd_status() { compose ps; }
-cmd_shell()  { compose exec "${1:-api}" sh; }
+cmd_logs()   { require_env_file; compose logs -f --tail=100 "$@"; }
+cmd_status() { require_env_file; compose ps; }
+cmd_shell()  { require_env_file; compose exec "${1:-api}" sh; }
 
 # Attend que la pile réponde vraiment, plutôt que de rendre la main dès que les
 # conteneurs sont créés.

@@ -35,9 +35,23 @@ Deux conteneurs seulement. Seul `web` publie un port, et uniquement sur
 ### 1. Sur le VPS
 
 ```bash
-sudo apt update && sudo apt install -y docker.io docker-compose-v2 apache2 git
+sudo apt update && sudo apt install -y apache2 git curl
 sudo a2enmod proxy proxy_http headers
-sudo usermod -aG docker "$USER"   # se reconnecter ensuite
+
+# Docker par le script officiel : il installe aussi le greffon Compose v2,
+# que le paquet `docker.io` des dépôts n'apporte pas.
+curl -fsSL https://get.docker.com | sudo sh
+sudo systemctl enable --now docker
+
+# Si vous n'êtes pas root, se donner l'accès au démon puis se reconnecter :
+sudo usermod -aG docker "$USER"
+```
+
+Vérifier avant d'aller plus loin — `./deploy/docker.sh` refusera de démarrer
+tant que ces deux commandes ne répondent pas :
+
+```bash
+docker version && docker compose version
 ```
 
 ### 2. Préparer MongoDB Atlas
@@ -160,6 +174,8 @@ processus de l'hôte.
 
 | Symptôme | Où regarder |
 |---|---|
+| `docker: command not found` | Docker n'est pas installé — voir [§1](#1-sur-le-vps) |
+| `Le démon Docker ne répond pas` | `sudo systemctl enable --now docker` |
 | `up` échoue à la vérification | `./deploy/docker.sh logs` |
 | 502 depuis l'hôte | la pile tourne-t-elle ? `./deploy/docker.sh status` |
 | Port déjà pris | changer `WEB_PORT` dans `.env.docker`, **et** `SITE_URL` si le port est public |
