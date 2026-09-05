@@ -20,9 +20,7 @@
  */
 import crypto from 'crypto';
 
-import mongoose from 'mongoose';
-
-import config from '../src/config/env';
+import { connectDatabase, disconnectDatabase } from '../src/config/database';
 import SiteUser from '../src/models/SiteUser.model';
 import { ASSIGNABLE_ROLES, ROLE_LABELS, UserRole } from '../src/lib/roles';
 
@@ -74,7 +72,7 @@ async function main(): Promise<number> {
     return 1;
   }
 
-  await mongoose.connect(config.mongoUri, { family: 4 });
+  await connectDatabase();
 
   try {
     const existing = await SiteUser.findOne({ email });
@@ -131,7 +129,7 @@ async function main(): Promise<number> {
     }
     return 0;
   } finally {
-    await mongoose.connection.close();
+    await disconnectDatabase();
   }
 }
 

@@ -4,10 +4,12 @@ Deux voies, au choix :
 
 | | [Docker](#déploiement-docker-recommandé) | [Installation directe](#installation-directe) |
 |---|---|---|
-| À installer sur le VPS | Docker, Apache, certbot | Node, MongoDB, Apache, certbot |
+| À installer sur le VPS | Docker, Apache, certbot | Node, Apache, certbot |
 | Mise à jour | `./deploy/docker.sh deploy` | `./deploy/deploy.sh` |
-| Base de données | conteneur + volume | service système |
 | Reproductible | oui, image identique partout | dépend de la machine |
+
+La base est **MongoDB Atlas** dans les deux cas : rien à installer ni à
+sauvegarder soi-même de ce côté.
 
 Docker demande moins de choses au VPS et rend la mise à jour plus sûre : si une
 image ne construit pas, rien n'est remplacé. La section suivante le décrit ;
@@ -24,11 +26,11 @@ sert tout — le navigateur ne fait donc aucune requête préalable CORS.
 navigateur ──► Apache de l'hôte :443 ──► conteneur web :8080 ──┬─► /api      ──► conteneur api :4100
                     (certificat)          (site + proxy)       ├─► /uploads  ──► conteneur api :4100
                                                                └─► reste     ──► fichiers statiques
-                                                                        conteneur api ──► conteneur mongo
+                                                                        conteneur api ──► MongoDB Atlas
 ```
 
-Seul le conteneur `web` publie un port, et seulement sur `127.0.0.1` : Mongo et
-l'API ne sont joignables que depuis le réseau interne de la pile.
+Deux conteneurs seulement. Seul `web` publie un port, et uniquement sur
+`127.0.0.1` : l'API n'est joignable que depuis le réseau interne de la pile.
 
 ### 1. Sur le VPS
 
@@ -38,7 +40,33 @@ sudo a2enmod proxy proxy_http headers
 sudo usermod -aG docker "$USER"   # se reconnecter ensuite
 ```
 
-### 2. Cloner et configurer
+### 2. Préparer MongoDB Atlas
+
+Dans la console Atlas :
+
+1. **Database Access** — créer un utilisateur dédié au site, avec le rôle
+   *Read and write to any database* (ou restreint à `asc_camberene`).
+2. **Network Access** — autoriser l'adresse IP du VPS. Sans cette étape, la
+   connexion expire au bout de trente secondes sans message explicite : c'est
+   la panne la plus fréquente au premier démarrage.
+3. **Database → Connect → Drivers** — copier la chaîne de connexion.
+
+Trois pièges dans cette chaîne :
+
+- **le nom de la base doit y figurer**, après le nom d'hôte. Sans lui, le
+  serveur écrit dans une base nommée `test` et le site paraît vide :
+
+  ```
+  mongodb+srv://user:mdp@cluster.mongodb.net/asc_camberene?retryWrites=true&w=majority
+                                             ^^^^^^^^^^^^^
+  ```
+
+- **un mot de passe contenant `@ : / ? #` doit être encodé** (`@` → `%40`,
+  `:` → `%3A`). Sinon l'URI est coupée au mauvais endroit ;
+- `mongodb+srv://` demande une résolution DNS SRV : elle échoue si le pare-feu
+  du VPS bloque les requêtes DNS sortantes.
+
+### 3. Cloner et configurer
 
 ```bash
 sudo mkdir -p /var/www && sudo chown "$USER" /var/www
@@ -47,13 +75,18 @@ cd /var/www/as-camberene
 
 cp .env.docker.example .env.docker
 node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"  # ×2
-nano .env.docker      # SITE_URL, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
+nano .env.docker      # SITE_URL, MONGODB_URI, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
 ```
 
 > `SITE_URL` est inscrite dans le bundle au moment de la construction : la
 > changer impose de reconstruire l'image, pas seulement de redémarrer.
 
-### 3. Démarrer
+> Pour une base en conteneur plutôt qu'Atlas — machine de test, installation
+> sans service externe — mettre `LOCAL_DB=1` dans `.env.docker` : la surcouche
+> `docker-compose.local-db.yml` ajoute alors un MongoDB et son volume, et
+> `MONGODB_URI` est ignorée.
+
+### 4. Démarrer
 
 ```bash
 ./deploy/docker.sh up
@@ -62,7 +95,7 @@ nano .env.docker      # SITE_URL, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
 Le script construit les images, démarre la pile et **attend qu'elle réponde
 vraiment** avant de rendre la main. En cas d'échec, il affiche les journaux.
 
-### 4. Apache et certificat
+### 5. Apache et certificat
 
 ```bash
 sudo cp deploy/apache-docker.conf /etc/apache2/sites-available/ascambere.conf
@@ -77,7 +110,7 @@ Reprendre ensuite dans le vhost 443 généré par certbot les deux en-têtes
 `X-Forwarded-*` en `https`/`443` — l'API en a besoin pour distinguer les
 visiteurs derrière le proxy.
 
-### 5. Premier compte et contenu
+### 6. Premier compte et contenu
 
 ```bash
 ./deploy/docker.sh superadmin direction@ascambere.sn
@@ -104,9 +137,18 @@ survivent à un arrêt comme à une reconstruction d'image.
 
 ### Sauvegardes
 
+Atlas sauvegarde la base de son côté, mais **pas les images téléversées** :
+elles vivent dans un volume Docker sur le VPS, et rien d'autre ne les protège.
+
 ```bash
 ./deploy/docker.sh backup      # → backups/mongo-*.archive.gz et uploads-*.tgz
 ```
+
+La commande sauvegarde les deux : un export de la base — utile pour partir avec
+une copie hors d'Atlas — et l'archive des images. Les outils MongoDB ne sont
+dans aucune image de la pile : le script les emprunte à un conteneur jetable, et
+passe l'URI par l'environnement pour qu'elle n'apparaisse pas dans la liste des
+processus de l'hôte.
 
 À planifier, par exemple chaque nuit :
 
@@ -121,7 +163,10 @@ survivent à un arrêt comme à une reconstruction d'image.
 | `up` échoue à la vérification | `./deploy/docker.sh logs` |
 | 502 depuis l'hôte | la pile tourne-t-elle ? `./deploy/docker.sh status` |
 | Port déjà pris | changer `WEB_PORT` dans `.env.docker`, **et** `SITE_URL` si le port est public |
-| Secret manquant | le script le dit avant de démarrer quoi que ce soit |
+| Secret ou URI manquant | le script le dit avant de démarrer quoi que ce soit |
+| Connexion à Atlas qui expire | l'IP du VPS est-elle dans Atlas → Network Access ? |
+| Site vide alors que la base existe | le nom de la base manque dans `MONGODB_URI` |
+| `authentication failed` | mot de passe non encodé, ou utilisateur sans droits |
 | Images 403 | droits des fichiers ; l'image les normalise, reconstruire avec `--no-cache` |
 
 ---
@@ -168,12 +213,12 @@ sudo apt install -y apache2 git curl
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
-# MongoDB 7 — suivre la procédure officielle pour la distribution utilisée :
-# https://www.mongodb.com/docs/manual/administration/install-on-linux/
-sudo systemctl enable --now mongod
-
 sudo a2enmod proxy proxy_http rewrite headers expires deflate
 ```
+
+La base étant hébergée chez Atlas, rien à installer de ce côté — voir
+[Préparer MongoDB Atlas](#2-préparer-mongodb-atlas) pour l'utilisateur, la
+liste d'adresses autorisées et la chaîne de connexion.
 
 ## 3. Clé de déploiement et clonage
 
@@ -213,7 +258,7 @@ sudo -u www-data nano .env
 ```ini
 NODE_ENV=production
 PORT=4100
-MONGODB_URI=mongodb://127.0.0.1:27017/asc_camberene
+MONGODB_URI=mongodb+srv://<user>:<mdp>@<cluster>.mongodb.net/asc_camberene?retryWrites=true&w=majority
 JWT_ACCESS_SECRET=<premier secret>
 JWT_REFRESH_SECRET=<second secret>
 CORS_ORIGINS=https://ascambere.sn,https://www.ascambere.sn
@@ -321,13 +366,10 @@ sudo chmod 440 /etc/sudoers.d/asc-camberene-deploy
 
 ## Sauvegardes
 
-Deux choses à sauvegarder, et elles seules :
+Atlas sauvegarde la base ; les images téléversées, elles, ne vivent que sur le
+VPS :
 
 ```bash
-# Base de données
-mongodump --db asc_camberene --archive=/var/backups/asc-$(date +%F).archive --gzip
-
-# Images téléversées depuis l'administration
 tar czf /var/backups/uploads-$(date +%F).tgz -C /var/www/as-camberene/server uploads
 ```
 

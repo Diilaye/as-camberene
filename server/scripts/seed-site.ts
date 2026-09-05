@@ -21,7 +21,7 @@
  */
 import mongoose from 'mongoose';
 
-import config from '../src/config/env';
+import { connectDatabase, disconnectDatabase, safeMongoUri } from '../src/config/database';
 import Article from '../src/models/Article.model';
 import Product from '../src/models/Product.model';
 import Legend from '../src/models/Legend.model';
@@ -83,14 +83,14 @@ const commentDate = (publishedAt: string, daysAfter: number): Date => {
 };
 
 async function main(): Promise<number> {
-  console.log(`Base : ${config.mongoUri.replace(/(mongodb(?:\+srv)?:\/\/)[^@]*@/, '$1***@')}`);
+  console.log(`Base : ${safeMongoUri()}`);
   console.log(
     dryRun ? '\nSimulation — rien ne sera écrit :\n'
       : reset ? '\nRéimport complet :\n'
       : '\nImport du contenu manquant :\n'
   );
 
-  await mongoose.connect(config.mongoUri, { family: 4 });
+  await connectDatabase();
 
   try {
     await importAll('actualités', Article, seedArticles, (a) => ({ title: a.title }), (article) => ({
@@ -151,7 +151,7 @@ async function main(): Promise<number> {
     console.log('Pas encore de compte pour y accéder ? npm run create:admin -- <email>');
     return 0;
   } finally {
-    await mongoose.connection.close();
+    await disconnectDatabase();
   }
 }
 

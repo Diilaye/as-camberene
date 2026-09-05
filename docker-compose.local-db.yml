@@ -1,0 +1,34 @@
+# ==========================================================================
+# Base de données en conteneur — optionnel
+# ==========================================================================
+# La pile principale attend une base hébergée (Atlas). Ce fichier en ajoute une
+# locale, pour une machine de test ou une installation sans service externe :
+#
+#   LOCAL_DB=1 dans .env.docker, puis ./deploy/docker.sh up
+#
+# Il impose `MONGODB_URI` : la valeur du .env.docker est alors ignorée.
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      # `depends_on: service_healthy` attend cette commande : l'API ne démarre
+      # pas avant que la base réponde vraiment.
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  api:
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/${MONGO_DB:-asc_camberene}
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo-data:

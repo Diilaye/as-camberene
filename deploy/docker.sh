@@ -28,15 +28,34 @@ step() { printf '\033[1m→ %s\033[0m\n' "$*"; }
 
 die() { red "✗ $*"; exit 1; }
 
-compose() { docker compose --env-file "$ENV_FILE" "$@"; }
+# `LOCAL_DB=1` dans .env.docker ajoute une base en conteneur ; sans lui, la
+# pile s'adresse à la base désignée par MONGODB_URI (Atlas).
+compose() {
+  local files=(-f docker-compose.yml)
+  if [ -f "$ENV_FILE" ] && grep -qE '^LOCAL_DB=1' "$ENV_FILE"; then
+    files+=(-f docker-compose.local-db.yml)
+  fi
+  docker compose --env-file "$ENV_FILE" "${files[@]}" "$@"
+}
+
+# La base est-elle dans la pile, ou ailleurs ?
+uses_local_db() { [ -f "$ENV_FILE" ] && grep -qE '^LOCAL_DB=1' "$ENV_FILE"; }
+
+# Valeur d'une clé du fichier d'environnement.
+env_value() { grep -E "^$1=" "$ENV_FILE" 2>/dev/null | head -1 | cut -d= -f2- || true; }
 
 require_env() {
   [ -f "$ENV_FILE" ] || die "$ENV_FILE est absent. Le créer :  cp .env.docker.example .env.docker"
 
   # Un secret vide passerait la substitution Compose et ne serait rattrapé
   # qu'au démarrage du conteneur, dans un journal. Autant le dire ici.
+  local required=(SITE_URL JWT_ACCESS_SECRET JWT_REFRESH_SECRET)
+  # Avec une base en conteneur, l'URI est fournie par la surcouche.
+  uses_local_db || required+=(MONGODB_URI)
+
   local missing=()
-  for key in SITE_URL JWT_ACCESS_SECRET JWT_REFRESH_SECRET; do
+  local key
+  for key in "${required[@]}"; do
     grep -qE "^${key}=.+" "$ENV_FILE" || missing+=("$key")
   done
   [ ${#missing[@]} -eq 0 ] || die "À renseigner dans $ENV_FILE : ${missing[*]}"
@@ -123,17 +142,31 @@ cmd_seed() {
   compose exec -T api npm run seed
 }
 
+# Les outils mongo ne sont dans aucune image de la pile : on les emprunte à un
+# conteneur jetable. L'URI passe par l'environnement et non par la ligne de
+# commande, où elle serait lisible dans la liste des processus de l'hôte.
+mongo_tool() {
+  local uri
+  if uses_local_db; then
+    uri="mongodb://mongo:27017/$(env_value MONGO_DB || echo asc_camberene)"
+    compose run --rm --no-deps -T -e MONGO_URI="$uri" --entrypoint sh mongo -c "$1"
+  else
+    uri="$(env_value MONGODB_URI)"
+    docker run --rm -i -e MONGO_URI="$uri" --entrypoint sh mongo:7 -c "$1"
+  fi
+}
+
 cmd_backup() {
   require_env
   mkdir -p "$BACKUP_DIR"
   local stamp; stamp="$(date +%Y%m%d-%H%M%S)"
 
   step "Sauvegarde de la base"
-  compose exec -T mongo mongodump --archive --gzip \
-    --db "$(grep -E '^MONGO_DB=' "$ENV_FILE" | cut -d= -f2 || echo asc_camberene)" \
+  mongo_tool 'mongodump --uri="$MONGO_URI" --archive --gzip' \
     > "$BACKUP_DIR/mongo-$stamp.archive.gz"
 
   step "Sauvegarde des images téléversées"
+  # Elles ne sont pas dans la base : une base hébergée ne les sauvegarde pas.
   compose exec -T api tar czf - -C /app uploads > "$BACKUP_DIR/uploads-$stamp.tgz"
 
   green "✓ $BACKUP_DIR/mongo-$stamp.archive.gz"
@@ -145,12 +178,15 @@ cmd_restore() {
   local archive="${1:-}"
   [ -f "$archive" ] || die "Usage : $0 restore <fichier mongo-*.archive.gz>"
 
+  local db; db="$(env_value MONGO_DB)"; db="${db:-asc_camberene}"
+
   red "Cette opération remplace le contenu actuel de la base."
-  read -r -p "Confirmer avec le nom de la base (${MONGO_DB:-asc_camberene}) : " answer
-  [ "$answer" = "${MONGO_DB:-asc_camberene}" ] || die "Annulé"
+  uses_local_db || red "La base visée est distante : $(env_value MONGODB_URI | sed -E 's|(//)[^@]*@|\1***@|')"
+  read -r -p "Confirmer en tapant le nom de la base ($db) : " answer
+  [ "$answer" = "$db" ] || die "Annulé"
 
   step "Restauration"
-  compose exec -T mongo mongorestore --archive --gzip --drop < "$archive"
+  mongo_tool 'mongorestore --uri="$MONGO_URI" --archive --gzip --drop' < "$archive"
   green "✓ Base restaurée"
 }
 
