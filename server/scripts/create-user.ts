@@ -1,0 +1,143 @@
+/**
+ * Ouverture d'un compte depuis le serveur.
+ *
+ * C'est le chemin d'amorçage : il faut un premier super administrateur pour que
+ * `/api/users` devienne utilisable, et cette route est réservée à ce profil.
+ * Ensuite, tout se fait depuis l'administration du site — ce script ne sert
+ * plus qu'au dépannage, quand plus personne ne peut se connecter.
+ *
+ *   npm run create:superadmin -- direction@asccamberene.sn
+ *   npm run create:admin      -- redaction@asccamberene.sn --name 'Rédaction'
+ *   npm run create:user       -- boutique@asccamberene.sn --role shop-admin
+ *
+ * Sur un compte existant, le script ne touche à rien sauf `--promote`, qui
+ * change son profil sans rien demander d'autre.
+ *
+ *   npm run create:user -- direction@asccamberene.sn --role superadmin --promote
+ *
+ * `--promote --password '…'` réattribue aussi le mot de passe : c'est le
+ * chemin de récupération quand plus personne ne peut entrer.
+ */
+import crypto from 'crypto';
+
+import mongoose from 'mongoose';
+
+import config from '../src/config/env';
+import SiteUser from '../src/models/SiteUser.model';
+import { ASSIGNABLE_ROLES, ROLE_LABELS, UserRole } from '../src/lib/roles';
+
+/** Mot de passe aléatoire lisible : 3 groupes séparés, sans caractères ambigus. */
+function generatePassword(): string {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const pick = (n: number) =>
+    Array.from(crypto.randomBytes(n))
+      .map((byte) => alphabet[byte % alphabet.length])
+      .join('');
+  return `${pick(4)}-${pick(4)}-${pick(4)}!`;
+}
+
+function readOption(name: string): string | undefined {
+  const index = process.argv.indexOf(`--${name}`);
+  if (index === -1) return undefined;
+  const value = process.argv[index + 1];
+  return value && !value.startsWith('--') ? value : undefined;
+}
+
+const hasFlag = (name: string): boolean => process.argv.includes(`--${name}`);
+
+async function main(): Promise<number> {
+  const email = process.argv
+    .slice(2)
+    .find((arg) => !arg.startsWith('--') && arg.includes('@'))
+    ?.toLowerCase();
+
+  if (!email) {
+    console.error(
+      "Usage : npm run create:user -- <email> --role <profil> [--name '…'] [--password '…'] [--promote]"
+    );
+    console.error(`Profils : ${ASSIGNABLE_ROLES.join(', ')}`);
+    return 1;
+  }
+
+  const role = (readOption('role') ?? 'admin') as UserRole;
+  if (!ASSIGNABLE_ROLES.includes(role)) {
+    console.error(`Profil inconnu : ${role}. Profils : ${ASSIGNABLE_ROLES.join(', ')}`);
+    return 1;
+  }
+
+  const providedPassword = readOption('password');
+  const password = providedPassword ?? generatePassword();
+  const name = readOption('name') ?? ROLE_LABELS[role];
+
+  if (password.length < 10) {
+    console.error('Le mot de passe doit contenir au moins 10 caractères.');
+    return 1;
+  }
+
+  await mongoose.connect(config.mongoUri, { family: 4 });
+
+  try {
+    const existing = await SiteUser.findOne({ email });
+
+    if (existing) {
+      if (existing.role === role && existing.is_active) {
+        console.log(`${email} est déjà ${ROLE_LABELS[role]}. Rien à faire.`);
+        return 0;
+      }
+
+      if (!hasFlag('promote')) {
+        console.log(
+          `${email} existe déjà comme ${ROLE_LABELS[existing.role]}`
+          + `${existing.is_active ? '' : ' (désactivé)'}.`
+        );
+        console.log('Relancer avec --promote pour changer son profil et le réactiver.');
+        return 1;
+      }
+
+      const before = existing.role;
+      existing.role = role;
+      existing.is_active = true;
+
+      // Avec `--password`, la promotion sert aussi de récupération : c'est le
+      // cas où plus personne ne peut se connecter, et où le mot de passe perdu
+      // est justement le problème.
+      if (providedPassword) existing.password_hash = providedPassword;
+      await existing.save();
+
+      console.log(`${email} : ${ROLE_LABELS[before]} → ${ROLE_LABELS[role]}, compte actif.`);
+      console.log(
+        providedPassword ? `Nouveau mot de passe : ${providedPassword}` : 'Mot de passe inchangé.'
+      );
+      return 0;
+    }
+
+    const user = await SiteUser.create({
+      name,
+      email,
+      password_hash: password, // haché par le hook du modèle
+      role,
+    });
+
+    console.log(`Compte créé — ${ROLE_LABELS[role]}.\n`);
+    console.log(`  email        : ${user.email}`);
+    console.log(`  mot de passe : ${password}`);
+    console.log(`  nom          : ${user.name}`);
+    if (!providedPassword) {
+      console.log("\nMot de passe tiré au sort : le noter, il n'est pas rejouable.");
+    }
+    console.log('\nConnexion sur /login, puis administration sur /admin.');
+    if (role === 'superadmin') {
+      console.log('Les autres comptes se créent depuis /admin/utilisateurs.');
+    }
+    return 0;
+  } finally {
+    await mongoose.connection.close();
+  }
+}
+
+main()
+  .then((code) => process.exit(code))
+  .catch((error) => {
+    console.error('Échec :', error instanceof Error ? error.message : error);
+    process.exit(1);
+  });

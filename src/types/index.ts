@@ -1,0 +1,220 @@
+import type { Permission, UserRole } from '../lib/roles';
+
+export type { Permission, UserRole };
+
+/**
+ * Identifiant d'entité.
+ *
+ * Les données statiques de `src/data/` numérotent leurs entrées ; fconnect les
+ * identifie par un ObjectId Mongo, une chaîne de 24 caractères. Les deux
+ * cohabitent le temps de la bascule, et les comparaisons passent donc par
+ * `String(a) === String(b)` plutôt que par une égalité stricte.
+ */
+export type EntityId = string | number;
+
+export interface Player {
+  id: EntityId;
+  name: string;
+  number: number;
+  position: string;
+  nationality: string;
+  age: number;
+  photo: string;
+  stats: {
+    matches: number;
+    goals: number;
+    assists: number;
+  };
+  biography: string;
+  joinedYear: number;
+}
+
+/**
+ * Rubriques et déclinaisons, énumérées plutôt que décrites.
+ *
+ * Les formulaires de l'administration en tirent leurs listes déroulantes, et le
+ * backend valide les mêmes valeurs : une rubrique ajoutée ici doit l'être aussi
+ * dans `server/src/models/`, sans quoi la saisie sera refusée.
+ */
+export const ARTICLE_CATEGORIES = ['Matchs', 'Transferts', 'Équipe', 'Club'] as const;
+export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
+
+export const PRODUCT_CATEGORIES = ['Maillots', 'Accessoires'] as const;
+export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
+
+export const PRODUCT_TYPES = ['Domicile', 'Extérieur', 'Third', 'Autre'] as const;
+export type ProductType = (typeof PRODUCT_TYPES)[number];
+
+export const LEGEND_ERAS = ['Golden Age', 'Modern Era', 'Classic Era'] as const;
+export type LegendEra = (typeof LEGEND_ERAS)[number];
+
+export interface Article {
+  id: EntityId;
+  title: string;
+  content: string;
+  excerpt: string;
+  image: string;
+  category: ArticleCategory;
+  publishedAt: string;
+  author: string;
+  status?: 'draft' | 'published';
+  comments: Comment[];
+}
+
+export interface Comment {
+  id: EntityId;
+  author: string;
+  content: string;
+  timestamp: string;
+}
+
+export interface Product {
+  id: EntityId;
+  name: string;
+  price: number;
+  category: ProductCategory;
+  type: ProductType;
+  image: string;
+  images: string[];
+  description: string;
+  sizes: string[];
+  inStock: boolean;
+  /**
+   * Visible sur la boutique.
+   *
+   * Retirer un produit de la vitrine sans le supprimer garde un sens aux
+   * paniers qui le citent. Facultatif : les données statiques de repli, qui
+   * précèdent le backend, ne le portent pas.
+   */
+  isVisible?: boolean;
+}
+
+/* ------------------------------------------------------------------ *
+ * Commandes de la boutique
+ * ------------------------------------------------------------------ */
+
+export const ORDER_STATUSES = ['recue', 'preparee', 'remise', 'annulee'] as const;
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export const FULFILMENTS = ['retrait', 'livraison'] as const;
+export type Fulfilment = (typeof FULFILMENTS)[number];
+
+export const PAYMENT_METHODS = ['a_la_remise', 'mobile_money'] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+/**
+ * Ligne de commande.
+ *
+ * Le nom et le prix unitaire sont ceux du jour de la commande, pas ceux du
+ * catalogue d'aujourd'hui : une commande ancienne reste lisible telle qu'elle
+ * a été passée, même si le produit a changé de prix ou disparu.
+ */
+export interface OrderItem {
+  product?: string;
+  name: string;
+  unit_price: number;
+  size: string;
+  quantity: number;
+}
+
+export interface Order {
+  id: string;
+  reference: string;
+  customer: { name: string; phone: string; email?: string };
+  items: OrderItem[];
+  subtotal: number;
+  shipping: number;
+  total: number;
+  fulfilment: Fulfilment;
+  address?: string;
+  payment_method: PaymentMethod;
+  status: OrderStatus;
+  note?: string;
+  created_at: string;
+}
+
+export interface CartItem {
+  product: Product;
+  size: string;
+  quantity: number;
+}
+
+export interface Match {
+  id: EntityId;
+  opponent: string;
+  date: string;
+  time: string;
+  venue: 'Domicile' | 'Extérieur';
+  competition: string;
+  result?: {
+    home: number;
+    away: number;
+  };
+  status: 'Terminé' | 'À venir' | 'En cours';
+}
+
+export interface Subscription {
+  id: number;
+  category: 'Tribune' | 'Virage' | 'VIP';
+  price: number;
+  seat: string;
+  benefits: string[];
+}
+
+export interface User {
+  id: EntityId;
+  name: string;
+  email: string;
+  role: UserRole;
+  /**
+   * Droits du compte, tels que le serveur les a rendus.
+   *
+   * Ils décident des écrans affichés, jamais de ce qui est permis : le serveur
+   * revérifie chaque écriture. Voir `src/lib/roles.ts`.
+   */
+  permissions: Permission[];
+  subscription?: Subscription;
+  favoriteTeam?: string; // ajouté pour supporters
+}
+
+export interface Legend {
+  id: number;
+  name: string;
+  position: string;
+  period: string;
+  nationality: string;
+  photo: string;
+  achievements: string[];
+  stats: {
+    matches: number;
+    goals: number;
+    assists: number;
+    trophies: number;
+  };
+  biography: string;
+  quote: string;
+  jerseyNumber: number;
+  era: LegendEra;
+  isHallOfFame: boolean;
+  /** Ordre d'affichage ; à défaut, le classement se fait par époque. */
+  rank?: number;
+}
+/**
+ * Étape de la frise historique du club.
+ *
+ * Vivait dans `src/data/history.ts` du temps où la frise était écrite en dur ;
+ * elle rejoint les types partagés maintenant que le backend du site la sert.
+ */
+export interface HistoryEvent {
+  id: EntityId;
+  /** Année pivot, celle qui range l'étape dans la frise. */
+  year: number;
+  /** Précision libre quand l'année ne suffit pas : « Mai 1974 », « 1974-1976 ». */
+  dateLabel?: string;
+  title: string;
+  description: string;
+  tags?: string[];
+  image?: string;
+  /** Ère à laquelle l'étape appartient : Fondation, Expansion, Modernisation… */
+  phase?: string;
+}

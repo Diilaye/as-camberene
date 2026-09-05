@@ -1,0 +1,315 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700;1,800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Tokens de la refonte.
+ *
+ * L'AS Roma expose sa charte sous forme de variables CSS (`--asr-red`,
+ * `--asr-yellow`, `--asr-gray-graphite`) que ses composants consomment sans
+ * jamais réécrire une couleur en dur. On reprend cette discipline avec les
+ * couleurs de l'ASC Cambérène : le vert tient le rôle de la couleur
+ * d'institution, le jaune celui de l'accent.
+ */
+:root {
+  --club-green: #0d7c27;
+  --club-green-dark: #0a5e1f;
+  --club-green-deep: #084a18;
+  --club-yellow: #f9ed3a;
+  --club-yellow-dark: #e6d532;
+  --graphite: #18191c;
+  --graphite-light: #202126;
+  --charcoal: #111;
+  --header-height: 61px;
+  --utility-height: 34px;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-graphite text-white antialiased;
+    font-family: 'Archivo', Arial, Helvetica, sans-serif;
+  }
+
+  /* Les titres du modèle sont capitalisés et très resserrés : -0.03em partout. */
+  h1, h2, h3, h4 {
+    letter-spacing: -0.03em;
+  }
+
+  ::selection {
+    background: var(--club-yellow);
+    color: #000;
+  }
+}
+
+@layer components {
+  /* ------------------------------------------------------------------ *
+   * Trame de page
+   * ------------------------------------------------------------------ */
+
+  .site-container {
+    @apply mx-auto w-full max-w-site px-4 sm:px-6 lg:px-10;
+  }
+
+  /**
+   * Titre de rubrique : 30px capitales, aligné à gauche, avec un lien « tout
+   * voir » poussé à droite. C'est le gabarit `__header` du modèle.
+   */
+  .section-title {
+    @apply text-2xl md:text-[30px] font-medium uppercase text-[#eee] leading-none;
+  }
+
+  .section-link {
+    @apply inline-flex items-center gap-2 text-sm md:text-base font-medium uppercase text-[#eee]
+           transition-opacity hover:opacity-70;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Rails horizontaux
+   *
+   * Les rubriques du modèle ne paginent pas : elles défilent latéralement avec
+   * un aimant de défilement sur chaque carte. La barre est masquée, les flèches
+   * ne s'affichent qu'au pointeur fin.
+   * ------------------------------------------------------------------ */
+
+  .rail {
+    @apply flex flex-row gap-5 overflow-x-auto py-4;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 1rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rail > * {
+    scroll-snap-align: start;
+  }
+
+  .rail-arrow {
+    @apply hidden md:flex h-9 w-9 items-center justify-center rounded-full bg-white text-club-green-dark
+           shadow-lg transition-opacity hover:opacity-80 disabled:opacity-0;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Carte éditoriale portrait
+   *
+   * Reprise fidèle du gabarit de l'AS Roma : 252×480, coins à 20px, image
+   * au-dessus et bloc de texte de 150px souligné d'un filet dégradé de 2px.
+   * ------------------------------------------------------------------ */
+
+  .card-portrait {
+    @apply relative flex w-[252px] min-w-[252px] flex-col justify-end overflow-hidden
+           rounded-[20px] text-[#eee] no-underline;
+    height: 480px;
+    box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
+  }
+
+  .card-portrait--wide {
+    @apply w-[599px] min-w-[599px];
+  }
+
+  .card-portrait__media {
+    height: calc(100% - 150px);
+    @apply overflow-hidden;
+  }
+
+  .card-portrait__media img {
+    @apply h-full w-full object-cover transition-transform duration-700;
+  }
+
+  .card-portrait:hover .card-portrait__media img {
+    @apply scale-105;
+  }
+
+  .card-portrait__body {
+    @apply relative flex h-[150px] flex-col gap-[5px] p-[10px];
+  }
+
+  /* Le filet dégradé qui sépare l'image du texte, signature du modèle. */
+  .card-portrait__body::before {
+    content: '';
+    @apply absolute right-0 top-0 block h-[2px] w-full;
+    background: linear-gradient(90deg, var(--club-yellow) 60%, var(--club-green));
+  }
+
+  .card-portrait__kicker {
+    @apply w-full max-w-[calc(100%-31px)] overflow-hidden text-ellipsis whitespace-nowrap
+           text-lg font-extrabold uppercase leading-[21px] text-club-yellow;
+  }
+
+  .card-portrait__title {
+    @apply overflow-hidden text-ellipsis text-[22px] font-extrabold leading-[25px];
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .card-portrait__meta {
+    @apply mt-auto flex items-center justify-between gap-3 text-base font-light;
+  }
+
+  .card-portrait__meta > * {
+    @apply min-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  @media (max-width: 767px) {
+    .card-portrait,
+    .card-portrait--wide {
+      @apply w-[252px] min-w-[252px];
+      height: 337px;
+      scroll-snap-align: center;
+    }
+
+    .card-portrait__media {
+      height: calc(100% - 132px);
+    }
+
+    .card-portrait__body {
+      @apply h-[132px];
+    }
+
+    .card-portrait__kicker {
+      @apply text-[1.05rem];
+    }
+
+    .card-portrait__title {
+      @apply text-base leading-[19px];
+    }
+
+    .card-portrait__meta {
+      @apply text-sm;
+    }
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Boutons
+   * ------------------------------------------------------------------ */
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 text-sm
+           font-bold uppercase tracking-wide transition-all duration-200;
+  }
+
+  .btn-yellow {
+    @apply btn bg-club-yellow text-black hover:bg-club-yellow-dark;
+  }
+
+  .btn-green {
+    @apply btn bg-club-green text-white hover:bg-club-green-dark;
+  }
+
+  .btn-outline {
+    @apply btn border-2 border-club-yellow text-club-yellow hover:bg-club-yellow hover:text-black;
+  }
+
+  .btn-ghost {
+    @apply btn border-2 border-white/60 text-white hover:border-white hover:bg-white hover:text-graphite;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Fonds de rubrique
+   *
+   * Le modèle pose ses rubriques éditoriales sur une texture rouge et le reste
+   * sur du graphite. On garde l'alternance, en vert.
+   * ------------------------------------------------------------------ */
+
+  .band-green {
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.06), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(0, 0, 0, 0.35), transparent 50%),
+      linear-gradient(160deg, var(--club-green) 0%, var(--club-green-dark) 55%, var(--club-green-deep) 100%);
+  }
+
+  .band-graphite {
+    @apply bg-graphite;
+  }
+
+  .band-charcoal {
+    @apply bg-charcoal;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Bannière de tête des pages intérieures
+   * ------------------------------------------------------------------ */
+
+  .page-hero {
+    @apply relative flex items-end overflow-hidden;
+    min-height: 340px;
+  }
+
+  .page-hero--image::before {
+    content: '';
+    @apply absolute inset-0 z-10;
+    background:
+      linear-gradient(90deg, rgba(24, 25, 28, 0.85), rgba(24, 25, 28, 0.35) 70%),
+      linear-gradient(rgba(24, 25, 28, 0), rgba(24, 25, 28, 0.95) 99%);
+  }
+
+  .page-hero__title {
+    @apply text-4xl md:text-6xl font-extrabold uppercase text-white;
+  }
+
+  .page-hero__kicker {
+    @apply text-lg md:text-2xl font-bold uppercase text-club-yellow;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Surfaces sombres réutilisées par les pages intérieures
+   * ------------------------------------------------------------------ */
+
+  .panel {
+    @apply rounded-[20px] border border-white/10 bg-white/[0.04] backdrop-blur-sm;
+  }
+
+  .panel-hover {
+    @apply transition-colors duration-200 hover:border-club-yellow/40 hover:bg-white/[0.07];
+  }
+
+  .field {
+    @apply w-full rounded-full border border-white/15 bg-white/[0.06] px-5 py-3 text-sm text-white
+           placeholder-white/40 outline-none transition-colors focus:border-club-yellow;
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide;
+  }
+}
+
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .text-shadow-hero {
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.63));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

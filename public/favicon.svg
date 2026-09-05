@@ -1,0 +1,29 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="faviconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F9ED3A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E6D532;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="faviconGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0D7C27;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0A5E1F;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Bouclier favicon -->
+  <path d="M16 3 C10 3, 6 6, 6 11 L6 19 C6 24, 10 28, 16 29 C22 28, 26 24, 26 19 L26 11 C26 6, 22 3, 16 3 Z" 
+        fill="url(#faviconGradient)" 
+        stroke="url(#faviconGreen)" 
+        stroke-width="1"/>
+  
+  <!-- ASC simplifié -->
+  <text x="16" y="20" 
+        text-anchor="middle" 
+        font-family="Inter, sans-serif" 
+        font-weight="900" 
+        font-size="8" 
+        fill="#000000">ASC</text>
+  
+  <!-- Point décoratif -->
+  <circle cx="16" cy="10" r="2" fill="url(#faviconGreen)" opacity="0.8"/>
+</svg>
