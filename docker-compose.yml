@@ -1,0 +1,73 @@
+# ==========================================================================
+# ASC Cambérène — pile de production
+# ==========================================================================
+#   docker compose up -d --build
+#
+# Seul `web` publie un port, et seulement sur la boucle locale : c'est l'Apache
+# de l'hôte qui expose le site au monde, et qui porte le certificat. Mongo et
+# l'API ne sont joignables que depuis le réseau interne de la pile.
+
+name: asc-camberene
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-asc_camberene}
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      # `depends_on: service_healthy` attend cette commande : l'API ne démarre
+      # pas avant que la base réponde vraiment.
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  api:
+    build:
+      context: ./server
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4100
+      MONGODB_URI: mongodb://mongo:27017/${MONGO_DB:-asc_camberene}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?renseigner JWT_ACCESS_SECRET dans .env}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?renseigner JWT_REFRESH_SECRET dans .env}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-2h}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-30d}
+      CORS_ORIGINS: ${SITE_URL:-https://ascambere.sn}
+      UPLOAD_DIR: uploads
+      # Deux proxys devant l'API : l'Apache de l'hôte, puis celui du conteneur.
+      # Sans ce nombre, la limite de débit compterait tout le trafic comme
+      # venant d'un seul visiteur.
+      TRUST_PROXY: 2
+    volumes:
+      # Les images téléversées survivent aux reconstructions d'image.
+      - uploads:/app/uploads
+
+  web:
+    build:
+      context: .
+      args:
+        # Figée dans le bundle à la construction : changer SITE_URL impose de
+        # reconstruire l'image, pas seulement de redémarrer le conteneur.
+        VITE_SITE_API_URL: ${SITE_URL:-https://ascambere.sn}
+        VITE_API_URL: ${FCONNECT_URL:-}
+        VITE_CLUB_ID: ${CLUB_ID:-}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      # Boucle locale uniquement : rien n'est exposé directement sur Internet.
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+
+volumes:
+  mongo-data:
+  uploads:

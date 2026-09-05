@@ -1,0 +1,11 @@
+node_modules
+dist
+server/node_modules
+server/dist
+server/uploads
+.env
+.git
+.github
+*.log
+.DS_Store
+*.tsbuildinfo

@@ -1,5 +1,133 @@
 # Déploiement sur VPS — ascambere.sn
 
+Deux voies, au choix :
+
+| | [Docker](#déploiement-docker-recommandé) | [Installation directe](#installation-directe) |
+|---|---|---|
+| À installer sur le VPS | Docker, Apache, certbot | Node, MongoDB, Apache, certbot |
+| Mise à jour | `./deploy/docker.sh deploy` | `./deploy/deploy.sh` |
+| Base de données | conteneur + volume | service système |
+| Reproductible | oui, image identique partout | dépend de la machine |
+
+Docker demande moins de choses au VPS et rend la mise à jour plus sûre : si une
+image ne construit pas, rien n'est remplacé. La section suivante le décrit ;
+l'installation directe vient après, inchangée.
+
+Dans les deux cas, l'Apache de l'hôte porte le certificat et une seule origine
+sert tout — le navigateur ne fait donc aucune requête préalable CORS.
+
+---
+
+## Déploiement Docker (recommandé)
+
+```
+navigateur ──► Apache de l'hôte :443 ──► conteneur web :8080 ──┬─► /api      ──► conteneur api :4100
+                    (certificat)          (site + proxy)       ├─► /uploads  ──► conteneur api :4100
+                                                               └─► reste     ──► fichiers statiques
+                                                                        conteneur api ──► conteneur mongo
+```
+
+Seul le conteneur `web` publie un port, et seulement sur `127.0.0.1` : Mongo et
+l'API ne sont joignables que depuis le réseau interne de la pile.
+
+### 1. Sur le VPS
+
+```bash
+sudo apt update && sudo apt install -y docker.io docker-compose-v2 apache2 git
+sudo a2enmod proxy proxy_http headers
+sudo usermod -aG docker "$USER"   # se reconnecter ensuite
+```
+
+### 2. Cloner et configurer
+
+```bash
+sudo mkdir -p /var/www && sudo chown "$USER" /var/www
+git clone git@github.com:Diilaye/as-camberene.git /var/www/as-camberene
+cd /var/www/as-camberene
+
+cp .env.docker.example .env.docker
+node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"  # ×2
+nano .env.docker      # SITE_URL, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
+```
+
+> `SITE_URL` est inscrite dans le bundle au moment de la construction : la
+> changer impose de reconstruire l'image, pas seulement de redémarrer.
+
+### 3. Démarrer
+
+```bash
+./deploy/docker.sh up
+```
+
+Le script construit les images, démarre la pile et **attend qu'elle réponde
+vraiment** avant de rendre la main. En cas d'échec, il affiche les journaux.
+
+### 4. Apache et certificat
+
+```bash
+sudo cp deploy/apache-docker.conf /etc/apache2/sites-available/ascambere.conf
+sudo a2ensite ascambere && sudo a2dissite 000-default
+sudo apache2ctl configtest && sudo systemctl reload apache2
+
+sudo apt install -y certbot python3-certbot-apache
+sudo certbot --apache -d ascambere.sn -d www.ascambere.sn
+```
+
+Reprendre ensuite dans le vhost 443 généré par certbot les deux en-têtes
+`X-Forwarded-*` en `https`/`443` — l'API en a besoin pour distinguer les
+visiteurs derrière le proxy.
+
+### 5. Premier compte et contenu
+
+```bash
+./deploy/docker.sh superadmin direction@ascambere.sn
+./deploy/docker.sh seed          # facultatif : contenu de démonstration
+```
+
+### Le script au quotidien
+
+```
+./deploy/docker.sh up                    construit et démarre
+./deploy/docker.sh deploy                git pull, reconstruit, redémarre, vérifie
+./deploy/docker.sh status                état des conteneurs
+./deploy/docker.sh logs [service]        journaux en continu
+./deploy/docker.sh shell [service]       un shell dans un conteneur
+./deploy/docker.sh superadmin <email>    crée un compte d'administration
+./deploy/docker.sh seed                  charge le contenu de démonstration
+./deploy/docker.sh backup                sauvegarde base + images téléversées
+./deploy/docker.sh restore <archive>     restaure une sauvegarde
+./deploy/docker.sh down                  arrête (base et images conservées)
+```
+
+`down` ne touche jamais aux volumes : la base et les images téléversées
+survivent à un arrêt comme à une reconstruction d'image.
+
+### Sauvegardes
+
+```bash
+./deploy/docker.sh backup      # → backups/mongo-*.archive.gz et uploads-*.tgz
+```
+
+À planifier, par exemple chaque nuit :
+
+```
+0 3 * * * cd /var/www/as-camberene && ./deploy/docker.sh backup
+```
+
+### Dépannage
+
+| Symptôme | Où regarder |
+|---|---|
+| `up` échoue à la vérification | `./deploy/docker.sh logs` |
+| 502 depuis l'hôte | la pile tourne-t-elle ? `./deploy/docker.sh status` |
+| Port déjà pris | changer `WEB_PORT` dans `.env.docker`, **et** `SITE_URL` si le port est public |
+| Secret manquant | le script le dit avant de démarrer quoi que ce soit |
+| Images 403 | droits des fichiers ; l'image les normalise, reconstruire avec `--no-cache` |
+
+---
+
+## Installation directe
+
 Site construit servi par Apache, API Node derrière le même domaine, MongoDB
 local. Une seule origine : Apache transmet `/api` et `/uploads` au serveur
 Node, tout le reste est du fichier statique.

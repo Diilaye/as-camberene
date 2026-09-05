@@ -35,6 +35,22 @@ const secret = (name: string): string => {
 export const config = {
   port: Number(process.env.PORT ?? 4100),
   isProduction,
+  /**
+   * Nombre de reverse proxys devant le serveur.
+   *
+   * Sans cette valeur, Express voit l'adresse du proxy et non celle du
+   * visiteur : la limite de débit s'appliquerait alors à tout le monde
+   * ensemble, et le premier robot venu la ferait porter aux vrais visiteurs.
+   *
+   * C'est un nombre et non `true` : `true` fait confiance à l'en-tête
+   * `X-Forwarded-For` entier, que n'importe quel client peut fabriquer. Le
+   * nombre dit combien de maillons, en partant du serveur, sont les nôtres.
+   *
+   *   0  exposition directe (développement)
+   *   1  un Apache en frontal
+   *   2  Apache de l'hôte + Apache du conteneur (déploiement Docker)
+   */
+  trustProxy: Number(process.env.TRUST_PROXY ?? 0),
   mongoUri: required('MONGODB_URI'),
   jwt: {
     accessSecret: secret('JWT_ACCESS_SECRET'),

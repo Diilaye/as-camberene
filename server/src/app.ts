@@ -10,6 +10,11 @@ import { errorHandler, routeNotFound } from './middlewares/errors';
 export const createApp = (): Application => {
   const app = express();
 
+  // Derrière un proxy, `req.ip` vaut l'adresse du proxy tant qu'Express ne sait
+  // pas combien de maillons lui appartiennent. La limite de débit ci-dessous en
+  // dépend directement.
+  if (config.trustProxy > 0) app.set('trust proxy', config.trustProxy);
+
   // `crossOriginResourcePolicy` par défaut interdirait au site, servi sur un
   // autre port, d'afficher les images de /uploads.
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
