@@ -175,6 +175,7 @@ processus de l'hôte.
 | Symptôme | Où regarder |
 |---|---|
 | `docker: command not found` | Docker n'est pas installé — voir [§1](#1-sur-le-vps) |
+| Une correction du script ne s'applique pas | `deploy` se relance seul si le script a changé ; sinon relancer la commande |
 | `Le démon Docker ne répond pas` | `sudo systemctl enable --now docker` |
 | `up` échoue à la vérification | `./deploy/docker.sh logs` |
 | 502 depuis l'hôte | la pile tourne-t-elle ? `./deploy/docker.sh status` |

@@ -12,6 +12,7 @@ set -euo pipefail
 
 # Le script est appelable depuis n'importe où : on se replace à la racine du
 # projet, qui est le dossier parent de celui-ci.
+SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
@@ -158,9 +159,28 @@ cmd_wait() {
 
 cmd_deploy() {
   require_env
-  step "Récupération des sources"
-  # `--ff-only` : un déploiement ne résout pas de conflit.
-  git pull --ff-only
+
+  # `--no-pull` : passe déjà relancée après une mise à jour du script.
+  if [ "${1:-}" != "--no-pull" ]; then
+    step "Récupération des sources"
+    local before after
+    before="$(git rev-parse HEAD)"
+    # `--ff-only` : un déploiement ne résout pas de conflit.
+    git pull --ff-only
+    after="$(git rev-parse HEAD)"
+
+    # Bash lit un script au fil de son exécution. Si `git pull` vient de
+    # réécrire celui-ci, la suite serait lue à la mauvaise position dans le
+    # nouveau fichier — au mieux une erreur de syntaxe, au pire des lignes
+    # exécutées de travers. C'est exactement ce qui fait qu'une correction
+    # apportée au script ne s'applique jamais au déploiement qui la récupère.
+    # On repart donc proprement de la version à jour.
+    if [ "$before" != "$after" ] && ! git diff --quiet "$before" "$after" -- "$SELF"; then
+      step "Le script a changé : reprise avec la nouvelle version"
+      exec "$SELF" deploy --no-pull
+    fi
+  fi
+
   cmd_up
   green "✓ Déploiement terminé"
 }
@@ -260,7 +280,7 @@ case "${1:-}" in
   up)          shift; cmd_up "$@" ;;
   down)        shift; cmd_down ;;
   restart)     shift; cmd_restart "$@" ;;
-  deploy)      shift; cmd_deploy ;;
+  deploy)      shift; cmd_deploy "$@" ;;
   status)      shift; cmd_status ;;
   logs)        shift; cmd_logs "$@" ;;
   shell)       shift; cmd_shell "$@" ;;
@@ -271,3 +291,8 @@ case "${1:-}" in
   ""|-h|--help|help) usage ;;
   *) red "Commande inconnue : $1"; echo; usage; exit 1 ;;
 esac
+
+# Sortie explicite : sans elle, bash reprendrait sa lecture du fichier après ce
+# bloc. Si le fichier a changé entre-temps, il y trouverait autre chose que ce
+# qu'il avait commencé à lire.
+exit $?
