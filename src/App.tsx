@@ -18,6 +18,7 @@ import EquipeU15 from './pages/EquipeU15';
 import EquipeU12 from './pages/EquipeU12';
 import Legends from './pages/Legends';
 import History from './pages/History';
+import President from './pages/President';
 import LegendDetail from './pages/LegendDetail';
 import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
@@ -68,6 +69,7 @@ const InnerApp: React.FC = () => {
             <Route path="/legends" element={<Legends />} />
             <Route path="/legends/:id" element={<LegendDetail />} />
             <Route path="/histoire" element={<History />} />
+            <Route path="/mot-du-president" element={<President />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/shop/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />

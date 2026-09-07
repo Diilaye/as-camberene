@@ -63,6 +63,7 @@ const NAV_ITEMS: NavItem[] = [
       {
         title: 'Histoire',
         links: [
+          { name: 'Mot du président', path: '/mot-du-president' },
           { name: 'Histoire du club', path: '/histoire' },
           { name: 'Légendes', path: '/legends' },
         ],

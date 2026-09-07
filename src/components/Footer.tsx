@@ -27,6 +27,7 @@ const FOOTER_MENU = [
       { name: 'Actualités', path: '/news' },
       { name: 'Légendes', path: '/legends' },
       { name: 'Histoire du club', path: '/histoire' },
+      { name: 'Mot du président', path: '/mot-du-president' },
     ],
   },
   {
