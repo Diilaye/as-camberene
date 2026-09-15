@@ -14,7 +14,9 @@ RUN npm ci
 
 COPY tsconfig*.json ./
 COPY src ./src
-RUN npm run build
+# Seule l'API est compilée ici : les scripts d'administration tournent dans
+# l'image finale via `tsx`, qui lit directement leurs sources.
+RUN npm run build:api
 
 # --------------------------------------------------------------------------
 FROM node:20-alpine AS runtime

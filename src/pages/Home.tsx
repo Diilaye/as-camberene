@@ -16,8 +16,8 @@ import {
   Youtube,
 } from 'lucide-react';
 import { matches as staticMatches } from '../data/matches';
-import { heroSlides, partners } from '../data/heroSlides';
-import { useArticles, useLegends, useProducts } from '../hooks/useContent';
+import { partners } from '../data/heroSlides';
+import { useArticles, useHeroSlides, useLegends, useProducts } from '../hooks/useContent';
 import useApiResource from '../hooks/useApiResource';
 import { getMatches } from '../services/fconnect/matches.service';
 import { toMatches } from '../adapters';
@@ -62,16 +62,29 @@ const Home: React.FC = () => {
    * pour que le rendu n'ait plus qu'à tester sa présence, et qu'un lien mal
    * formé retombe silencieusement sur la photo.
    */
+  const { data: heroSlides } = useHeroSlides();
+
   const slides = useMemo(
     () =>
       heroSlides.map((item) => {
         const id = item.youtube ? youtubeId(item.youtube) : null;
         return { ...item, videoId: id && !unavailable.includes(id) ? id : null };
       }),
-    [unavailable]
+    [heroSlides, unavailable]
   );
 
-  const active = slides[slide];
+  /**
+   * Position affichée, ramenée dans les bornes de la liste.
+   *
+   * Les diapositives viennent du serveur : leur nombre change une fois la
+   * réponse arrivée, et peut être plus petit que la position courante — le
+   * club vient de supprimer la dernière, par exemple. Sans ce garde-fou, la
+   * diapositive active serait `undefined` et l'accueil planterait sur son
+   * titre. Borner à l'affichage plutôt que corriger l'état après coup évite
+   * le rendu intermédiaire, celui qui casse.
+   */
+  const activeIndex = slides.length > 0 ? Math.min(slide, slides.length - 1) : 0;
+  const active = slides[activeIndex];
   const isVideo = Boolean(active?.videoId);
 
   const goTo = useCallback(
@@ -91,9 +104,9 @@ const Home: React.FC = () => {
    */
   useEffect(() => {
     if (!playing || isVideo) return undefined;
-    const timer = setInterval(() => goTo(slide + 1), 6000);
+    const timer = setInterval(() => goTo(activeIndex + 1), 6000);
     return () => clearInterval(timer);
-  }, [playing, isVideo, slide, goTo]);
+  }, [playing, isVideo, activeIndex, goTo]);
 
   const onVideoTime = useCallback((current: number, duration: number) => {
     setProgress({ current, duration });
@@ -119,14 +132,14 @@ const Home: React.FC = () => {
       <section className="relative h-[95vh] min-h-[520px] overflow-hidden bg-graphite xl:h-[56.25vw] xl:max-h-none">
         {slides.map((item, index) => (
           <div
-            key={item.title}
-            aria-hidden={index !== slide}
+            key={item.id}
+            aria-hidden={index !== activeIndex}
             className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === slide ? 'opacity-100' : 'opacity-0'
+              index === activeIndex ? 'opacity-100' : 'opacity-0'
             } ${item.image || item.videoId ? '' : 'band-green'}`}
           >
             {item.videoId ? (
-              index === slide && (
+              index === activeIndex && (
               <HeroVideo
                 videoId={item.videoId}
                 active
@@ -239,7 +252,7 @@ const Home: React.FC = () => {
           <div className="flex w-full items-center justify-center gap-4 text-[#eee]">
             <button
               type="button"
-              onClick={() => goTo(slide - 1)}
+              onClick={() => goTo(activeIndex - 1)}
               aria-label="Diapositive précédente"
               className="flex h-3 items-center font-bold text-white transition-opacity hover:opacity-70"
             >
@@ -249,13 +262,13 @@ const Home: React.FC = () => {
             <div className="flex items-center gap-2">
               {slides.map((item, index) => (
                 <button
-                  key={item.title}
+                  key={item.id}
                   type="button"
                   onClick={() => goTo(index)}
                   aria-label={`Diapositive ${index + 1}`}
-                  aria-current={index === slide}
+                  aria-current={index === activeIndex}
                   className={`h-3 rounded-full border-2 border-transparent transition-all duration-700 ${
-                    index === slide ? 'w-[45px] bg-club-yellow opacity-70' : 'w-3 bg-white opacity-30 hover:opacity-60'
+                    index === activeIndex ? 'w-[45px] bg-club-yellow opacity-70' : 'w-3 bg-white opacity-30 hover:opacity-60'
                   }`}
                 />
               ))}
@@ -263,7 +276,7 @@ const Home: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => goTo(slide + 1)}
+              onClick={() => goTo(activeIndex + 1)}
               aria-label="Diapositive suivante"
               className="flex h-3 items-center font-bold text-white transition-opacity hover:opacity-70"
             >

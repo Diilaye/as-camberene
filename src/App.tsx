@@ -36,6 +36,7 @@ import ArticlesAdmin from './pages/admin/ArticlesAdmin';
 import Parametres from './pages/admin/Parametres';
 import LegendesAdmin from './pages/admin/LegendesAdmin';
 import HistoireAdmin from './pages/admin/HistoireAdmin';
+import CarrouselAdmin from './pages/admin/CarrouselAdmin';
 import Commandes from './pages/admin/Commandes';
 import Utilisateurs from './pages/admin/Utilisateurs';
 import NotFound from './pages/NotFound';
@@ -95,6 +96,7 @@ const InnerApp: React.FC = () => {
             <Route path="/admin/articles" element={<ProtectedRoute permission="articles:write"><AdminLayout><ArticlesAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/legendes" element={<ProtectedRoute permission="legends:write"><AdminLayout><LegendesAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/histoire" element={<ProtectedRoute permission="history:write"><AdminLayout><HistoireAdmin /></AdminLayout></ProtectedRoute>} />
+            <Route path="/admin/carrousel" element={<ProtectedRoute permission="hero:write"><AdminLayout><CarrouselAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/utilisateurs" element={<ProtectedRoute permission="users:manage"><AdminLayout><Utilisateurs /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/parametres" element={<ProtectedRoute><AdminLayout><Parametres /></AdminLayout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />

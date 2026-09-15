@@ -11,7 +11,7 @@
  */
 
 import { siteApi } from '../../lib/api';
-import { Article, Comment, HistoryEvent, Legend, Product, TeamMember } from '../../types';
+import { Article, Comment, HeroSlide, HistoryEvent, Legend, Product, TeamMember } from '../../types';
 import { siteMediaUrl } from './media';
 
 /**
@@ -25,6 +25,7 @@ export type ArticleRecord = Article & { id: string };
 export type ProductRecord = Product & { id: string };
 export type LegendRecord = Legend & { id: string };
 export type HistoryEventRecord = HistoryEvent & { id: string };
+export type HeroSlideRecord = HeroSlide & { id: string };
 export type TeamMemberRecord = TeamMember;
 
 export interface ListResponse<T> {
@@ -125,6 +126,18 @@ const normalizeTeamMember = (member: TeamMemberRecord): TeamMemberRecord => ({
   photo: siteMediaUrl(member.photo),
 });
 
+/**
+ * La photo passe par `siteMediaUrl`, pas le lien YouTube.
+ *
+ * L'un désigne un fichier téléversé sur l'API du site, l'autre une adresse de
+ * YouTube : les faire passer par la même fonction préfixerait le second du
+ * domaine de l'API.
+ */
+const normalizeHeroSlide = (slide: HeroSlideRecord): HeroSlideRecord => ({
+  ...slide,
+  image: slide.image ? siteMediaUrl(slide.image) : undefined,
+});
+
 const normalizeHistoryEvent = (event: HistoryEventRecord): HistoryEventRecord => ({
   ...event,
   image: event.image ? siteMediaUrl(event.image) : undefined,
@@ -139,6 +152,7 @@ export const products = resource<ProductRecord>('/products', normalizeProduct);
 export const legends = resource<LegendRecord>('/legends', normalizeLegend);
 export const history = resource<HistoryEventRecord>('/history', normalizeHistoryEvent);
 export const teamMembers = resource<TeamMemberRecord>('/players', normalizeTeamMember);
+export const heroSlides = resource<HeroSlideRecord>('/hero', normalizeHeroSlide);
 
 // ==========================================================================
 // Commentaires — sous-ressource d'un article

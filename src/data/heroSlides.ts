@@ -1,39 +1,30 @@
 /**
- * Diapositives du carrousel de tête.
+ * Diapositives de repli du carrousel de tête.
+ *
+ * Le carrousel se tient désormais depuis l'administration
+ * (`/admin/carrousel`) : ses diapositives vivent en base, et le club y change
+ * photos, vidéos et ordre sans toucher au code. Ce tableau reste ce que le
+ * site affiche quand l'API ne répond pas — un accueil daté plutôt qu'un écran
+ * noir — et ce qu'il montre tant qu'aucune diapositive n'a été saisie.
  *
  * Une diapositive porte soit une photo (`image`), soit une vidéo YouTube
- * (`youtube`) — jamais les deux : `youtube` l'emporte, et `image` sert alors
- * d'affiche le temps que le lecteur se charge.
+ * (`youtube`) — jamais les deux à l'écran : `youtube` l'emporte, et `image`
+ * sert alors d'affiche le temps que le lecteur se charge.
  *
  * `youtube` accepte ce que l'on a sous la main : un identifiant nu, un lien de
  * la barre d'adresse, un lien de partage `youtu.be`, un lien `/embed/` ou
  * `/shorts/`. Voir `src/lib/youtube.ts`.
  *
- * Pour ajouter une vidéo, il suffit d'une entrée de plus dans ce tableau :
- *
- *   {
- *     youtube: 'https://www.youtube.com/watch?v=XXXXXXXXXXX',
- *     kicker: 'Résumé',
- *     title: 'ASC Cambérène — Jaraaf : les buts',
- *     link: '/news',
- *     linkLabel: 'Voir le compte rendu',
- *   }
+ * Les identifiants sont des chaînes fixes : ces entrées ne viennent d'aucune
+ * base, mais le carrousel a besoin d'une clé stable pour chaque diapositive.
  */
-export interface HeroSlide {
-  /** Photo de fond. Ignorée si `youtube` est renseigné et que la vidéo charge. */
-  image?: string;
-  /** Identifiant ou lien YouTube. La diapositive devient alors une vidéo. */
-  youtube?: string;
-  /** Surtitre jaune, en capitales. */
-  kicker: string;
-  /** Titre blanc, en capitales, sur trois lignes au plus. */
-  title: string;
-  link: string;
-  linkLabel: string;
-}
+import { HeroSlide } from '../types';
+
+export type { HeroSlide };
 
 export const heroSlides: HeroSlide[] = [
   {
+    id: 'repli-equipe',
     image: '/assets/img/asc-camberene-equipe-2025.webp',
     kicker: 'Résumé',
     title: "L'ASC Cambérène retrouve l'élite",
@@ -41,6 +32,7 @@ export const heroSlides: HeroSlide[] = [
     linkLabel: "Lire l'actualité",
   },
   {
+    id: 'repli-recrue',
     youtube: 'https://youtu.be/Zh_5yh8rfNk',
     kicker: 'Résumé',
     title: "Presentation de notre recrue leader l'enfant prodige du club",
@@ -48,6 +40,7 @@ export const heroSlides: HeroSlide[] = [
     linkLabel: 'Voir le compte rendu',
   },
   {
+    id: 'repli-palmares',
     image: '/assets/img/coupe.jpg',
     kicker: 'Palmarès',
     title: 'Soixante ans de titres à Cambérène',
@@ -55,6 +48,7 @@ export const heroSlides: HeroSlide[] = [
     linkLabel: "Découvrir l'histoire",
   },
   {
+    id: 'repli-abonnement',
     kicker: 'Supporters',
     title: 'Prenez votre abonnement pour la saison',
     link: '/subscriptions',

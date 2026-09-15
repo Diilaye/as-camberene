@@ -262,6 +262,31 @@ export interface Legend {
  * Vivait dans `src/data/history.ts` du temps où la frise était écrite en dur ;
  * elle rejoint les types partagés maintenant que le backend du site la sert.
  */
+/**
+ * Diapositive du carrousel de tête de l'accueil.
+ *
+ * Elle porte soit une photo, soit une vidéo YouTube : `youtube` l'emporte à
+ * l'écran, `image` lui servant d'affiche puis de repli si la vidéo ne se
+ * charge pas. Sans l'un ni l'autre, la diapositive s'affiche sur le fond vert
+ * du club.
+ */
+export interface HeroSlide {
+  id: EntityId;
+  /** Photo de fond. Affiche de la vidéo quand `youtube` est renseigné. */
+  image?: string;
+  /** Identifiant ou lien YouTube, sous n'importe laquelle de ses formes. */
+  youtube?: string;
+  /** Surtitre jaune, en capitales. */
+  kicker: string;
+  /** Titre blanc, en capitales, sur trois lignes au plus. */
+  title: string;
+  link: string;
+  linkLabel: string;
+  /** Ordre d'apparition : les petits nombres passent devant. */
+  rank?: number;
+  isVisible?: boolean;
+}
+
 export interface HistoryEvent {
   id: EntityId;
   /** Année pivot, celle qui range l'étape dans la frise. */

@@ -64,3 +64,16 @@ export interface SeedHistoryEvent {
   tags: string[];
   phase: string;
 }
+
+export interface SeedHeroSlide {
+  /** Photo de fond. Affiche de la vidéo quand `youtube` est renseigné. */
+  image?: string;
+  /** Lien ou identifiant YouTube : la diapositive devient alors une vidéo. */
+  youtube?: string;
+  kicker: string;
+  title: string;
+  link: string;
+  linkLabel: string;
+  /** Ordre d'apparition : les petits nombres passent devant. */
+  rank: number;
+}

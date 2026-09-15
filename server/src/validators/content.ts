@@ -88,6 +88,25 @@ export const historyEventSchema = Joi.object({
   phase: Joi.string().allow('').max(80),
 });
 
+/**
+ * Diapositive de tête.
+ *
+ * Ni `image` ni `youtube` n'est exigé : une diapositive sans visuel s'affiche
+ * sur le fond vert du club, et c'est une mise en avant valable — l'appel à
+ * l'abonnement l'a longtemps été. Le lien YouTube n'est pas normalisé ici : le
+ * site accepte toutes ses formes et retombe sur la photo s'il n'en tire rien.
+ */
+export const heroSlideSchema = Joi.object({
+  image: Joi.string().allow('').max(500).default(''),
+  youtube: Joi.string().allow('').max(500).default(''),
+  kicker: Joi.string().trim().max(80).required(),
+  title: Joi.string().trim().max(250).required(),
+  link: Joi.string().allow('').max(500).default('/news'),
+  linkLabel: Joi.string().allow('').max(80).default('En savoir plus'),
+  rank: Joi.number().default(0),
+  isVisible: Joi.boolean().default(true),
+});
+
 export const playerSchema = Joi.object({
   kind: Joi.string().valid(...PLAYER_KINDS).default('player'),
   name: Joi.string().trim().max(150).required(),
@@ -128,3 +147,4 @@ export const productPatchSchema = asPatch(productSchema);
 export const legendPatchSchema = asPatch(legendSchema);
 export const historyEventPatchSchema = asPatch(historyEventSchema);
 export const playerPatchSchema = asPatch(playerSchema);
+export const heroSlidePatchSchema = asPatch(heroSlideSchema);

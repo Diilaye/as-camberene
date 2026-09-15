@@ -202,6 +202,24 @@ cmd_superadmin() {
   fi
 }
 
+# Les deux comptes d'administration d'un seul coup : la direction, qui
+# distribue les rôles, et l'administrateur qui tient le contenu. `--yes` coupe
+# les questions : `compose exec -T` n'a pas de terminal pour y répondre.
+cmd_admins() {
+  require_env
+  local superadmin="${1:-}"
+  local admin="${2:-}"
+  [ -n "$superadmin" ] || die "Usage : $0 admins <email-superadmin> [email-admin]"
+
+  step "Ouverture des comptes d'administration"
+  if [ -n "$admin" ]; then
+    compose exec -T api npm run bootstrap:admins -- --yes \
+      --superadmin "$superadmin" --admin "$admin"
+  else
+    compose exec -T api npm run bootstrap:admins -- --yes --superadmin "$superadmin"
+  fi
+}
+
 cmd_seed() {
   require_env
   step "Chargement du contenu de démonstration"
@@ -268,6 +286,7 @@ Pilote de la pile Docker — ASC Cambérène
   logs [service]          journaux en continu
   shell [service]         ouvre un shell (api par défaut)
   superadmin <email> [mdp]  crée le premier compte d'administration
+  admins <super> [admin]  ouvre les deux comptes d'administration d'un coup
   seed                    charge le contenu de démonstration
   backup                  sauvegarde base + images téléversées
   restore <archive>       restaure une sauvegarde de base
@@ -285,6 +304,7 @@ case "${1:-}" in
   logs)        shift; cmd_logs "$@" ;;
   shell)       shift; cmd_shell "$@" ;;
   superadmin)  shift; cmd_superadmin "$@" ;;
+  admins)      shift; cmd_admins "$@" ;;
   seed)        shift; cmd_seed ;;
   backup)      shift; cmd_backup ;;
   restore)     shift; cmd_restore "$@" ;;

@@ -6,8 +6,20 @@
  * forger, et personne ne s'en aperçoit avant l'incident.
  */
 
+import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+
+/**
+ * `dotenv` lit le `.env` du répertoire courant et se tait s'il n'y en a pas —
+ * c'est voulu : en conteneur, la configuration vient de l'environnement et
+ * aucun fichier n'est attendu. Mais quand une variable manque ensuite, savoir
+ * quel fichier a été cherché, et s'il existe, évite de chercher au mauvais
+ * endroit : le `.env` du serveur n'est pas celui de la racine du dépôt, et un
+ * script lancé depuis un autre répertoire ne voit pas le même.
+ */
+const envPath = path.resolve(process.cwd(), '.env');
+const envFileFound = fs.existsSync(envPath);
 
 dotenv.config();
 
@@ -15,7 +27,14 @@ const required = (name: string): string => {
   const value = process.env[name]?.trim();
   if (!value) {
     throw new Error(
-      `${name} est absent de l'environnement. Copier server/.env.example vers server/.env.`
+      `${name} est absent de l'environnement.\n`
+      + (envFileFound
+        ? `  ${envPath} a été lu, mais ne définit pas ${name}.`
+        : `  Aucun fichier ${envPath}.\n`
+          + '  Le créer à partir de server/.env.example, ou lancer la commande'
+          + ' depuis le dossier server/ —\n'
+          + '  sous Docker, la configuration vient de l\'environnement du'
+          + ' conteneur : y exécuter la commande.')
     );
   }
   return value;

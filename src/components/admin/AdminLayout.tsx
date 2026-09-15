@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { BarChart3, Users, ShoppingBag, Newspaper, Settings, Menu, Shield, LogOut, User as UserIcon, UserCog, Crown, Landmark, Package, ChevronLeft } from 'lucide-react';
+import { BarChart3, Users, ShoppingBag, Newspaper, Settings, Menu, Shield, LogOut, User as UserIcon, UserCog, Crown, Landmark, Package, Clapperboard, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Permission, ROLE_LABELS } from '../../lib/roles';
 
@@ -13,6 +13,7 @@ import { Permission, ROLE_LABELS } from '../../lib/roles';
  */
 const navItems: { to: string; label: string; icon: React.ReactNode; permission?: Permission }[] = [
   { to: '/admin/dashboard', label: 'Tableau de bord', icon: <BarChart3 size={18} /> },
+  { to: '/admin/carrousel', label: 'Carrousel', icon: <Clapperboard size={18} />, permission: 'hero:write' },
   { to: '/admin/articles', label: 'Articles', icon: <Newspaper size={18} />, permission: 'articles:write' },
   { to: '/admin/legendes', label: 'Légendes', icon: <Crown size={18} />, permission: 'legends:write' },
   { to: '/admin/histoire', label: 'Histoire', icon: <Landmark size={18} />, permission: 'history:write' },

@@ -1,9 +1,11 @@
 import {
   ArticleRecord,
+  HeroSlideRecord,
   LegendRecord,
   ListParams,
   ProductRecord,
   articles as articlesApi,
+  heroSlides as heroSlidesApi,
   history as historyApi,
   legends as legendsApi,
   products as productsApi,
@@ -11,8 +13,9 @@ import {
 import { articles as staticArticles } from '../data/articles';
 import { products as staticProducts } from '../data/products';
 import { legends as staticLegends } from '../data/legends';
+import { heroSlides as staticHeroSlides } from '../data/heroSlides';
 import { getHistoryEvents } from '../data/history';
-import { Article, HistoryEvent, Legend, Product } from '../types';
+import { Article, HeroSlide, HistoryEvent, Legend, Product } from '../types';
 import { ApiResource, useApiResource } from './useApiResource';
 
 /**
@@ -47,6 +50,27 @@ export const useLegends = (params: ListParams = {}): ApiResource<Legend[]> =>
     staticLegends,
     { deps: [JSON.stringify(params)] }
   );
+
+/**
+ * Diapositives du carrousel de tête.
+ *
+ * Le repli n'est pas seulement là pour la panne : tant que le club n'a saisi
+ * aucune diapositive, la base répond une liste vide, et un accueil sans tête
+ * serait pire qu'un accueil daté. Une liste vide retombe donc, elle aussi, sur
+ * `src/data/heroSlides.ts`.
+ */
+export const useHeroSlides = (): ApiResource<HeroSlide[]> => {
+  const resource = useApiResource<HeroSlideRecord[]>(
+    (signal) => heroSlidesApi.list({ sort: 'rank created_at' }, signal),
+    [],
+    { deps: [] }
+  );
+
+  return {
+    ...resource,
+    data: resource.data.length > 0 ? resource.data : staticHeroSlides,
+  };
+};
 
 export const useHistoryEvents = (): ApiResource<HistoryEvent[]> =>
   useApiResource<HistoryEvent[]>(

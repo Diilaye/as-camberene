@@ -1,8 +1,8 @@
 /**
  * Amorcage du contenu du site.
  *
- * Verse en base tout ce que l'administration du site gere : actualites,
- * boutique, legendes, frise historique. De quoi ouvrir n'importe quelle page
+ * Verse en base tout ce que l'administration du site gere : carrousel de tete,
+ * actualites, boutique, legendes, frise historique. De quoi ouvrir n'importe quelle page
  * sur du contenu credible, et de quoi apprendre a se servir de l'administration
  * sur de la matiere plutot que sur du vide.
  *
@@ -14,7 +14,7 @@
  * n'est pas dupliquee. Relancer le script est donc sans danger.
  *
  *   npm run seed              # ajoute ce qui manque
- *   npm run seed -- --reset   # vide les quatre collections puis reimporte
+ *   npm run seed -- --reset   # vide les cinq collections puis reimporte
  *   npm run seed -- --dry-run # annonce ce qui serait ecrit, sans rien ecrire
  *
  * Ne cree aucun compte : `npm run create:admin -- <email>` s'en charge.
@@ -26,7 +26,14 @@ import Article from '../src/models/Article.model';
 import Product from '../src/models/Product.model';
 import Legend from '../src/models/Legend.model';
 import HistoryEvent from '../src/models/HistoryEvent.model';
-import { seedArticles, seedHistoryEvents, seedLegends, seedProducts } from './dataset';
+import HeroSlide from '../src/models/HeroSlide.model';
+import {
+  seedArticles,
+  seedHeroSlides,
+  seedHistoryEvents,
+  seedLegends,
+  seedProducts,
+} from './dataset';
 
 const reset = process.argv.includes('--reset');
 const dryRun = process.argv.includes('--dry-run');
@@ -93,6 +100,16 @@ async function main(): Promise<number> {
   await connectDatabase();
 
   try {
+    // Le titre identifie la diapositive : deux diapositives qui le partagent
+    // sont la même, importée deux fois.
+    await importAll(
+      'diapositives de tête',
+      HeroSlide,
+      seedHeroSlides,
+      (slide) => ({ title: slide.title }),
+      (slide) => ({ ...slide })
+    );
+
     await importAll('actualités', Article, seedArticles, (a) => ({ title: a.title }), (article) => ({
       title: article.title,
       excerpt: article.excerpt,

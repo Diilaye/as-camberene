@@ -12,10 +12,13 @@ import Product from '../models/Product.model';
 import Legend from '../models/Legend.model';
 import HistoryEvent from '../models/HistoryEvent.model';
 import Player from '../models/Player.model';
+import HeroSlide from '../models/HeroSlide.model';
 import { buildResourceRouter } from '../lib/resource';
 import {
   articlePatchSchema,
   articleSchema,
+  heroSlidePatchSchema,
+  heroSlideSchema,
   historyEventPatchSchema,
   historyEventSchema,
   legendPatchSchema,
@@ -111,6 +114,23 @@ router.use(
     publicFilter: { isVisible: true },
     searchable: ['name', 'position', 'role'],
     filters: ['team', 'line', 'kind', 'status'],
+  })
+);
+
+router.use(
+  '/hero',
+  buildResourceRouter({
+    model: HeroSlide,
+    permission: 'hero:write',
+    createSchema: heroSlideSchema,
+    updateSchema: heroSlidePatchSchema,
+    // `rank` porte l'ordre voulu par le club ; la date de création départage
+    // deux diapositives laissées au même rang, pour que l'ordre reste stable
+    // d'un chargement à l'autre.
+    defaultSort: 'rank created_at',
+    // Une diapositive retirée de la vitrine reste modifiable dans l'administration.
+    publicFilter: { isVisible: true },
+    searchable: ['title', 'kicker'],
   })
 );
 
