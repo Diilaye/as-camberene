@@ -6,6 +6,9 @@
  * Ensuite, tout se fait depuis l'administration du site — ce script ne sert
  * plus qu'au dépannage, quand plus personne ne peut se connecter.
  *
+ * Pour ouvrir d'un coup les deux comptes d'un site neuf — le super
+ * administrateur et l'administrateur — voir `bootstrap-admins.ts`.
+ *
  *   npm run create:superadmin -- direction@asccamberene.sn
  *   npm run create:admin      -- redaction@asccamberene.sn --name 'Rédaction'
  *   npm run create:user       -- boutique@asccamberene.sn --role shop-admin
@@ -18,21 +21,10 @@
  * `--promote --password '…'` réattribue aussi le mot de passe : c'est le
  * chemin de récupération quand plus personne ne peut entrer.
  */
-import crypto from 'crypto';
-
 import { connectDatabase, disconnectDatabase } from '../src/config/database';
 import SiteUser from '../src/models/SiteUser.model';
 import { ASSIGNABLE_ROLES, ROLE_LABELS, UserRole } from '../src/lib/roles';
-
-/** Mot de passe aléatoire lisible : 3 groupes séparés, sans caractères ambigus. */
-function generatePassword(): string {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
-  const pick = (n: number) =>
-    Array.from(crypto.randomBytes(n))
-      .map((byte) => alphabet[byte % alphabet.length])
-      .join('');
-  return `${pick(4)}-${pick(4)}-${pick(4)}!`;
-}
+import { MIN_PASSWORD_LENGTH, generatePassword } from './lib/accounts';
 
 function readOption(name: string): string | undefined {
   const index = process.argv.indexOf(`--${name}`);
@@ -67,8 +59,8 @@ async function main(): Promise<number> {
   const password = providedPassword ?? generatePassword();
   const name = readOption('name') ?? ROLE_LABELS[role];
 
-  if (password.length < 10) {
-    console.error('Le mot de passe doit contenir au moins 10 caractères.');
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    console.error(`Le mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères.`);
     return 1;
   }
 

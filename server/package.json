@@ -12,6 +12,7 @@
     "create:superadmin": "tsx scripts/create-user.ts --role superadmin",
     "create:admin": "tsx scripts/create-user.ts --role admin",
     "create:user": "tsx scripts/create-user.ts",
+    "bootstrap:admins": "tsx scripts/bootstrap-admins.ts",
     "seed": "tsx scripts/seed-site.ts"
   },
   "dependencies": {

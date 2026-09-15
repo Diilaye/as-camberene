@@ -36,6 +36,63 @@ export interface Player {
  * backend valide les mêmes valeurs : une rubrique ajoutée ici doit l'être aussi
  * dans `server/src/models/`, sans quoi la saisie sera refusée.
  */
+/**
+ * Effectif — vocabulaire partagé avec `server/src/models/Player.model.ts`.
+ *
+ * Ces listes remplissent les menus de l'administration et le backend valide
+ * les mêmes valeurs : une équipe ajoutée ici doit l'être aussi là-bas.
+ */
+export const PLAYER_TEAMS = ['equipe-a', 'equipe-u19', 'equipe-u17', 'equipe-u15', 'equipe-u12'] as const;
+export type PlayerTeam = (typeof PLAYER_TEAMS)[number];
+
+/** Libellés d'équipe, pour l'affichage. */
+export const PLAYER_TEAM_LABELS: Record<PlayerTeam, string> = {
+  'equipe-a': 'Équipe A',
+  'equipe-u19': 'U19',
+  'equipe-u17': 'U17',
+  'equipe-u15': 'U15',
+  'equipe-u12': 'U12',
+};
+
+/** Ligne de jeu, dans l'ordre du terrain — c'est cet ordre qui sert au tri. */
+export const PLAYER_LINES = ['Gardien', 'Défenseur', 'Milieu', 'Attaquant'] as const;
+export type PlayerLine = (typeof PLAYER_LINES)[number];
+
+export const PLAYER_KINDS = ['player', 'staff'] as const;
+export type PlayerKind = (typeof PLAYER_KINDS)[number];
+
+export const PLAYER_STATUSES = ['actif', 'blessé', 'suspendu', 'prêté', 'inactif'] as const;
+export type PlayerStatus = (typeof PLAYER_STATUSES)[number];
+
+export const STRONG_FEET = ['droit', 'gauche', 'les deux'] as const;
+export type StrongFoot = (typeof STRONG_FEET)[number];
+
+/** Fiche complète telle que le backend du site la rend. */
+export interface TeamMember {
+  id: string;
+  kind: PlayerKind;
+  name: string;
+  team: PlayerTeam;
+  number: number;
+  line: PlayerLine;
+  position: string;
+  role: string;
+  photo: string;
+  status: PlayerStatus;
+  birthDate: string | null;
+  /** Calculé par le serveur à partir de `birthDate` ; 0 si elle est inconnue. */
+  age: number;
+  nationality: string;
+  height: number;
+  weight: number;
+  strongFoot: StrongFoot | '';
+  stats: { matches: number; goals: number; assists: number; yellowCards: number; redCards: number };
+  biography: string;
+  joinedYear: number;
+  rank: number;
+  isVisible: boolean;
+}
+
 export const ARTICLE_CATEGORIES = ['Matchs', 'Transferts', 'Équipe', 'Club'] as const;
 export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
 

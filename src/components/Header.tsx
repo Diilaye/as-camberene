@@ -215,7 +215,7 @@ const Header: React.FC = () => {
             </>
           ) : (
             <span className="hidden truncate text-[10px] font-bold uppercase tracking-[0.18em] text-black sm:block">
-              Club officiel · Fondé en 1965 · Ligue 1 Sénégal
+              Club officiel · Fondé en 1965 · Ligue 2 Sénégal
             </span>
           )}
 

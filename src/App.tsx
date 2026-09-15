@@ -89,7 +89,7 @@ const InnerApp: React.FC = () => {
             <Route path="/admin/dashboard" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
             {/* Alias avec faute potentielle 'dashbord' pour tolérance utilisateur */}
             <Route path="/admin/dashbord" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
-            <Route path="/admin/joueurs" element={<ProtectedRoute><AdminLayout><Joueurs /></AdminLayout></ProtectedRoute>} />
+            <Route path="/admin/joueurs" element={<ProtectedRoute permission="players:write"><AdminLayout><Joueurs /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/produits" element={<ProtectedRoute permission="products:write"><AdminLayout><Produits /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/commandes" element={<ProtectedRoute permission="orders:manage"><AdminLayout><Commandes /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/articles" element={<ProtectedRoute permission="articles:write"><AdminLayout><ArticlesAdmin /></AdminLayout></ProtectedRoute>} />

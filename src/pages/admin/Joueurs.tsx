@@ -1,135 +1,698 @@
 import React, { useMemo, useState } from 'react';
-import { ExternalLink, Info, Search } from 'lucide-react';
-import { getClubRoster } from '../../services/fconnect/members.service';
-import { fromStaticPlayers, toPlayers, ApiPlayer } from '../../adapters';
-import { players as staticPlayers } from '../../data/players';
-import useApiResource from '../../hooks/useApiResource';
-import { isFconnectConfigured } from '../../config/env';
+import { Plus, Search, Users, X } from 'lucide-react';
+import useEditableResource from '../../hooks/useEditableResource';
+import { teamMembers as teamMembersApi, TeamMemberRecord } from '../../services/site/content.service';
 import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
+import ImageField from '../../components/admin/ImageField';
+import { IMAGE_PLACEHOLDER, handleImageError } from '../../lib/imagePlaceholder';
+import {
+  PLAYER_KINDS,
+  PLAYER_LINES,
+  PLAYER_STATUSES,
+  PLAYER_TEAMS,
+  PLAYER_TEAM_LABELS,
+  PlayerKind,
+  PlayerLine,
+  PlayerStatus,
+  PlayerTeam,
+  STRONG_FEET,
+  StrongFoot,
+} from '../../types';
+
+/** Compteurs et mesures : saisis en texte pour laisser le champ vide, fixés ici. */
+const toNumber = (value: string): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+};
+
+/** `<input type="date">` veut `AAAA-MM-JJ` ; le serveur rend une date ISO complète. */
+const toDateInput = (value: string | null): string => (value ? String(value).slice(0, 10) : '');
+
+const EMPTY_FORM = {
+  kind: 'player' as PlayerKind,
+  name: '',
+  team: 'equipe-a' as PlayerTeam,
+  number: '',
+  line: 'Milieu' as PlayerLine,
+  position: '',
+  role: '',
+  photo: '',
+  status: 'actif' as PlayerStatus,
+  birthDate: '',
+  nationality: 'Sénégal',
+  height: '',
+  weight: '',
+  strongFoot: '' as StrongFoot | '',
+  matches: '',
+  goals: '',
+  assists: '',
+  yellowCards: '',
+  redCards: '',
+  biography: '',
+  joinedYear: '',
+  rank: '',
+  isVisible: true,
+};
+
+const STATUS_STYLES: Record<PlayerStatus, string> = {
+  actif: 'bg-green-500/20 text-green-300',
+  blessé: 'bg-red-500/20 text-red-200',
+  suspendu: 'bg-orange-500/20 text-orange-200',
+  prêté: 'bg-blue-500/20 text-blue-200',
+  inactif: 'bg-white/10 text-white/60',
+};
+
+const KIND_LABELS: Record<PlayerKind, string> = {
+  player: 'Joueur',
+  staff: 'Encadrement',
+};
 
 /**
- * Effectif — consultation.
+ * Effectif — création et gestion.
  *
- * L'effectif appartient à fconnect : c'est là que le club inscrit ses membres,
- * leur donne un numéro, les rattache à une équipe. Le site le lit et l'affiche,
- * il ne l'écrit pas — deux endroits où modifier le même joueur finiraient par
- * se contredire, et c'est fconnect qui fait foi.
+ * Chaque fiche est rattachée à une équipe (A, U19, U17, U15, U12) et à une
+ * ligne de jeu ; c'est ce couple qui construit les pages publiques d'équipe.
+ * L'encadrement se saisit ici aussi, distingué par `kind` : même fiche, mais
+ * une fonction à la place d'un poste et d'un numéro.
  *
- * L'administration du site reste donc éditoriale : actualités et boutique s'y
- * modifient, l'effectif s'y consulte.
+ * Le droit `players:write` est exigé, et le serveur le revérifie à chaque
+ * écriture — ce que masque cet écran n'est jamais ce qui protège la donnée.
  */
 const Joueurs: React.FC = () => {
+  const {
+    items: members,
+    loading,
+    error,
+    actionError,
+    saving,
+    reload,
+    create,
+    update,
+    remove,
+  } = useEditableResource<TeamMemberRecord>(teamMembersApi);
+
   const [query, setQuery] = useState('');
-  const [positionFilter, setPositionFilter] = useState('');
+  const [teamFilter, setTeamFilter] = useState<PlayerTeam | ''>('');
+  const [kindFilter, setKindFilter] = useState<PlayerKind | ''>('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const { data: players, loading, error, reload, source } = useApiResource<ApiPlayer[]>(
-    (signal) => getClubRoster({}, signal).then(toPlayers),
-    // Repli : l'effectif écrit en dur, du temps où le site n'avait pas de source.
-    fromStaticPlayers(staticPlayers),
-    { enabled: isFconnectConfigured() }
-  );
+  const isStaff = form.kind === 'staff';
 
-  const positions = useMemo(
-    () => Array.from(new Set(players.map((p) => p.position))).sort(),
-    [players]
-  );
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return members
+      .filter((member) => {
+        const matchesQuery =
+          !needle ||
+          member.name.toLowerCase().includes(needle) ||
+          (member.position ?? '').toLowerCase().includes(needle) ||
+          (member.role ?? '').toLowerCase().includes(needle) ||
+          String(member.number ?? '').includes(needle);
+        const matchesTeam = !teamFilter || member.team === teamFilter;
+        const matchesKind = !kindFilter || member.kind === kindFilter;
+        return matchesQuery && matchesTeam && matchesKind;
+      })
+      .sort((a, b) => {
+        // Ordre du terrain, pas ordre alphabétique : l'encadrement ferme la
+        // liste de son équipe, les joueurs se rangent gardiens en tête.
+        if (a.team !== b.team) return PLAYER_TEAMS.indexOf(a.team) - PLAYER_TEAMS.indexOf(b.team);
+        if (a.kind !== b.kind) return a.kind === 'player' ? -1 : 1;
+        if (a.kind === 'player' && a.line !== b.line) {
+          return PLAYER_LINES.indexOf(a.line) - PLAYER_LINES.indexOf(b.line);
+        }
+        return (a.rank ?? 0) - (b.rank ?? 0) || (a.number ?? 0) - (b.number ?? 0) || a.name.localeCompare(b.name);
+      });
+  }, [members, query, teamFilter, kindFilter]);
 
-  const filtered = useMemo(
-    () =>
-      players.filter((p) => {
-        const q = query.toLowerCase();
-        const okQ =
-          !q ||
-          p.name.toLowerCase().includes(q) ||
-          String(p.number).includes(q) ||
-          p.position.toLowerCase().includes(q);
-        const okPos = !positionFilter || p.position === positionFilter;
-        return okQ && okPos;
-      }),
-    [players, query, positionFilter]
-  );
+  /** Combien de fiches par équipe, pour situer d'un coup d'œil. */
+  const countByTeam = useMemo(() => {
+    const counts = new Map<PlayerTeam, number>();
+    for (const member of members) counts.set(member.team, (counts.get(member.team) ?? 0) + 1);
+    return counts;
+  }, [members]);
+
+  const openCreate = () => {
+    setEditingId(null);
+    // L'équipe filtrée est presque toujours celle qu'on vient remplir.
+    setForm({ ...EMPTY_FORM, team: teamFilter || EMPTY_FORM.team });
+    setModalOpen(true);
+  };
+
+  const openEdit = (member: TeamMemberRecord) => {
+    setEditingId(member.id);
+    setForm({
+      kind: member.kind,
+      name: member.name,
+      team: member.team,
+      number: member.number ? String(member.number) : '',
+      line: member.line,
+      position: member.position ?? '',
+      role: member.role ?? '',
+      photo: member.photo ?? '',
+      status: member.status,
+      birthDate: toDateInput(member.birthDate),
+      nationality: member.nationality ?? '',
+      height: member.height ? String(member.height) : '',
+      weight: member.weight ? String(member.weight) : '',
+      strongFoot: member.strongFoot ?? '',
+      matches: String(member.stats?.matches ?? ''),
+      goals: String(member.stats?.goals ?? ''),
+      assists: String(member.stats?.assists ?? ''),
+      yellowCards: String(member.stats?.yellowCards ?? ''),
+      redCards: String(member.stats?.redCards ?? ''),
+      biography: member.biography ?? '',
+      joinedYear: member.joinedYear ? String(member.joinedYear) : '',
+      rank: String(member.rank ?? ''),
+      isVisible: member.isVisible !== false,
+    });
+    setModalOpen(true);
+  };
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const payload = {
+      kind: form.kind,
+      name: form.name,
+      team: form.team,
+      // Un encadrant ne porte ni numéro ni ligne de jeu : on n'envoie pas une
+      // valeur de formulaire qui n'a pas de sens pour lui.
+      number: isStaff ? 0 : toNumber(form.number),
+      line: isStaff ? 'Milieu' : form.line,
+      position: isStaff ? '' : form.position,
+      role: isStaff ? form.role : '',
+      photo: form.photo,
+      status: form.status,
+      // Chaîne vide = date inconnue ; `null` le dit au serveur sans qu'il ait à
+      // convertir une chaîne vide en date.
+      birthDate: form.birthDate || null,
+      nationality: form.nationality,
+      height: toNumber(form.height),
+      weight: toNumber(form.weight),
+      strongFoot: isStaff ? '' : form.strongFoot,
+      stats: {
+        matches: toNumber(form.matches),
+        goals: toNumber(form.goals),
+        assists: toNumber(form.assists),
+        yellowCards: toNumber(form.yellowCards),
+        redCards: toNumber(form.redCards),
+      },
+      biography: form.biography,
+      joinedYear: toNumber(form.joinedYear),
+      rank: toNumber(form.rank),
+      isVisible: form.isVisible,
+    };
+
+    // Le formulaire reste ouvert si l'enregistrement a échoué : la saisie n'est
+    // pas perdue, et le message d'erreur explique pourquoi.
+    const saved = editingId ? await update(editingId, payload) : await create(payload);
+    if (saved) setModalOpen(false);
+  };
+
+  const confirmRemoval = async () => {
+    if (!confirmDelete) return;
+    if (await remove(confirmDelete)) setConfirmDelete(null);
+  };
+
+  const field = 'w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none';
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+      <div className="mb-6 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Effectif</h2>
-          <p className="text-sm text-white/60">Lecture seule ({filtered.length})</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div className="relative flex-1 sm:w-72">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Recherche joueur..." className="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-9 pr-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-club-yellow" />
-          </div>
-          <select value={positionFilter} onChange={e=>setPositionFilter(e.target.value)} className="bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-xs text-white focus:outline-none focus:border-club-yellow">
-            <option value="">Tous postes</option>
-            {positions.map(p=> <option key={p}>{p}</option>)}
-          </select>
-        </div>
-      </div>
-
-      <div className="mb-6 flex items-start gap-3 rounded-2xl border border-club-yellow/20 bg-club-yellow/5 px-4 py-3">
-        <Info size={16} className="mt-0.5 shrink-0 text-club-yellow" />
-        <div className="text-xs text-white/70">
-          <p className="font-semibold text-white">L’effectif se gère dans fconnect</p>
-          <p className="mt-1 text-white/60">
-            Inscrire un joueur, changer son numéro ou son équipe se fait depuis le tableau de bord
-            fconnect du club. Le site affiche ce qui y est saisi.
-            {source === 'fallback' && !isFconnectConfigured() && (
-              <> Aucun club n’est encore relié : <code>VITE_CLUB_ID</code> est vide, la liste
-              ci-dessous vient des données de démonstration.</>
-            )}
+          <h2 className="mb-1 flex items-center gap-2 text-2xl font-bold text-white">
+            <Users size={20} className="text-club-yellow" />
+            Effectif
+          </h2>
+          <p className="text-sm text-white/60">
+            Joueurs et encadrement de toutes les équipes ({filtered.length})
           </p>
         </div>
-        <a
-          href="https://fconnect.sn"
-          target="_blank"
-          rel="noreferrer"
-          className="shrink-0 flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[11px] text-white hover:bg-white/20"
-        >
-          fconnect <ExternalLink size={12} />
-        </a>
+        <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
+          <div className="relative flex-1 sm:w-64">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            <label htmlFor="member-search" className="sr-only">Rechercher un membre</label>
+            <input
+              id="member-search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Nom, poste, numéro…"
+              className="w-full rounded-full border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-xs text-white placeholder-white/40 outline-none focus:border-club-yellow"
+            />
+          </div>
+          <label htmlFor="member-kind" className="sr-only">Filtrer par nature</label>
+          <select
+            id="member-kind"
+            value={kindFilter}
+            onChange={(event) => setKindFilter(event.target.value as PlayerKind | '')}
+            className="rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-xs text-white outline-none focus:border-club-yellow"
+          >
+            <option value="">Tous</option>
+            {PLAYER_KINDS.map((kind) => (
+              <option key={kind} value={kind} className="bg-graphite">{KIND_LABELS[kind]}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={openCreate}
+            className="flex items-center justify-center gap-2 rounded-full bg-club-yellow px-5 py-2.5 text-xs font-semibold text-black shadow hover:shadow-lg"
+          >
+            <Plus size={14} /> Nouveau
+          </button>
+        </div>
       </div>
 
-      <AdminError error={error} onRetry={reload} />
+      {/* Onglets d'équipe : c'est l'entrée naturelle dans un effectif. */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setTeamFilter('')}
+          className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+            teamFilter === '' ? 'bg-club-yellow text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'
+          }`}
+        >
+          Toutes les équipes ({members.length})
+        </button>
+        {PLAYER_TEAMS.map((team) => (
+          <button
+            key={team}
+            type="button"
+            onClick={() => setTeamFilter(team)}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+              teamFilter === team ? 'bg-club-yellow text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'
+            }`}
+          >
+            {PLAYER_TEAM_LABELS[team]} ({countByTeam.get(team) ?? 0})
+          </button>
+        ))}
+      </div>
+
+      <AdminError error={error ?? actionError} onRetry={reload} />
 
       {loading ? (
         <AdminLoading label="Chargement de l’effectif…" />
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl">
           <table className="min-w-full text-sm">
-            <thead className="text-white/60 uppercase tracking-wide text-xs">
+            <thead className="text-xs uppercase tracking-wide text-white/60">
               <tr>
-                <th className="py-3 px-4 text-left">Joueur</th>
-                <th className="py-3 px-4 text-left">Poste</th>
-                <th className="py-3 px-4 text-left">Âge</th>
-                <th className="py-3 px-4 text-left">Statut</th>
+                <th className="px-4 py-3 text-left">Membre</th>
+                <th className="px-4 py-3 text-left">Équipe</th>
+                <th className="px-4 py-3 text-left">Poste</th>
+                <th className="px-4 py-3 text-left">Âge</th>
+                <th className="px-4 py-3 text-left">Statistiques</th>
+                <th className="px-4 py-3 text-left">Statut</th>
+                <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-white/85">
-              {filtered.map(p => (
-                <tr key={p.id} className="hover:bg-white/5 transition">
-                  <td className="py-3 px-4 flex items-center gap-3">
-                    <img src={p.photo} alt={p.name} className="w-10 h-10 rounded-full object-cover" />
-                    <div>
-                      <p className="font-medium text-white">{p.name}</p>
-                      <p className="text-xs text-white/40">#{p.number || '—'}</p>
+            <tbody className="divide-y divide-white/5 text-white/70">
+              {filtered.map((member) => (
+                <tr key={member.id} className={`hover:bg-white/5 ${member.isVisible ? '' : 'opacity-50'}`}>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={member.photo || IMAGE_PLACEHOLDER}
+                        alt=""
+                        onError={handleImageError}
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
+                      <div className="min-w-0">
+                        <p className="line-clamp-1 font-medium text-white">{member.name}</p>
+                        <p className="text-xs text-white/40">
+                          {member.kind === 'staff'
+                            ? KIND_LABELS.staff
+                            : member.number
+                              ? `#${member.number}`
+                              : 'Sans numéro'}
+                          {member.isVisible ? '' : ' · masqué'}
+                        </p>
+                      </div>
                     </div>
                   </td>
-                  <td className="py-3 px-4">{p.position}</td>
-                  <td className="py-3 px-4">{p.age || '—'}</td>
-                  <td className="py-3 px-4 text-xs capitalize">{p.status ?? '—'}</td>
+                  <td className="px-4 py-3 text-xs">{PLAYER_TEAM_LABELS[member.team]}</td>
+                  <td className="px-4 py-3 text-xs">
+                    {member.kind === 'staff'
+                      ? member.role || '—'
+                      : [member.line, member.position].filter(Boolean).join(' · ')}
+                  </td>
+                  <td className="px-4 py-3 text-xs">{member.age || '—'}</td>
+                  <td className="px-4 py-3 text-xs">
+                    {member.kind === 'staff'
+                      ? '—'
+                      : `${member.stats?.matches ?? 0} m · ${member.stats?.goals ?? 0} b · ${member.stats?.assists ?? 0} p`}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`rounded-full px-2 py-1 text-[10px] font-semibold capitalize ${STATUS_STYLES[member.status]}`}>
+                      {member.status}
+                    </span>
+                  </td>
+                  <td className="space-x-2 whitespace-nowrap px-4 py-3 text-right">
+                    <button
+                      type="button"
+                      onClick={() => openEdit(member)}
+                      className="rounded-full bg-white/10 px-3 py-1.5 text-xs hover:bg-white/20"
+                    >
+                      Éditer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(member.id)}
+                      className="rounded-full bg-red-500/30 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/40"
+                    >
+                      Supprimer
+                    </button>
+                  </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="p-0">
-                    <AdminEmpty label={players.length === 0 ? 'Aucun joueur dans fconnect' : 'Aucun joueur ne correspond à la recherche'} />
+                  <td colSpan={7} className="p-0">
+                    <AdminEmpty
+                      label={
+                        members.length === 0
+                          ? 'Aucun membre en base — commencez par « Nouveau »'
+                          : 'Aucun membre ne correspond à la recherche'
+                      }
+                    />
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Formulaire */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
+          <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.05] p-6">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              aria-label="Fermer"
+              className="absolute right-3 top-3 text-white/60 hover:text-white"
+            >
+              <X size={16} />
+            </button>
+            <h3 className="mb-4 text-lg font-semibold text-white">
+              {editingId ? 'Modifier la fiche' : 'Nouveau membre'}
+            </h3>
+
+            <form onSubmit={submit} className="space-y-4 text-xs">
+              {/* Joueur ou encadrant : ce choix commande la suite du formulaire. */}
+              <div className="flex gap-2">
+                {PLAYER_KINDS.map((kind) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, kind }))}
+                    className={`flex-1 rounded-lg px-4 py-2 font-semibold transition ${
+                      form.kind === kind ? 'bg-club-yellow text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'
+                    }`}
+                  >
+                    {KIND_LABELS[kind]}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                required
+                value={form.name}
+                onChange={(event) => setForm((f) => ({ ...f, name: event.target.value }))}
+                placeholder="Nom complet"
+                aria-label="Nom complet"
+                className={field}
+              />
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="member-team" className="mb-1 block text-white/60">Équipe</label>
+                  <select
+                    id="member-team"
+                    value={form.team}
+                    onChange={(event) => setForm((f) => ({ ...f, team: event.target.value as PlayerTeam }))}
+                    className={field}
+                  >
+                    {PLAYER_TEAMS.map((team) => (
+                      <option key={team} value={team} className="bg-graphite">
+                        {PLAYER_TEAM_LABELS[team]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="member-status" className="mb-1 block text-white/60">Statut</label>
+                  <select
+                    id="member-status"
+                    value={form.status}
+                    onChange={(event) => setForm((f) => ({ ...f, status: event.target.value as PlayerStatus }))}
+                    className={`${field} capitalize`}
+                  >
+                    {PLAYER_STATUSES.map((status) => (
+                      <option key={status} value={status} className="bg-graphite capitalize">{status}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {isStaff ? (
+                <input
+                  value={form.role}
+                  onChange={(event) => setForm((f) => ({ ...f, role: event.target.value }))}
+                  placeholder="Fonction (Entraîneur, Adjoint, Préparateur physique…)"
+                  aria-label="Fonction"
+                  className={field}
+                />
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <label htmlFor="member-number" className="mb-1 block text-white/60">Numéro</label>
+                    <input
+                      id="member-number"
+                      type="number"
+                      min={0}
+                      max={99}
+                      value={form.number}
+                      onChange={(event) => setForm((f) => ({ ...f, number: event.target.value }))}
+                      placeholder="10"
+                      className={field}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="member-line" className="mb-1 block text-white/60">Ligne</label>
+                    <select
+                      id="member-line"
+                      value={form.line}
+                      onChange={(event) => setForm((f) => ({ ...f, line: event.target.value as PlayerLine }))}
+                      className={field}
+                    >
+                      {PLAYER_LINES.map((line) => (
+                        <option key={line} value={line} className="bg-graphite">{line}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="member-position" className="mb-1 block text-white/60">Poste précis</label>
+                    <input
+                      id="member-position"
+                      value={form.position}
+                      onChange={(event) => setForm((f) => ({ ...f, position: event.target.value }))}
+                      placeholder="Ailier gauche"
+                      className={field}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <ImageField
+                value={form.photo}
+                onChange={(value) => setForm((f) => ({ ...f, photo: value }))}
+                label="Portrait"
+              />
+
+              <fieldset>
+                <legend className="mb-2 text-white/60">État civil</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="member-birth" className="mb-1 block text-white/50">
+                      Date de naissance
+                    </label>
+                    <input
+                      id="member-birth"
+                      type="date"
+                      value={form.birthDate}
+                      onChange={(event) => setForm((f) => ({ ...f, birthDate: event.target.value }))}
+                      className={`${field} [color-scheme:dark]`}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="member-nationality" className="mb-1 block text-white/50">
+                      Nationalité
+                    </label>
+                    <input
+                      id="member-nationality"
+                      value={form.nationality}
+                      onChange={(event) => setForm((f) => ({ ...f, nationality: event.target.value }))}
+                      placeholder="Sénégal"
+                      className={field}
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-4">
+                  <input
+                    type="number"
+                    min={0}
+                    max={260}
+                    value={form.height}
+                    onChange={(event) => setForm((f) => ({ ...f, height: event.target.value }))}
+                    placeholder="Taille (cm)"
+                    aria-label="Taille en centimètres"
+                    className={field}
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    max={200}
+                    value={form.weight}
+                    onChange={(event) => setForm((f) => ({ ...f, weight: event.target.value }))}
+                    placeholder="Poids (kg)"
+                    aria-label="Poids en kilogrammes"
+                    className={field}
+                  />
+                  {!isStaff && (
+                    <select
+                      value={form.strongFoot}
+                      onChange={(event) => setForm((f) => ({ ...f, strongFoot: event.target.value as StrongFoot | '' }))}
+                      aria-label="Pied fort"
+                      className={field}
+                    >
+                      <option value="" className="bg-graphite">Pied fort</option>
+                      {STRONG_FEET.map((foot) => (
+                        <option key={foot} value={foot} className="bg-graphite">{foot}</option>
+                      ))}
+                    </select>
+                  )}
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.joinedYear}
+                    onChange={(event) => setForm((f) => ({ ...f, joinedYear: event.target.value }))}
+                    placeholder="Arrivée (année)"
+                    aria-label="Année d'arrivée au club"
+                    className={field}
+                  />
+                </div>
+              </fieldset>
+
+              {!isStaff && (
+                <fieldset>
+                  <legend className="mb-2 text-white/60">Statistiques de la saison</legend>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                    {([
+                      ['matches', 'Matchs'],
+                      ['goals', 'Buts'],
+                      ['assists', 'Passes'],
+                      ['yellowCards', 'Jaunes'],
+                      ['redCards', 'Rouges'],
+                    ] as const).map(([key, label]) => (
+                      <input
+                        key={key}
+                        type="number"
+                        min={0}
+                        value={form[key]}
+                        onChange={(event) => setForm((f) => ({ ...f, [key]: event.target.value }))}
+                        placeholder={label}
+                        aria-label={label}
+                        className={field}
+                      />
+                    ))}
+                  </div>
+                </fieldset>
+              )}
+
+              <textarea
+                value={form.biography}
+                onChange={(event) => setForm((f) => ({ ...f, biography: event.target.value }))}
+                placeholder="Biographie"
+                aria-label="Biographie"
+                rows={4}
+                className={`${field} resize-none`}
+              />
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <input
+                  type="number"
+                  min={0}
+                  value={form.rank}
+                  onChange={(event) => setForm((f) => ({ ...f, rank: event.target.value }))}
+                  placeholder="Ordre d'affichage"
+                  aria-label="Ordre d'affichage"
+                  className={field}
+                />
+                <label className="flex cursor-pointer select-none items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={form.isVisible}
+                    onChange={(event) => setForm((f) => ({ ...f, isVisible: event.target.checked }))}
+                    className="accent-club-yellow"
+                  />
+                  <span>Visible sur le site</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="rounded-full bg-white/5 px-4 py-2 text-white/70 hover:bg-white/10"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="rounded-full bg-club-yellow px-5 py-2 font-semibold text-black disabled:opacity-60"
+                >
+                  {saving ? 'Enregistrement…' : editingId ? 'Mettre à jour' : 'Créer'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation de suppression */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={() => setConfirmDelete(null)} />
+          <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.05] p-6">
+            <h4 className="mb-2 text-sm font-semibold text-white">Supprimer la fiche</h4>
+            <p className="mb-4 text-xs text-white/60">
+              Confirmez-vous la suppression ? Elle est définitive. Pour retirer un membre du site
+              sans perdre sa fiche, décochez plutôt « Visible sur le site ».
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(null)}
+                className="rounded-full bg-white/5 px-4 py-1.5 text-xs text-white/70 hover:bg-white/10"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={confirmRemoval}
+                disabled={saving}
+                className="rounded-full bg-red-500/30 px-4 py-1.5 text-xs text-red-200 hover:bg-red-500/40 disabled:opacity-60"
+              >
+                {saving ? 'Suppression…' : 'Supprimer'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

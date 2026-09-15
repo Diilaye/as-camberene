@@ -1,7 +1,7 @@
 /**
- * Contenu éditorial du site : actualités, boutique, légendes, histoire.
+ * Contenu du site : actualités, boutique, légendes, histoire, effectif.
  *
- * Ces quatre ressources partagent la même API — c'est la fabrique de routes du
+ * Ces cinq ressources partagent la même API — c'est la fabrique de routes du
  * backend (`server/src/lib/resource.ts`) qui le garantit. Elles partagent donc
  * ici le même client, et chaque ressource ne déclare que son chemin et son type.
  *
@@ -11,7 +11,7 @@
  */
 
 import { siteApi } from '../../lib/api';
-import { Article, Comment, HistoryEvent, Legend, Product } from '../../types';
+import { Article, Comment, HistoryEvent, Legend, Product, TeamMember } from '../../types';
 import { siteMediaUrl } from './media';
 
 /**
@@ -25,6 +25,7 @@ export type ArticleRecord = Article & { id: string };
 export type ProductRecord = Product & { id: string };
 export type LegendRecord = Legend & { id: string };
 export type HistoryEventRecord = HistoryEvent & { id: string };
+export type TeamMemberRecord = TeamMember;
 
 export interface ListResponse<T> {
   success: boolean;
@@ -116,6 +117,14 @@ const normalizeLegend = (legend: LegendRecord): LegendRecord => ({
   photo: siteMediaUrl(legend.photo, 'assets/img/vue-du-ballon-de-football.jpg'),
 });
 
+const normalizeTeamMember = (member: TeamMemberRecord): TeamMemberRecord => ({
+  ...member,
+  // Pas de fichier de repli ici : une fiche sans portrait garde une photo vide,
+  // et c'est `IMAGE_PLACEHOLDER` qui tient la place à l'affichage. Désigner un
+  // fichier absent donnerait l'icône d'image brisée du navigateur.
+  photo: siteMediaUrl(member.photo),
+});
+
 const normalizeHistoryEvent = (event: HistoryEventRecord): HistoryEventRecord => ({
   ...event,
   image: event.image ? siteMediaUrl(event.image) : undefined,
@@ -129,6 +138,7 @@ export const articles = resource<ArticleRecord>('/articles', normalizeArticle);
 export const products = resource<ProductRecord>('/products', normalizeProduct);
 export const legends = resource<LegendRecord>('/legends', normalizeLegend);
 export const history = resource<HistoryEventRecord>('/history', normalizeHistoryEvent);
+export const teamMembers = resource<TeamMemberRecord>('/players', normalizeTeamMember);
 
 // ==========================================================================
 // Commentaires — sous-ressource d'un article

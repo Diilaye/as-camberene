@@ -18,7 +18,7 @@ const navItems: { to: string; label: string; icon: React.ReactNode; permission?:
   { to: '/admin/histoire', label: 'Histoire', icon: <Landmark size={18} />, permission: 'history:write' },
   { to: '/admin/produits', label: 'Produits', icon: <ShoppingBag size={18} />, permission: 'products:write' },
   { to: '/admin/commandes', label: 'Commandes', icon: <Package size={18} />, permission: 'orders:manage' },
-  { to: '/admin/joueurs', label: 'Effectif', icon: <Users size={18} /> },
+  { to: '/admin/joueurs', label: 'Effectif', icon: <Users size={18} />, permission: 'players:write' },
   { to: '/admin/utilisateurs', label: 'Comptes', icon: <UserCog size={18} />, permission: 'users:manage' },
   { to: '/admin/parametres', label: 'Paramètres', icon: <Settings size={18} /> },
 ];

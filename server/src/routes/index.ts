@@ -11,6 +11,7 @@ import Article from '../models/Article.model';
 import Product from '../models/Product.model';
 import Legend from '../models/Legend.model';
 import HistoryEvent from '../models/HistoryEvent.model';
+import Player from '../models/Player.model';
 import { buildResourceRouter } from '../lib/resource';
 import {
   articlePatchSchema,
@@ -19,6 +20,8 @@ import {
   historyEventSchema,
   legendPatchSchema,
   legendSchema,
+  playerPatchSchema,
+  playerSchema,
   productPatchSchema,
   productSchema,
 } from '../validators/content';
@@ -90,6 +93,24 @@ router.use(
     defaultSort: 'year',
     searchable: ['title', 'description'],
     filters: ['phase'],
+  })
+);
+
+router.use(
+  '/players',
+  buildResourceRouter({
+    model: Player,
+    permission: 'players:write',
+    createSchema: playerSchema,
+    updateSchema: playerPatchSchema,
+    // Les gardiens d'abord, puis la défense, le milieu, l'attaque : `line` est
+    // une chaîne, donc l'ordre alphabétique ne donnerait pas celui du terrain.
+    // Le tri final se fait à l'affichage ; ici on groupe par équipe et numéro.
+    defaultSort: 'team rank number name',
+    // Une fiche retirée de la vitrine reste visible de l'administration.
+    publicFilter: { isVisible: true },
+    searchable: ['name', 'position', 'role'],
+    filters: ['team', 'line', 'kind', 'status'],
   })
 );
 

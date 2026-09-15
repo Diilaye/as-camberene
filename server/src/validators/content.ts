@@ -10,6 +10,13 @@ import Joi from 'joi';
 import { ARTICLE_CATEGORIES } from '../models/Article.model';
 import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../models/Product.model';
 import { LEGEND_ERAS } from '../models/Legend.model';
+import {
+  PLAYER_KINDS,
+  PLAYER_LINES,
+  PLAYER_STATUSES,
+  PLAYER_TEAMS,
+  STRONG_FEET,
+} from '../models/Player.model';
 
 /**
  * Même schéma, tout devenant facultatif, et au moins un champ exigé.
@@ -81,6 +88,36 @@ export const historyEventSchema = Joi.object({
   phase: Joi.string().allow('').max(80),
 });
 
+export const playerSchema = Joi.object({
+  kind: Joi.string().valid(...PLAYER_KINDS).default('player'),
+  name: Joi.string().trim().max(150).required(),
+  team: Joi.string().valid(...PLAYER_TEAMS).required(),
+  number: Joi.number().integer().min(0).max(99).default(0),
+  line: Joi.string().valid(...PLAYER_LINES).default('Milieu'),
+  position: Joi.string().allow('').max(100).default(''),
+  role: Joi.string().allow('').max(100).default(''),
+  photo: Joi.string().allow('').max(500).default(''),
+  status: Joi.string().valid(...PLAYER_STATUSES).default('actif'),
+  // `null` est une réponse valable : c'est « date inconnue », et le formulaire
+  // envoie cela plutôt qu'une chaîne vide que Mongo refuserait de convertir.
+  birthDate: Joi.date().allow(null).default(null),
+  nationality: Joi.string().allow('').max(100).default(''),
+  height: Joi.number().min(0).max(260).default(0),
+  weight: Joi.number().min(0).max(200).default(0),
+  strongFoot: Joi.string().valid(...STRONG_FEET, '').default(''),
+  stats: Joi.object({
+    matches: Joi.number().min(0).default(0),
+    goals: Joi.number().min(0).default(0),
+    assists: Joi.number().min(0).default(0),
+    yellowCards: Joi.number().min(0).default(0),
+    redCards: Joi.number().min(0).default(0),
+  }).default({ matches: 0, goals: 0, assists: 0, yellowCards: 0, redCards: 0 }),
+  biography: Joi.string().allow('').max(10000).default(''),
+  joinedYear: Joi.number().integer().min(0).max(new Date().getFullYear() + 1).default(0),
+  rank: Joi.number().default(0),
+  isVisible: Joi.boolean().default(true),
+});
+
 export const commentSchema = Joi.object({
   author: Joi.string().trim().min(2).max(80).required(),
   content: Joi.string().trim().min(2).max(2000).required(),
@@ -90,3 +127,4 @@ export const articlePatchSchema = asPatch(articleSchema);
 export const productPatchSchema = asPatch(productSchema);
 export const legendPatchSchema = asPatch(legendSchema);
 export const historyEventPatchSchema = asPatch(historyEventSchema);
+export const playerPatchSchema = asPatch(playerSchema);
