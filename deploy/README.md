@@ -335,9 +335,17 @@ sudo -u www-data npm run build          # → dist/
 
 cd server
 sudo -u www-data npm ci
-sudo -u www-data npm run build          # → server/dist/index.js
+sudo -u www-data npm run build          # → server/dist/index.js et server/dist-scripts/
 sudo -u www-data mkdir -p uploads
 ```
+
+`npm run build` construit l'API **et** les scripts d'administration. Ces
+derniers sont écrits en TypeScript : sans cette construction, ils n'existent
+que sous une forme que Node ne sait pas lire, et `tsx` — qui s'en charge en
+développement — peut manquer sur un serveur installé sans les dépendances de
+développement (`npm ci --omit=dev`, ou un `NODE_ENV=production` qui pousse npm
+à les omettre). C'est exactement l'étape 9 qui échouerait, sur `tsx: not
+found`, au moment de créer le premier compte.
 
 ## 6. Service de l'API
 
@@ -383,11 +391,33 @@ Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains
 > À n'ajouter qu'après avoir confirmé que HTTPS fonctionne : les navigateurs
 > mémorisent cette directive et refuseront ensuite tout accès en clair.
 
-## 9. Premier compte
+## 9. Premiers comptes
+
+Un site neuf n'a aucun compte, et la route qui en crée est réservée au super
+administrateur : il faut donc ouvrir le premier depuis le serveur. Le plus
+court ouvre les deux d'un coup — la direction, qui distribue les rôles, et
+l'administrateur qui tient le contenu au quotidien :
 
 ```bash
 cd /var/www/as-camberene/server
+sudo -u www-data npm run bootstrap:admins -- \
+  --superadmin direction@ascamberene.sn \
+  --admin redaction@ascamberene.sn
+```
+
+Les mots de passe sont tirés au sort et affichés **une seule fois** : ils ne
+sont stockés que hachés, rien ne permet de les relire. Les noter avant de
+fermer le terminal.
+
+La commande est rejouable : relancée, elle laisse intacts les comptes déjà en
+place. `--reset-passwords` en tire de nouveaux — c'est le chemin de
+récupération quand plus personne ne peut se connecter.
+
+Pour un seul compte, ou pour un profil autre (`journalist`, `shop-admin`) :
+
+```bash
 sudo -u www-data npm run create:superadmin -- direction@ascamberene.sn --password 'un-mot-de-passe-long'
+sudo -u www-data npm run create:user -- boutique@ascamberene.sn --role shop-admin
 ```
 
 Puis connexion sur `https://ascamberene.sn/login` — les autres comptes se créent

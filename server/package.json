@@ -6,14 +6,16 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "npm run build:api && npm run build:scripts",
+    "build:api": "tsc -p tsconfig.build.json",
+    "build:scripts": "tsc -p tsconfig.scripts.json",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "create:superadmin": "tsx scripts/create-user.ts --role superadmin",
-    "create:admin": "tsx scripts/create-user.ts --role admin",
-    "create:user": "tsx scripts/create-user.ts",
-    "bootstrap:admins": "tsx scripts/bootstrap-admins.ts",
-    "seed": "tsx scripts/seed-site.ts"
+    "create:superadmin": "node scripts/run.js create-user --role superadmin",
+    "create:admin": "node scripts/run.js create-user --role admin",
+    "create:user": "node scripts/run.js create-user",
+    "bootstrap:admins": "node scripts/run.js bootstrap-admins",
+    "seed": "node scripts/run.js seed-site"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
