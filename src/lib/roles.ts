@@ -23,6 +23,7 @@ export const PERMISSIONS = [
   'history:write',
   'players:write',
   'hero:write',
+  'matches:write',
   'comments:moderate',
   'media:upload',
 ] as const;
@@ -38,7 +39,14 @@ const EDITORIAL: Permission[] = [
 
 const MATRIX: Record<UserRole, Permission[]> = {
   superadmin: [...PERMISSIONS],
-  admin: [...EDITORIAL, 'products:write', 'orders:manage', 'players:write', 'hero:write'],
+  admin: [
+    ...EDITORIAL,
+    'products:write',
+    'orders:manage',
+    'players:write',
+    'hero:write',
+    'matches:write',
+  ],
   journalist: [...EDITORIAL],
   'shop-admin': ['products:write', 'orders:manage', 'media:upload'],
   subscriber: [],

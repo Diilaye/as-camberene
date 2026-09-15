@@ -13,6 +13,7 @@ import Legend from '../models/Legend.model';
 import HistoryEvent from '../models/HistoryEvent.model';
 import Player from '../models/Player.model';
 import HeroSlide from '../models/HeroSlide.model';
+import Match from '../models/Match.model';
 import { buildResourceRouter } from '../lib/resource';
 import {
   articlePatchSchema,
@@ -21,6 +22,8 @@ import {
   heroSlideSchema,
   historyEventPatchSchema,
   historyEventSchema,
+  matchPatchSchema,
+  matchSchema,
   legendPatchSchema,
   legendSchema,
   playerPatchSchema,
@@ -131,6 +134,22 @@ router.use(
     // Une diapositive retirée de la vitrine reste modifiable dans l'administration.
     publicFilter: { isVisible: true },
     searchable: ['title', 'kicker'],
+  })
+);
+
+router.use(
+  '/matches',
+  buildResourceRouter({
+    model: Match,
+    permission: 'matches:write',
+    createSchema: matchSchema,
+    updateSchema: matchPatchSchema,
+    // `date` est au format AAAA-MM-JJ : l'ordre alphabétique est l'ordre
+    // chronologique, et la saison se lit du premier au dernier match.
+    defaultSort: 'date time',
+    // Tout le calendrier est public : une rencontre n'a pas de brouillon.
+    searchable: ['opponent', 'competition'],
+    filters: ['status', 'venue', 'competition'],
   })
 );
 

@@ -10,6 +10,7 @@ import Joi from 'joi';
 import { ARTICLE_CATEGORIES } from '../models/Article.model';
 import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../models/Product.model';
 import { LEGEND_ERAS } from '../models/Legend.model';
+import { MATCH_STATUSES, MATCH_VENUES } from '../models/Match.model';
 import {
   PLAYER_KINDS,
   PLAYER_LINES,
@@ -107,6 +108,32 @@ export const heroSlideSchema = Joi.object({
   isVisible: Joi.boolean().default(true),
 });
 
+/**
+ * Rencontre du calendrier.
+ *
+ * `result` accepte `null` : c'est ainsi que le formulaire efface un score, quand
+ * une rencontre repasse « À venir » après une saisie erronée. Sans cela, le
+ * score resterait collé au match faute de moyen de le retirer.
+ */
+export const matchSchema = Joi.object({
+  opponent: Joi.string().trim().max(150).required(),
+  date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).required().messages({
+    'string.pattern.base': 'La date doit être au format AAAA-MM-JJ',
+  }),
+  time: Joi.string().pattern(/^([01]\d|2[0-3]):[0-5]\d$/).default('16:00').messages({
+    'string.pattern.base': "L'heure doit être au format HH:MM",
+  }),
+  venue: Joi.string().valid(...MATCH_VENUES).default('Domicile'),
+  competition: Joi.string().allow('').max(120).default('Ligue 1 Sénégal'),
+  result: Joi.object({
+    home: Joi.number().integer().min(0).max(99).required(),
+    away: Joi.number().integer().min(0).max(99).required(),
+  })
+    .allow(null)
+    .default(null),
+  status: Joi.string().valid(...MATCH_STATUSES).default('À venir'),
+});
+
 export const playerSchema = Joi.object({
   kind: Joi.string().valid(...PLAYER_KINDS).default('player'),
   name: Joi.string().trim().max(150).required(),
@@ -148,3 +175,4 @@ export const legendPatchSchema = asPatch(legendSchema);
 export const historyEventPatchSchema = asPatch(historyEventSchema);
 export const playerPatchSchema = asPatch(playerSchema);
 export const heroSlidePatchSchema = asPatch(heroSlideSchema);
+export const matchPatchSchema = asPatch(matchSchema);

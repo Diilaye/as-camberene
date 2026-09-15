@@ -2,11 +2,13 @@ import {
   ArticleRecord,
   HeroSlideRecord,
   LegendRecord,
+  MatchRecord,
   ListParams,
   ProductRecord,
   articles as articlesApi,
   heroSlides as heroSlidesApi,
   history as historyApi,
+  matches as matchesApi,
   legends as legendsApi,
   products as productsApi,
 } from '../services/site/content.service';
@@ -14,8 +16,12 @@ import { articles as staticArticles } from '../data/articles';
 import { products as staticProducts } from '../data/products';
 import { legends as staticLegends } from '../data/legends';
 import { heroSlides as staticHeroSlides } from '../data/heroSlides';
+import { matches as staticMatches } from '../data/matches';
 import { getHistoryEvents } from '../data/history';
-import { Article, HeroSlide, HistoryEvent, Legend, Product } from '../types';
+import { Article, HeroSlide, HistoryEvent, Legend, Match, Product } from '../types';
+import { getMatches } from '../services/fconnect/matches.service';
+import { toMatches } from '../adapters';
+import { isFconnectConfigured } from '../config/env';
 import { ApiResource, useApiResource } from './useApiResource';
 
 /**
@@ -70,6 +76,37 @@ export const useHeroSlides = (): ApiResource<HeroSlide[]> => {
     ...resource,
     data: resource.data.length > 0 ? resource.data : staticHeroSlides,
   };
+};
+
+/**
+ * Calendrier des matchs.
+ *
+ * Trois sources, dans cet ordre : ce que le club a saisi dans l'administration,
+ * puis fconnect si la plateforme est jointe, puis les rencontres d'origine. La
+ * première prime parce qu'elle est la seule que le club maîtrise sans passer
+ * par personne — et parce qu'un calendrier à moitié saisi ici et à moitié
+ * ailleurs ne voudrait rien dire.
+ *
+ * Les deux requêtes partent ensemble plutôt qu'en cascade : enchaîner la
+ * seconde à la première demanderait un appel conditionnel, et ferait attendre
+ * un aller-retour de plus les visiteurs dont le club n'a rien saisi.
+ */
+export const useMatches = (): ApiResource<Match[]> => {
+  const site = useApiResource<MatchRecord[]>(
+    (signal) => matchesApi.list({ sort: 'date time' }, signal),
+    [],
+    { deps: [] }
+  );
+
+  // `enabled: false` laisse cette ressource sur son repli : sans fconnect, les
+  // rencontres d'origine, qui sont bien le dernier recours voulu.
+  const external = useApiResource<Match[]>(
+    (signal) => getMatches({ limit: 50 }, signal).then(toMatches),
+    staticMatches,
+    { enabled: isFconnectConfigured() }
+  );
+
+  return { ...site, data: site.data.length > 0 ? site.data : external.data };
 };
 
 export const useHistoryEvents = (): ApiResource<HistoryEvent[]> =>

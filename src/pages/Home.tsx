@@ -15,14 +15,8 @@ import {
   VolumeX,
   Youtube,
 } from 'lucide-react';
-import { matches as staticMatches } from '../data/matches';
 import { partners } from '../data/heroSlides';
-import { useArticles, useHeroSlides, useLegends, useProducts } from '../hooks/useContent';
-import useApiResource from '../hooks/useApiResource';
-import { getMatches } from '../services/fconnect/matches.service';
-import { toMatches } from '../adapters';
-import { isFconnectConfigured } from '../config/env';
-import { Match } from '../types';
+import { useArticles, useHeroSlides, useLegends, useMatches, useProducts } from '../hooks/useContent';
 import { formatCFA } from '../lib/currency';
 import { formatVideoTime, youtubeId } from '../lib/youtube';
 import { handleImageError } from '../lib/imagePlaceholder';
@@ -115,11 +109,7 @@ const Home: React.FC = () => {
   const { data: articles } = useArticles({ limit: 9 });
   const { data: products } = useProducts({ limit: 8 });
   const { data: legends } = useLegends({ limit: 8 });
-  const { data: matches } = useApiResource<Match[]>(
-    (signal) => getMatches({ limit: 20 }, signal).then(toMatches),
-    staticMatches,
-    { enabled: isFconnectConfigured() }
-  );
+  const { data: matches } = useMatches();
 
   const upcomingMatches = matches.filter((match) => match.status === 'À venir').slice(0, 3);
   const recentMatches = matches.filter((match) => match.status === 'Terminé').slice(0, 3);

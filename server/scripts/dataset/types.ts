@@ -77,3 +77,16 @@ export interface SeedHeroSlide {
   /** Ordre d'apparition : les petits nombres passent devant. */
   rank: number;
 }
+
+export interface SeedMatch {
+  opponent: string;
+  /** Jour de la rencontre, `AAAA-MM-JJ`. */
+  date: string;
+  /** Heure du coup d'envoi, `HH:MM`. */
+  time: string;
+  venue: 'Domicile' | 'Extérieur';
+  competition: string;
+  /** Absent tant que la rencontre n'est pas jouée. */
+  result?: { home: number; away: number };
+  status: 'À venir' | 'En cours' | 'Terminé';
+}

@@ -196,18 +196,36 @@ export interface CartItem {
   quantity: number;
 }
 
+/** Le club reçoit, ou se déplace. */
+export const MATCH_VENUES = ['Domicile', 'Extérieur'] as const;
+export type MatchVenue = (typeof MATCH_VENUES)[number];
+
+export const MATCH_STATUSES = ['À venir', 'En cours', 'Terminé'] as const;
+export type MatchStatus = (typeof MATCH_STATUSES)[number];
+
 export interface Match {
   id: EntityId;
   opponent: string;
+  /** Jour de la rencontre, `AAAA-MM-JJ`. */
   date: string;
+  /** Heure du coup d'envoi, `HH:MM`. */
   time: string;
-  venue: 'Domicile' | 'Extérieur';
+  venue: MatchVenue;
   competition: string;
+  /**
+   * Score, une fois la rencontre jouée.
+   *
+   * `home` et `away` suivent l'affiche et non le club : à l'extérieur, le score
+   * de Cambérène est `away`.
+   *
+   * `null` est accepté autant qu'absent : c'est ce que l'administration envoie
+   * pour retirer un score, quand une rencontre repasse « À venir ».
+   */
   result?: {
     home: number;
     away: number;
-  };
-  status: 'Terminé' | 'À venir' | 'En cours';
+  } | null;
+  status: MatchStatus;
 }
 
 export interface Subscription {

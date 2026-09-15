@@ -2,7 +2,7 @@
  * Amorcage du contenu du site.
  *
  * Verse en base tout ce que l'administration du site gere : carrousel de tete,
- * actualites, boutique, legendes, frise historique. De quoi ouvrir n'importe quelle page
+ * calendrier, actualites, boutique, legendes, frise historique. De quoi ouvrir n'importe quelle page
  * sur du contenu credible, et de quoi apprendre a se servir de l'administration
  * sur de la matiere plutot que sur du vide.
  *
@@ -14,7 +14,7 @@
  * n'est pas dupliquee. Relancer le script est donc sans danger.
  *
  *   npm run seed              # ajoute ce qui manque
- *   npm run seed -- --reset   # vide les cinq collections puis reimporte
+ *   npm run seed -- --reset   # vide les six collections puis reimporte
  *   npm run seed -- --dry-run # annonce ce qui serait ecrit, sans rien ecrire
  *
  * Ne cree aucun compte : `npm run create:admin -- <email>` s'en charge.
@@ -27,10 +27,12 @@ import Product from '../src/models/Product.model';
 import Legend from '../src/models/Legend.model';
 import HistoryEvent from '../src/models/HistoryEvent.model';
 import HeroSlide from '../src/models/HeroSlide.model';
+import Match from '../src/models/Match.model';
 import {
   seedArticles,
   seedHeroSlides,
   seedHistoryEvents,
+  seedMatches,
   seedLegends,
   seedProducts,
 } from './dataset';
@@ -108,6 +110,16 @@ async function main(): Promise<number> {
       seedHeroSlides,
       (slide) => ({ title: slide.title }),
       (slide) => ({ ...slide })
+    );
+
+    // Adversaire et date font la rencontre : deux matchs qui les partagent
+    // sont le même, importé deux fois.
+    await importAll(
+      'matchs',
+      Match,
+      seedMatches,
+      (m) => ({ opponent: m.opponent, date: m.date }),
+      (match) => ({ ...match })
     );
 
     await importAll('actualités', Article, seedArticles, (a) => ({ title: a.title }), (article) => ({

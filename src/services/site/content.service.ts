@@ -11,7 +11,16 @@
  */
 
 import { siteApi } from '../../lib/api';
-import { Article, Comment, HeroSlide, HistoryEvent, Legend, Product, TeamMember } from '../../types';
+import {
+  Article,
+  Comment,
+  HeroSlide,
+  HistoryEvent,
+  Legend,
+  Match,
+  Product,
+  TeamMember,
+} from '../../types';
 import { siteMediaUrl } from './media';
 
 /**
@@ -26,6 +35,7 @@ export type ProductRecord = Product & { id: string };
 export type LegendRecord = Legend & { id: string };
 export type HistoryEventRecord = HistoryEvent & { id: string };
 export type HeroSlideRecord = HeroSlide & { id: string };
+export type MatchRecord = Match & { id: string };
 export type TeamMemberRecord = TeamMember;
 
 export interface ListResponse<T> {
@@ -138,6 +148,14 @@ const normalizeHeroSlide = (slide: HeroSlideRecord): HeroSlideRecord => ({
   image: slide.image ? siteMediaUrl(slide.image) : undefined,
 });
 
+/**
+ * Rien à traduire : le calendrier ne porte ni image ni date à reformater.
+ *
+ * La fonction existe quand même parce que la fabrique en attend une, et pour
+ * qu'un champ à normaliser un jour trouve sa place sans toucher au reste.
+ */
+const normalizeMatch = (match: MatchRecord): MatchRecord => match;
+
 const normalizeHistoryEvent = (event: HistoryEventRecord): HistoryEventRecord => ({
   ...event,
   image: event.image ? siteMediaUrl(event.image) : undefined,
@@ -153,6 +171,7 @@ export const legends = resource<LegendRecord>('/legends', normalizeLegend);
 export const history = resource<HistoryEventRecord>('/history', normalizeHistoryEvent);
 export const teamMembers = resource<TeamMemberRecord>('/players', normalizeTeamMember);
 export const heroSlides = resource<HeroSlideRecord>('/hero', normalizeHeroSlide);
+export const matches = resource<MatchRecord>('/matches', normalizeMatch);
 
 // ==========================================================================
 // Commentaires — sous-ressource d'un article
