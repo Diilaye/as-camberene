@@ -24,6 +24,7 @@ export const PERMISSIONS = [
   'players:write',
   'hero:write',
   'matches:write',
+  'gallery:write',
   'comments:moderate',
   'media:upload',
 ] as const;
@@ -31,6 +32,7 @@ export type Permission = (typeof PERMISSIONS)[number];
 
 const EDITORIAL: Permission[] = [
   'articles:write',
+  'gallery:write',
   'legends:write',
   'history:write',
   'comments:moderate',

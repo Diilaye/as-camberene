@@ -12,6 +12,7 @@ import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../models/Product.model';
 import { LEGEND_ERAS } from '../models/Legend.model';
 import { MATCH_STATUSES, MATCH_VENUES } from '../models/Match.model';
 import { TEAM_CATEGORIES } from '../models/Team.model';
+import { GALLERY_CATEGORIES } from '../models/GalleryItem.model';
 import {
   PLAYER_KINDS,
   PLAYER_LINES,
@@ -132,6 +133,7 @@ export const matchSchema = Joi.object({
     .allow(null)
     .default(null),
   status: Joi.string().valid(...MATCH_STATUSES).default('À venir'),
+  image: Joi.string().allow('').max(500).default(''),
 });
 
 /**
@@ -171,6 +173,26 @@ export const teamSchema = Joi.object({
   isVisible: Joi.boolean().default(true),
 });
 
+/**
+ * Photo de la galerie.
+ *
+ * `match` accepte `null` autant qu'un identifiant : détacher une photo de sa
+ * rencontre est une opération courante — la photo était mal rangée — et un
+ * champ qu'on ne peut que renseigner ne se corrige pas.
+ */
+export const galleryItemSchema = Joi.object({
+  image: Joi.string().max(500).required(),
+  title: Joi.string().trim().max(200).required(),
+  description: Joi.string().allow('').max(2000).default(''),
+  category: Joi.string().valid(...GALLERY_CATEGORIES).default('club'),
+  match: Joi.string().hex().length(24).allow(null, '').default(null),
+  date: Joi.string().allow('').pattern(/^(\d{4}-\d{2}-\d{2})?$/).default('').messages({
+    'string.pattern.base': 'La date doit être au format AAAA-MM-JJ',
+  }),
+  rank: Joi.number().default(0),
+  isVisible: Joi.boolean().default(true),
+});
+
 export const playerSchema = Joi.object({
   kind: Joi.string().valid(...PLAYER_KINDS).default('player'),
   name: Joi.string().trim().max(150).required(),
@@ -206,6 +228,7 @@ export const playerSchema = Joi.object({
   joinedYear: Joi.number().integer().min(0).max(new Date().getFullYear() + 1).default(0),
   rank: Joi.number().default(0),
   isVisible: Joi.boolean().default(true),
+  isFeatured: Joi.boolean().default(false),
 });
 
 export const commentSchema = Joi.object({
@@ -221,4 +244,5 @@ export const playerPatchSchema = asPatch(playerSchema);
 export const heroSlidePatchSchema = asPatch(heroSlideSchema);
 export const matchPatchSchema = asPatch(matchSchema);
 // `slug` retiré du patch : il identifie l'équipe, il ne se corrige pas.
+export const galleryItemPatchSchema = asPatch(galleryItemSchema);
 export const teamPatchSchema = asPatch(teamSchema.fork(['slug'], (f) => f.forbidden()));

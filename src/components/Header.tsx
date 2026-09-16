@@ -71,6 +71,8 @@ const NAV_ITEMS: NavItem[] = [
       {
         title: 'Supporters',
         links: [
+          { name: 'Galerie', path: '/galerie' },
+          { name: 'Billetterie', path: '/billetterie' },
           { name: 'Abonnements', path: '/subscriptions' },
           { name: 'Devenir membre', path: '/inscription' },
         ],
@@ -345,7 +347,7 @@ const Header: React.FC = () => {
 
             {/* Appels à l'action, en pastilles */}
             <Link
-              to="/subscriptions"
+              to="/billetterie"
               className="hidden h-10 items-center justify-center gap-3 rounded-full bg-club-yellow px-7 text-sm font-semibold uppercase text-club-green-dark transition-opacity hover:opacity-70 lg:flex"
             >
               <Ticket size={20} />
@@ -366,7 +368,7 @@ const Header: React.FC = () => {
 
             {/* Pastilles compactes sur mobile */}
             <Link
-              to="/subscriptions"
+              to="/billetterie"
               aria-label="Billetterie"
               className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-club-yellow text-black lg:hidden"
             >
@@ -526,7 +528,7 @@ const Header: React.FC = () => {
 
           <div className="mx-auto flex max-w-site flex-col gap-3 px-4 py-8 sm:flex-row lg:px-10">
             <Link
-              to="/subscriptions"
+              to="/billetterie"
               className="flex h-10 items-center justify-center gap-3 rounded-full bg-club-yellow px-7 text-sm font-semibold uppercase text-club-green-dark"
             >
               <Ticket size={18} />

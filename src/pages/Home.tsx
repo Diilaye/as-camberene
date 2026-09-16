@@ -338,6 +338,14 @@ const Home: React.FC = () => {
                       <p className="text-xs uppercase text-white/50">{formatMatchDate(match.date)}</p>
                       <p className="text-lg font-extrabold text-club-yellow">{match.time}</p>
                     </div>
+                    {match.image && (
+                      <img
+                        src={match.image}
+                        alt=""
+                        onError={handleImageError}
+                        className="hidden h-14 w-14 shrink-0 rounded-lg border border-white/10 object-cover sm:block"
+                      />
+                    )}
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate text-base font-extrabold uppercase text-white">
                         {match.venue === 'Domicile'
@@ -359,7 +367,10 @@ const Home: React.FC = () => {
                         </span>
                       </p>
                     </div>
-                    <Link to="/subscriptions" className="btn-yellow shrink-0 px-4 py-2 text-xs">
+                    <Link
+                      to={`/billetterie?match=${match.id}`}
+                      className="btn-yellow shrink-0 px-4 py-2 text-xs"
+                    >
                       Billets
                     </Link>
                   </article>
@@ -392,6 +403,14 @@ const Home: React.FC = () => {
                       <div className="w-16 shrink-0 text-center text-2xl font-extrabold text-white">
                         {scored ?? '-'}<span className="text-white/40">:</span>{conceded ?? '-'}
                       </div>
+                      {match.image && (
+                        <img
+                          src={match.image}
+                          alt=""
+                          onError={handleImageError}
+                          className="hidden h-14 w-14 shrink-0 rounded-lg border border-white/10 object-cover sm:block"
+                        />
+                      )}
                       <div className="min-w-0 flex-1">
                         <h3 className="truncate text-base font-extrabold uppercase text-white">
                           {match.venue === 'Domicile'

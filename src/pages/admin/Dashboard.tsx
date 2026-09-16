@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, Users, ShoppingBag, Newspaper, BarChart3, Package, Sparkles, Clapperboard, CalendarDays } from 'lucide-react';
+import { Plus, Users, ShoppingBag, Newspaper, BarChart3, Package, Sparkles, Clapperboard, CalendarDays, Images, Ticket } from 'lucide-react';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import Notification from '../../components/Notification';
@@ -102,6 +102,12 @@ const Dashboard: React.FC = () => {
           <a href="/admin/joueurs" className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/85"><Users size={14}/>Effectif</a>
           {can('matches:write') && (
             <a href="/admin/calendrier" className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/85"><CalendarDays size={14}/>Calendrier</a>
+          )}
+          {can('gallery:write') && (
+            <a href="/admin/galerie" className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/85"><Images size={14}/>Galerie</a>
+          )}
+          {can('orders:manage') && (
+            <a href="/admin/billetterie" className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/85"><Ticket size={14}/>Billetterie</a>
           )}
           {can('products:write') && (
             <a href="/admin/produits" className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/85"><ShoppingBag size={14}/>Produits</a>

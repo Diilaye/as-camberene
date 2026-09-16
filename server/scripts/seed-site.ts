@@ -2,7 +2,7 @@
  * Amorcage du contenu du site.
  *
  * Verse en base tout ce que l'administration du site gere : carrousel de tete,
- * calendrier, actualites, boutique, legendes, frise historique. De quoi ouvrir n'importe quelle page
+ * calendrier, galerie, actualites, boutique, legendes, frise historique. De quoi ouvrir n'importe quelle page
  * sur du contenu credible, et de quoi apprendre a se servir de l'administration
  * sur de la matiere plutot que sur du vide.
  *
@@ -14,7 +14,7 @@
  * n'est pas dupliquee. Relancer le script est donc sans danger.
  *
  *   npm run seed              # ajoute ce qui manque
- *   npm run seed -- --reset   # vide les six collections puis reimporte
+ *   npm run seed -- --reset   # vide les sept collections puis reimporte
  *   npm run seed -- --dry-run # annonce ce qui serait ecrit, sans rien ecrire
  *
  * Ne cree aucun compte : `npm run create:admin -- <email>` s'en charge.
@@ -28,8 +28,10 @@ import Legend from '../src/models/Legend.model';
 import HistoryEvent from '../src/models/HistoryEvent.model';
 import HeroSlide from '../src/models/HeroSlide.model';
 import Match from '../src/models/Match.model';
+import GalleryItem from '../src/models/GalleryItem.model';
 import {
   seedArticles,
+  seedGalleryItems,
   seedHeroSlides,
   seedHistoryEvents,
   seedMatches,
@@ -120,6 +122,14 @@ async function main(): Promise<number> {
       seedMatches,
       (m) => ({ opponent: m.opponent, date: m.date }),
       (match) => ({ ...match })
+    );
+
+    await importAll(
+      'photos de la galerie',
+      GalleryItem,
+      seedGalleryItems,
+      (photo) => ({ title: photo.title }),
+      (photo) => ({ ...photo })
     );
 
     await importAll('actualités', Article, seedArticles, (a) => ({ title: a.title }), (article) => ({

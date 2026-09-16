@@ -90,3 +90,12 @@ export interface SeedMatch {
   result?: { home: number; away: number };
   status: 'À venir' | 'En cours' | 'Terminé';
 }
+
+export interface SeedGalleryItem {
+  image: string;
+  title: string;
+  description: string;
+  category: 'match' | 'entrainement' | 'club';
+  /** Jour de la prise de vue, `AAAA-MM-JJ`. */
+  date: string;
+}

@@ -80,6 +80,14 @@ export interface IPlayer extends Document {
   /** Ordre d'affichage dans sa ligne ; à défaut, le numéro puis le nom. */
   rank: number;
   isVisible: boolean;
+  /**
+   * Joueur mis en avant dans « Nos stars ».
+   *
+   * Sur la fiche plutôt que dans une liste à part : la vedette d'une saison est
+   * un état du joueur, et une seconde liste se serait désynchronisée du jour où
+   * une fiche est retirée de la vitrine.
+   */
+  isFeatured: boolean;
 }
 
 const playerSchema = new Schema<IPlayer>(
@@ -120,6 +128,7 @@ const playerSchema = new Schema<IPlayer>(
     // Retirer un joueur de la vitrine sans effacer sa fiche : une fin de saison
     // n'est pas une suppression, et son historique peut resservir.
     isVisible: { type: Boolean, default: true, index: true },
+    isFeatured: { type: Boolean, default: false, index: true },
   },
   {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },

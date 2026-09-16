@@ -41,6 +41,13 @@ export interface IMatch extends Document {
    */
   result?: { home: number; away: number };
   status: MatchStatus;
+  /**
+   * Affiche de la rencontre, ou photo d'après-match.
+   *
+   * Facultative : sans elle, les cartes du site gardent leur mise en page
+   * compacte, qui reste la plus lisible pour une liste de rencontres.
+   */
+  image: string;
 }
 
 const matchSchema = new Schema<IMatch>(
@@ -74,6 +81,7 @@ const matchSchema = new Schema<IMatch>(
       _id: false,
     },
     status: { type: String, enum: MATCH_STATUSES, default: 'À venir', index: true },
+    image: { type: String, maxlength: 500, default: '' },
   },
   {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },

@@ -14,6 +14,7 @@ import { siteApi } from '../../lib/api';
 import {
   Article,
   Comment,
+  GalleryItem,
   HeroSlide,
   HistoryEvent,
   Legend,
@@ -38,6 +39,7 @@ export type HistoryEventRecord = HistoryEvent & { id: string };
 export type HeroSlideRecord = HeroSlide & { id: string };
 export type MatchRecord = Match & { id: string };
 export type TeamRecord = Team & { id: string };
+export type GalleryItemRecord = GalleryItem & { id: string };
 export type TeamMemberRecord = TeamMember;
 
 export interface ListResponse<T> {
@@ -151,17 +153,26 @@ const normalizeHeroSlide = (slide: HeroSlideRecord): HeroSlideRecord => ({
 });
 
 /**
- * Rien à traduire : le calendrier ne porte ni image ni date à reformater.
- *
- * La fonction existe quand même parce que la fabrique en attend une, et pour
- * qu'un champ à normaliser un jour trouve sa place sans toucher au reste.
+ * La photo d'équipe est un fichier téléversé ; `siteMediaUrl` la fait pointer
+ * sur l'API quel que soit le domaine de celle-ci. Une équipe sans photo garde
+ * une adresse vide, et la page y met celle livrée avec le site.
  */
 const normalizeTeam = (team: TeamRecord): TeamRecord => ({
   ...team,
   image: siteMediaUrl(team.image),
 });
 
-const normalizeMatch = (match: MatchRecord): MatchRecord => match;
+/** La photo de la galerie est toujours un fichier téléversé. */
+const normalizeGalleryItem = (item: GalleryItemRecord): GalleryItemRecord => ({
+  ...item,
+  image: siteMediaUrl(item.image),
+});
+
+/** Même chose pour l'affiche d'une rencontre, qui reste facultative. */
+const normalizeMatch = (match: MatchRecord): MatchRecord => ({
+  ...match,
+  image: match.image ? siteMediaUrl(match.image) : undefined,
+});
 
 const normalizeHistoryEvent = (event: HistoryEventRecord): HistoryEventRecord => ({
   ...event,
@@ -180,6 +191,7 @@ export const teamMembers = resource<TeamMemberRecord>('/players', normalizeTeamM
 export const heroSlides = resource<HeroSlideRecord>('/hero', normalizeHeroSlide);
 export const matches = resource<MatchRecord>('/matches', normalizeMatch);
 export const teams = resource<TeamRecord>('/teams', normalizeTeam);
+export const gallery = resource<GalleryItemRecord>('/gallery', normalizeGalleryItem);
 
 // ==========================================================================
 // Commentaires — sous-ressource d'un article

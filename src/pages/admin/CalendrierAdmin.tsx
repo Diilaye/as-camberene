@@ -3,7 +3,9 @@ import { CalendarDays, Plus, Search, X } from 'lucide-react';
 import useEditableResource from '../../hooks/useEditableResource';
 import { matches as matchesApi, MatchRecord } from '../../services/site/content.service';
 import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
+import ImageField from '../../components/admin/ImageField';
 import { MATCH_STATUSES, MATCH_VENUES, MatchStatus, MatchVenue } from '../../types';
+import { handleImageError } from '../../lib/imagePlaceholder';
 
 /** Le jour même, au format que `<input type="date">` attend. */
 const today = (): string => new Date().toISOString().slice(0, 10);
@@ -15,6 +17,7 @@ const EMPTY_FORM = {
   venue: 'Domicile' as MatchVenue,
   competition: 'Ligue 1 Sénégal',
   status: 'À venir' as MatchStatus,
+  image: '',
   scoreHome: '',
   scoreAway: '',
 };
@@ -97,6 +100,7 @@ const CalendrierAdmin: React.FC = () => {
       venue: match.venue,
       competition: match.competition ?? '',
       status: match.status,
+      image: match.image ?? '',
       scoreHome: match.result ? String(match.result.home) : '',
       scoreAway: match.result ? String(match.result.away) : '',
     });
@@ -121,6 +125,7 @@ const CalendrierAdmin: React.FC = () => {
       venue: form.venue,
       competition: form.competition,
       status: form.status,
+      image: form.image,
       result: hasScore
         ? { home: Number(form.scoreHome), away: Number(form.scoreAway) }
         : null,
@@ -191,6 +196,7 @@ const CalendrierAdmin: React.FC = () => {
           <table className="min-w-full text-sm">
             <thead className="text-xs uppercase tracking-wide text-white/60">
               <tr>
+                <th className="px-4 py-3 text-left">Affiche</th>
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-left">Adversaire</th>
                 <th className="px-4 py-3 text-left">Lieu</th>
@@ -203,6 +209,18 @@ const CalendrierAdmin: React.FC = () => {
             <tbody className="divide-y divide-white/5 text-white/70">
               {filtered.map((match) => (
                 <tr key={match.id} className="hover:bg-white/5">
+                  <td className="px-4 py-3">
+                    {match.image ? (
+                      <img
+                        src={match.image}
+                        alt=""
+                        onError={handleImageError}
+                        className="h-10 w-16 rounded-lg border border-white/10 object-cover"
+                      />
+                    ) : (
+                      <span className="text-white/30">—</span>
+                    )}
+                  </td>
                   <td className="whitespace-nowrap px-4 py-3">
                     <p className="font-medium text-white">{formatDate(match.date)}</p>
                     <p className="text-[11px] text-white/40">{match.time}</p>
@@ -246,7 +264,7 @@ const CalendrierAdmin: React.FC = () => {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-0">
+                  <td colSpan={8} className="p-0">
                     <AdminEmpty
                       label={
                         matches.length === 0
@@ -363,6 +381,12 @@ const CalendrierAdmin: React.FC = () => {
                   className={field}
                 />
               </div>
+
+              <ImageField
+                value={form.image}
+                onChange={(value) => setForm((f) => ({ ...f, image: value }))}
+                label="Affiche du match"
+              />
 
               {/* Le score n'a de sens qu'une fois la rencontre jouée. */}
               {form.status === 'Terminé' && (

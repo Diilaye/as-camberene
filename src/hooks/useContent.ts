@@ -1,5 +1,6 @@
 import {
   ArticleRecord,
+  GalleryItemRecord,
   HeroSlideRecord,
   LegendRecord,
   MatchRecord,
@@ -8,6 +9,7 @@ import {
   TeamMemberRecord,
   TeamRecord,
   articles as articlesApi,
+  gallery as galleryApi,
   heroSlides as heroSlidesApi,
   history as historyApi,
   matches as matchesApi,
@@ -23,7 +25,17 @@ import { heroSlides as staticHeroSlides } from '../data/heroSlides';
 import { matches as staticMatches } from '../data/matches';
 import { teamsData as staticTeams } from '../data/teams';
 import { getHistoryEvents } from '../data/history';
-import { Article, HeroSlide, HistoryEvent, Legend, Match, Product, Team, TeamMember } from '../types';
+import {
+  Article,
+  GalleryItem,
+  HeroSlide,
+  HistoryEvent,
+  Legend,
+  Match,
+  Product,
+  Team,
+  TeamMember,
+} from '../types';
 import { getMatches } from '../services/fconnect/matches.service';
 import { toMatches } from '../adapters';
 import { isFconnectConfigured } from '../config/env';
@@ -145,6 +157,20 @@ export const useTeamMembers = (team?: string): ApiResource<TeamMember[]> =>
     (signal) => teamMembersApi.list(team ? { team } : {}, signal),
     [],
     { deps: [team] }
+  );
+
+/**
+ * Photos de la galerie.
+ *
+ * Pas de repli sur des photos figées : une galerie vide se dit, alors qu'une
+ * photo d'emprunt sous l'affiche d'un match raconterait une rencontre qui n'a
+ * pas eu lieu.
+ */
+export const useGallery = (category?: string): ApiResource<GalleryItem[]> =>
+  useApiResource<GalleryItemRecord[]>(
+    (signal) => galleryApi.list(category ? { category } : {}, signal),
+    [],
+    { deps: [category] }
   );
 
 export const useHistoryEvents = (): ApiResource<HistoryEvent[]> =>

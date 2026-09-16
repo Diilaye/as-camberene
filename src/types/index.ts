@@ -100,6 +100,8 @@ export interface TeamMember {
   joinedYear: number;
   rank: number;
   isVisible: boolean;
+  /** Mis en avant dans l'onglet « Nos stars » de la galerie. */
+  isFeatured?: boolean;
 }
 
 export const ARTICLE_CATEGORIES = ['Matchs', 'Transferts', 'Équipe', 'Club'] as const;
@@ -205,6 +207,67 @@ export interface CartItem {
   quantity: number;
 }
 
+export const GALLERY_CATEGORIES = ['match', 'entrainement', 'club'] as const;
+export type GalleryCategory = (typeof GALLERY_CATEGORIES)[number];
+
+/** Libellés des onglets de la galerie. */
+export const GALLERY_CATEGORY_LABELS: Record<GalleryCategory, string> = {
+  match: 'Matchs',
+  entrainement: 'Entraînements',
+  club: 'Vie du club',
+};
+
+/**
+ * Photo de la galerie.
+ *
+ * `match` rattache la photo à une rencontre du calendrier : c'est ce qui
+ * permet de présenter l'album d'un match sous son affiche plutôt qu'en vrac.
+ */
+export interface GalleryItem {
+  id: EntityId;
+  image: string;
+  title: string;
+  description: string;
+  category: GalleryCategory;
+  /** Identifiant de la rencontre, ou `null` hors catégorie « Matchs ». */
+  match?: string | null;
+  /** Jour de la prise de vue, `AAAA-MM-JJ`. */
+  date?: string;
+  rank?: number;
+  isVisible?: boolean;
+}
+
+export const RESERVATION_STATUSES = ['nouvelle', 'confirmee', 'honoree', 'annulee'] as const;
+export type ReservationStatus = (typeof RESERVATION_STATUSES)[number];
+
+export const RESERVATION_STATUS_LABELS: Record<ReservationStatus, string> = {
+  nouvelle: 'À traiter',
+  confirmee: 'Confirmée',
+  honoree: 'Retirée au guichet',
+  annulee: 'Annulée',
+};
+
+/**
+ * Réservation de places pour une rencontre.
+ *
+ * Rien n'est encaissé en ligne : c'est une place tenue, réglée au guichet. La
+ * rencontre arrive jointe depuis le serveur, pour que la liste se lise sans un
+ * aller-retour par ligne.
+ */
+export interface TicketReservation {
+  id: string;
+  reference: string;
+  match: Pick<Match, 'id' | 'opponent' | 'date' | 'time' | 'venue' | 'competition' | 'status'> | null;
+  name: string;
+  phone: string;
+  email?: string;
+  seats: number;
+  status: ReservationStatus;
+  message: string;
+  note: string;
+  created_at?: string;
+}
+
 export const TEAM_CATEGORIES = ['senior', 'youth'] as const;
 export type TeamCategory = (typeof TEAM_CATEGORIES)[number];
 
@@ -264,6 +327,8 @@ export interface Match {
     away: number;
   } | null;
   status: MatchStatus;
+  /** Affiche de la rencontre ou photo d'après-match. Facultative. */
+  image?: string;
 }
 
 export interface Subscription {

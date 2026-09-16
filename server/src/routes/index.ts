@@ -15,10 +15,13 @@ import Player from '../models/Player.model';
 import HeroSlide from '../models/HeroSlide.model';
 import Match from '../models/Match.model';
 import Team from '../models/Team.model';
+import GalleryItem from '../models/GalleryItem.model';
 import { buildResourceRouter } from '../lib/resource';
 import {
   articlePatchSchema,
   articleSchema,
+  galleryItemPatchSchema,
+  galleryItemSchema,
   heroSlidePatchSchema,
   heroSlideSchema,
   historyEventPatchSchema,
@@ -39,6 +42,7 @@ import userRoutes from './users.routes';
 import orderRoutes from './orders.routes';
 import commentRoutes from './comments.routes';
 import uploadRoutes from './uploads.routes';
+import ticketRoutes from './tickets.routes';
 
 const router = Router();
 
@@ -175,8 +179,27 @@ router.use(
   })
 );
 
+router.use(
+  '/gallery',
+  buildResourceRouter({
+    model: GalleryItem,
+    permission: 'gallery:write',
+    createSchema: galleryItemSchema,
+    updateSchema: galleryItemPatchSchema,
+    // Les photos épinglées d'abord, puis la plus récente : un album se lit à
+    // l'envers de son remplissage.
+    defaultSort: '-rank -date -created_at',
+    publicFilter: { isVisible: true },
+    searchable: ['title', 'description'],
+    filters: ['category', 'match'],
+  })
+);
+
 // Commandes : création ouverte au public, suivi réservé à la boutique.
 router.use('/orders', orderRoutes);
+
+// Billetterie : réservation ouverte au public, suivi réservé au club.
+router.use('/tickets', ticketRoutes);
 
 router.use('/uploads', uploadRoutes);
 

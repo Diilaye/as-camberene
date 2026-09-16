@@ -170,6 +170,66 @@ processus de l'hôte.
 0 3 * * * cd /var/www/as-camberene && ./deploy/docker.sh backup
 ```
 
+### Passer d'Atlas à une base sur le serveur
+
+Atlas impose des limites à ses offres d'entrée — dont **500 collections par
+cluster, toutes bases confondues**. Un cluster partagé avec d'autres projets
+finit par les atteindre, et le site répond alors 500 sur toute écriture qui
+demande une collection encore inexistante : la lecture continue de marcher, ce
+qui rend le symptôme déroutant.
+
+Héberger la base sur le VPS lève cette limite. La bascule se fait sans perdre
+de données, mais **l'ordre compte** : la sauvegarde doit être prise pendant que
+`.env.docker` désigne encore Atlas, sinon le script sauvegarde la base locale,
+qui est vide.
+
+```bash
+cd /opt/as-camberene
+
+# 1. Copie complète d'Atlas — LOCAL_DB vaut encore 0
+./deploy/docker.sh backup
+
+# 2. Bascule : LOCAL_DB=1 dans .env.docker
+#    Garder la ligne MONGODB_URI : elle est ignorée, mais permet de revenir
+#    à Atlas en remettant LOCAL_DB=0.
+nano .env.docker
+
+# 3. Démarrage de la pile avec son MongoDB
+./deploy/docker.sh up
+
+# 4. Restauration dans la base du serveur
+./deploy/docker.sh restore backups/mongo-<horodatage>.archive.gz
+```
+
+Entre le démarrage et la restauration, le site tourne sur une base vide : la
+bascule se fait donc de préférence à une heure creuse.
+
+Vérifier ensuite que le contenu est bien arrivé :
+
+```bash
+docker compose --env-file .env.docker exec api node -e "
+const m = require('mongoose');
+m.connect(process.env.MONGODB_URI).then(async () => {
+  for (const c of await m.connection.db.listCollections().toArray()) {
+    console.log(String(await m.connection.db.collection(c.name).countDocuments()).padStart(6), c.name);
+  }
+  process.exit(0);
+});"
+```
+
+Ce qui change une fois la base sur le serveur :
+
+- **Les sauvegardes deviennent votre affaire.** Atlas en prenait ; le conteneur
+  n'en prend aucune. Planifier `./deploy/docker.sh backup` chaque nuit n'est
+  plus une précaution, c'est la seule copie qui existe.
+- **Le volume `mongo-data` porte toute la base.** `docker compose down -v`
+  l'efface — ne jamais employer `-v` sur cette pile.
+- **La mémoire du VPS devient un facteur.** MongoDB en demande quelques
+  centaines de mégaoctets ; vérifier avec `free -h` avant de basculer.
+- La base n'écoute que sur le réseau Docker, sans port publié : elle n'est pas
+  joignable depuis Internet, et c'est ce qui permet de s'en tenir là sans
+  authentification.
+
 ### Dépannage
 
 | Symptôme | Où regarder |
@@ -183,6 +243,7 @@ processus de l'hôte.
 | Port déjà pris | changer `WEB_PORT` dans `.env.docker`, **et** `SITE_URL` si le port est public |
 | Secret ou URI manquant | le script le dit avant de démarrer quoi que ce soit |
 | Connexion à Atlas qui expire | l'IP du VPS est-elle dans Atlas → Network Access ? |
+| 500 à la création, 200 à la lecture | `already using 500 collections of 500` dans les journaux : limite d'Atlas atteinte, voir [Passer d'Atlas à une base sur le serveur](#passer-datlas-à-une-base-sur-le-serveur) |
 | Site vide alors que la base existe | le nom de la base manque dans `MONGODB_URI` |
 | `authentication failed` | mot de passe non encodé, ou utilisateur sans droits |
 | Images 403 | droits des fichiers ; l'image les normalise, reconstruire avec `--no-cache` |

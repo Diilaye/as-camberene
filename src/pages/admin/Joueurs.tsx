@@ -52,6 +52,7 @@ const EMPTY_FORM = {
   joinedYear: '',
   rank: '',
   isVisible: true,
+  isFeatured: false,
 };
 
 const STATUS_STYLES: Record<PlayerStatus, string> = {
@@ -189,6 +190,7 @@ const Joueurs: React.FC = () => {
       joinedYear: member.joinedYear ? String(member.joinedYear) : '',
       rank: String(member.rank ?? ''),
       isVisible: member.isVisible !== false,
+      isFeatured: member.isFeatured === true,
     });
     setModalOpen(true);
   };
@@ -226,6 +228,7 @@ const Joueurs: React.FC = () => {
       joinedYear: toNumber(form.joinedYear),
       rank: toNumber(form.rank),
       isVisible: form.isVisible,
+      isFeatured: form.isFeatured,
     };
 
     // Le formulaire reste ouvert si l'enregistrement a échoué : la saisie n'est
@@ -350,6 +353,7 @@ const Joueurs: React.FC = () => {
                               ? `#${member.number}`
                               : 'Sans numéro'}
                           {member.isVisible ? '' : ' · masqué'}
+                          {member.isFeatured ? ' · vedette' : ''}
                         </p>
                       </div>
                     </div>
@@ -663,6 +667,18 @@ const Joueurs: React.FC = () => {
                     className="accent-club-yellow"
                   />
                   <span>Visible sur le site</span>
+                </label>
+                {/* Alimente l'onglet « Nos stars » de la galerie. */}
+                <label className="flex cursor-pointer select-none items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={form.isFeatured}
+                    onChange={(event) => setForm((f) => ({ ...f, isFeatured: event.target.checked }))}
+                    className="accent-club-yellow"
+                  />
+                  <span>
+                    Vedette <span className="text-white/40">— « Nos stars »</span>
+                  </span>
                 </label>
               </div>
 

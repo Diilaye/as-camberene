@@ -30,6 +30,8 @@ export const PERMISSIONS = [
   'hero:write',
   /** Le calendrier : rencontres à venir, scores des rencontres jouées. */
   'matches:write',
+  /** Les photos de la galerie : matchs, entraînements, vie du club. */
+  'gallery:write',
   'comments:moderate',
   'media:upload',
 ] as const;
@@ -37,6 +39,7 @@ export type Permission = (typeof PERMISSIONS)[number];
 
 const EDITORIAL: Permission[] = [
   'articles:write',
+  'gallery:write',
   'legends:write',
   'history:write',
   'comments:moderate',

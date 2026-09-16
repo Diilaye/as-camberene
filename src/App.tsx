@@ -25,6 +25,8 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Subscriptions from './pages/Subscriptions';
+import Gallery from './pages/Gallery';
+import Billetterie from './pages/Billetterie';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -38,6 +40,8 @@ import LegendesAdmin from './pages/admin/LegendesAdmin';
 import HistoireAdmin from './pages/admin/HistoireAdmin';
 import CarrouselAdmin from './pages/admin/CarrouselAdmin';
 import CalendrierAdmin from './pages/admin/CalendrierAdmin';
+import GalerieAdmin from './pages/admin/GalerieAdmin';
+import BilletterieAdmin from './pages/admin/BilletterieAdmin';
 import Commandes from './pages/admin/Commandes';
 import Utilisateurs from './pages/admin/Utilisateurs';
 import NotFound from './pages/NotFound';
@@ -77,6 +81,8 @@ const InnerApp: React.FC = () => {
             <Route path="/cart" element={<Cart />} />
             <Route path="/commande" element={<Checkout />} />
             <Route path="/subscriptions" element={<Subscriptions />} />
+            <Route path="/galerie" element={<Gallery />} />
+            <Route path="/billetterie" element={<Billetterie />} />
             <Route path="/login" element={<Login />} />
             <Route path="/inscription" element={<Register />} />
             {/*
@@ -99,6 +105,8 @@ const InnerApp: React.FC = () => {
             <Route path="/admin/histoire" element={<ProtectedRoute permission="history:write"><AdminLayout><HistoireAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/carrousel" element={<ProtectedRoute permission="hero:write"><AdminLayout><CarrouselAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/calendrier" element={<ProtectedRoute permission="matches:write"><AdminLayout><CalendrierAdmin /></AdminLayout></ProtectedRoute>} />
+            <Route path="/admin/galerie" element={<ProtectedRoute permission="gallery:write"><AdminLayout><GalerieAdmin /></AdminLayout></ProtectedRoute>} />
+            <Route path="/admin/billetterie" element={<ProtectedRoute permission="orders:manage"><AdminLayout><BilletterieAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/utilisateurs" element={<ProtectedRoute permission="users:manage"><AdminLayout><Utilisateurs /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/parametres" element={<ProtectedRoute><AdminLayout><Parametres /></AdminLayout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
