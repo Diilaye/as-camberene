@@ -11,11 +11,11 @@ import { ARTICLE_CATEGORIES } from '../models/Article.model';
 import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../models/Product.model';
 import { LEGEND_ERAS } from '../models/Legend.model';
 import { MATCH_STATUSES, MATCH_VENUES } from '../models/Match.model';
+import { TEAM_CATEGORIES } from '../models/Team.model';
 import {
   PLAYER_KINDS,
   PLAYER_LINES,
   PLAYER_STATUSES,
-  PLAYER_TEAMS,
   STRONG_FEET,
 } from '../models/Player.model';
 
@@ -134,10 +134,54 @@ export const matchSchema = Joi.object({
   status: Joi.string().valid(...MATCH_STATUSES).default('À venir'),
 });
 
+/**
+ * Équipe du club.
+ *
+ * `slug` est exigé à la création et absent du patch : il identifie l'équipe
+ * pour son adresse comme pour l'effectif qui s'y rattache, et le laisser
+ * changer détacherait tous les joueurs sans que rien ne le signale.
+ */
+export const teamSchema = Joi.object({
+  slug: Joi.string()
+    .trim()
+    .lowercase()
+    .max(80)
+    .pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Identifiant invalide : minuscules, chiffres et tirets uniquement',
+    }),
+  name: Joi.string().trim().max(120).required(),
+  category: Joi.string().valid(...TEAM_CATEGORIES).default('youth'),
+  ageRange: Joi.string().allow('').max(40).default(''),
+  subtitle: Joi.string().allow('').max(120).default(''),
+  description: Joi.string().allow('').max(2000).default(''),
+  coach: Joi.string().allow('').max(120).default(''),
+  training: Joi.string().allow('').max(200).default(''),
+  stadium: Joi.string().allow('').max(200).default(''),
+  achievements: Joi.array().items(Joi.string().max(120)).default([]),
+  stats: Joi.object({
+    wins: Joi.number().integer().min(0).default(0),
+    draws: Joi.number().integer().min(0).default(0),
+    losses: Joi.number().integer().min(0).default(0),
+  }).default({ wins: 0, draws: 0, losses: 0 }),
+  established: Joi.string().allow('').max(20).default(''),
+  image: Joi.string().allow('').max(500).default(''),
+  rank: Joi.number().default(0),
+  isVisible: Joi.boolean().default(true),
+});
+
 export const playerSchema = Joi.object({
   kind: Joi.string().valid(...PLAYER_KINDS).default('player'),
   name: Joi.string().trim().max(150).required(),
-  team: Joi.string().valid(...PLAYER_TEAMS).required(),
+  // Le slug d'une équipe : la liste n'est plus fermée depuis que le club crée
+  // ses équipes. Le format reste contraint, pour qu'un slug reste une adresse.
+  team: Joi.string()
+    .trim()
+    .max(80)
+    .pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .required()
+    .messages({ 'string.pattern.base': 'Identifiant d’équipe invalide' }),
   number: Joi.number().integer().min(0).max(99).default(0),
   line: Joi.string().valid(...PLAYER_LINES).default('Milieu'),
   position: Joi.string().allow('').max(100).default(''),
@@ -176,3 +220,5 @@ export const historyEventPatchSchema = asPatch(historyEventSchema);
 export const playerPatchSchema = asPatch(playerSchema);
 export const heroSlidePatchSchema = asPatch(heroSlideSchema);
 export const matchPatchSchema = asPatch(matchSchema);
+// `slug` retiré du patch : il identifie l'équipe, il ne se corrige pas.
+export const teamPatchSchema = asPatch(teamSchema.fork(['slug'], (f) => f.forbidden()));

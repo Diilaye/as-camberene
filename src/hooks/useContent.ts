@@ -5,20 +5,25 @@ import {
   MatchRecord,
   ListParams,
   ProductRecord,
+  TeamMemberRecord,
+  TeamRecord,
   articles as articlesApi,
   heroSlides as heroSlidesApi,
   history as historyApi,
   matches as matchesApi,
   legends as legendsApi,
   products as productsApi,
+  teamMembers as teamMembersApi,
+  teams as teamsApi,
 } from '../services/site/content.service';
 import { articles as staticArticles } from '../data/articles';
 import { products as staticProducts } from '../data/products';
 import { legends as staticLegends } from '../data/legends';
 import { heroSlides as staticHeroSlides } from '../data/heroSlides';
 import { matches as staticMatches } from '../data/matches';
+import { teamsData as staticTeams } from '../data/teams';
 import { getHistoryEvents } from '../data/history';
-import { Article, HeroSlide, HistoryEvent, Legend, Match, Product } from '../types';
+import { Article, HeroSlide, HistoryEvent, Legend, Match, Product, Team, TeamMember } from '../types';
 import { getMatches } from '../services/fconnect/matches.service';
 import { toMatches } from '../adapters';
 import { isFconnectConfigured } from '../config/env';
@@ -108,6 +113,39 @@ export const useMatches = (): ApiResource<Match[]> => {
 
   return { ...site, data: site.data.length > 0 ? site.data : external.data };
 };
+
+/**
+ * Équipes du club.
+ *
+ * Comme le carrousel : une base vide n'est pas une erreur mais un site qui
+ * n'a pas encore été rempli, et une page « Équipes » vide ferait croire que le
+ * club n'en a aucune. Les équipes d'origine tiennent la place jusqu'à la
+ * première saisie.
+ */
+export const useTeams = (): ApiResource<Team[]> => {
+  const resource = useApiResource<TeamRecord[]>(
+    (signal) => teamsApi.list({ sort: 'rank name' }, signal),
+    [],
+    { deps: [] }
+  );
+
+  return { ...resource, data: resource.data.length > 0 ? resource.data : staticTeams };
+};
+
+/**
+ * Effectif, éventuellement restreint à une équipe.
+ *
+ * Pas de repli sur des données figées : un effectif d'emprunt sur une équipe
+ * que le club vient de créer afficherait des joueurs qui n'y sont pas. Une
+ * équipe sans fiche saisie est une équipe dont l'effectif reste à remplir, et
+ * les pages le disent.
+ */
+export const useTeamMembers = (team?: string): ApiResource<TeamMember[]> =>
+  useApiResource<TeamMemberRecord[]>(
+    (signal) => teamMembersApi.list(team ? { team } : {}, signal),
+    [],
+    { deps: [team] }
+  );
 
 export const useHistoryEvents = (): ApiResource<HistoryEvent[]> =>
   useApiResource<HistoryEvent[]>(

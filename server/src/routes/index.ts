@@ -14,6 +14,7 @@ import HistoryEvent from '../models/HistoryEvent.model';
 import Player from '../models/Player.model';
 import HeroSlide from '../models/HeroSlide.model';
 import Match from '../models/Match.model';
+import Team from '../models/Team.model';
 import { buildResourceRouter } from '../lib/resource';
 import {
   articlePatchSchema,
@@ -28,6 +29,8 @@ import {
   legendSchema,
   playerPatchSchema,
   playerSchema,
+  teamPatchSchema,
+  teamSchema,
   productPatchSchema,
   productSchema,
 } from '../validators/content';
@@ -99,6 +102,25 @@ router.use(
     defaultSort: 'year',
     searchable: ['title', 'description'],
     filters: ['phase'],
+  })
+);
+
+router.use(
+  '/teams',
+  buildResourceRouter({
+    model: Team,
+    // Même droit que l'effectif : une équipe sans joueurs n'a pas d'objet, et
+    // qui tient l'un tient l'autre. Une permission de plus n'aurait fait que
+    // multiplier les cases à cocher sans rien séparer d'utile.
+    permission: 'players:write',
+    createSchema: teamSchema,
+    updateSchema: teamPatchSchema,
+    defaultSort: 'rank name',
+    // Une équipe retirée de la vitrine reste visible de l'administration —
+    // et son effectif lui reste rattaché.
+    publicFilter: { isVisible: true },
+    searchable: ['name', 'subtitle', 'coach'],
+    filters: ['category', 'slug'],
   })
 );
 

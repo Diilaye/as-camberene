@@ -1,8 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Mail, MapPin, Phone, Users } from 'lucide-react';
-import { getTeamById } from '../data/teams';
+import teamHero from '../../assets/img/asc-camberene-equipe-2025.webp';
+import { teamsData } from '../data/teams';
 import { PlayerEntry, getRosterForTeam } from '../data/teamRosters';
+import { useTeamMembers, useTeams } from '../hooks/useContent';
+import { TeamMember } from '../types';
 import PageHero from './ui/PageHero';
 import PlayerCard from './ui/PlayerCard';
 
@@ -18,6 +21,42 @@ const sectionsOf = (roster: ReturnType<typeof getRosterForTeam>) => ({
   Staff: roster?.staff ?? [],
 });
 
+/** De la ligne de jeu à l'onglet qui la présente. */
+const SECTION_OF_LINE: Record<string, string> = {
+  Gardien: 'Gardiens',
+  Défenseur: 'Défenseurs',
+  Milieu: 'Milieux',
+  Attaquant: 'Attaquants',
+};
+
+/** Une fiche de l'effectif, ramenée à ce que la carte de joueur affiche. */
+const toEntry = (member: TeamMember): PlayerEntry => ({
+  name: member.name,
+  number: member.kind === 'player' ? member.number : undefined,
+  age: member.age || undefined,
+  nationality: member.nationality || undefined,
+  role: member.role || undefined,
+  photo: member.photo,
+});
+
+/** Les fiches saisies, rangées par ligne ; l'encadrement à part. */
+const sectionsOfMembers = (members: TeamMember[]) => {
+  const sections: Record<string, PlayerEntry[]> = {
+    Gardiens: [],
+    Défenseurs: [],
+    Milieux: [],
+    Attaquants: [],
+    Staff: [],
+  };
+
+  members.forEach((member) => {
+    const key = member.kind === 'staff' ? 'Staff' : SECTION_OF_LINE[member.line] ?? 'Milieux';
+    sections[key].push(toEntry(member));
+  });
+
+  return sections;
+};
+
 /**
  * Page d'une équipe : identité, effectif par ligne, bilan de la saison.
  *
@@ -27,9 +66,30 @@ const sectionsOf = (roster: ReturnType<typeof getRosterForTeam>) => ({
  * avec son effectif en dur, ce qui laissait les mises en forme diverger.
  */
 const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
-  const team = useMemo(() => getTeamById(teamId), [teamId]);
+  const { data: teams } = useTeams();
+  const { data: members } = useTeamMembers(teamId);
+
+  const team = useMemo(
+    () => teams.find((entry) => entry.slug === teamId) ?? teamsData.find((entry) => entry.slug === teamId),
+    [teams, teamId]
+  );
+
   const roster = useMemo(() => getRosterForTeam(teamId), [teamId]);
-  const sections = useMemo(() => sectionsOf(roster), [roster]);
+
+  /*
+    Les fiches saisies font autorité dès qu'il y en a une. Sans elles — une
+    équipe que le club vient de créer, ou un site dont l'effectif n'a pas
+    encore été repris — on montre l'effectif d'origine plutôt qu'une page vide.
+  */
+  const sections = useMemo(
+    () => (members.length > 0 ? sectionsOfMembers(members) : sectionsOf(roster)),
+    [members, roster]
+  );
+
+  /** Effectif réel : compté, jamais recopié sur l'équipe. */
+  const headcount = members.length > 0
+    ? members.length
+    : Object.values(sectionsOf(roster)).reduce((total, list) => total + list.length, 0);
   const [activeSection, setActiveSection] = useState<string>('Attaquants');
 
   if (!team) {
@@ -61,7 +121,7 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
         kicker={`${team.subtitle} · ${team.ageRange}`}
         title={team.name}
         description={team.description}
-        image={team.image}
+        image={team.image || teamHero}
       >
         <Link
           to="/teams"
@@ -84,7 +144,9 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
               <Users size={13} className="text-club-yellow" />
               Effectif
             </p>
-            <p className="mt-1 font-extrabold uppercase text-white">{team.players} joueurs</p>
+            <p className="mt-1 font-extrabold uppercase text-white">
+              {headcount > 0 ? `${headcount} joueurs` : 'À compléter'}
+            </p>
           </div>
           <div>
             <p className="flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-white/50">

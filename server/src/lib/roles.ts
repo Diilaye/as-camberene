@@ -24,7 +24,7 @@ export const PERMISSIONS = [
   'orders:manage',
   'legends:write',
   'history:write',
-  /** Tenir l'effectif : joueurs et encadrement de chaque équipe. */
+  /** Tenir les équipes et leur effectif : joueurs et encadrement. */
   'players:write',
   /** Le carrousel de tête de l'accueil : photos, vidéos et leur ordre. */
   'hero:write',

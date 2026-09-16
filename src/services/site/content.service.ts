@@ -19,6 +19,7 @@ import {
   Legend,
   Match,
   Product,
+  Team,
   TeamMember,
 } from '../../types';
 import { siteMediaUrl } from './media';
@@ -36,6 +37,7 @@ export type LegendRecord = Legend & { id: string };
 export type HistoryEventRecord = HistoryEvent & { id: string };
 export type HeroSlideRecord = HeroSlide & { id: string };
 export type MatchRecord = Match & { id: string };
+export type TeamRecord = Team & { id: string };
 export type TeamMemberRecord = TeamMember;
 
 export interface ListResponse<T> {
@@ -154,6 +156,11 @@ const normalizeHeroSlide = (slide: HeroSlideRecord): HeroSlideRecord => ({
  * La fonction existe quand même parce que la fabrique en attend une, et pour
  * qu'un champ à normaliser un jour trouve sa place sans toucher au reste.
  */
+const normalizeTeam = (team: TeamRecord): TeamRecord => ({
+  ...team,
+  image: siteMediaUrl(team.image),
+});
+
 const normalizeMatch = (match: MatchRecord): MatchRecord => match;
 
 const normalizeHistoryEvent = (event: HistoryEventRecord): HistoryEventRecord => ({
@@ -172,6 +179,7 @@ export const history = resource<HistoryEventRecord>('/history', normalizeHistory
 export const teamMembers = resource<TeamMemberRecord>('/players', normalizeTeamMember);
 export const heroSlides = resource<HeroSlideRecord>('/hero', normalizeHeroSlide);
 export const matches = resource<MatchRecord>('/matches', normalizeMatch);
+export const teams = resource<TeamRecord>('/teams', normalizeTeam);
 
 // ==========================================================================
 // Commentaires — sous-ressource d'un article

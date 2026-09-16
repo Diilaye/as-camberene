@@ -20,7 +20,13 @@
 
 import mongoose, { Document, Schema } from 'mongoose';
 
-/** Identifiants des équipes, alignés sur `src/data/teams.ts`. */
+/**
+ * Équipes d'origine du club.
+ *
+ * Ce n'est plus la liste des équipes possibles : celles-ci vivent dans `Team`,
+ * et le club en ajoute depuis l'administration. Cette constante ne sert plus
+ * qu'à amorcer une base neuve et à nommer les équipes livrées avec le site.
+ */
 export const PLAYER_TEAMS = [
   'equipe-a',
   'equipe-u19',
@@ -48,7 +54,8 @@ export interface IPlayer extends Document {
   _id: mongoose.Types.ObjectId;
   kind: (typeof PLAYER_KINDS)[number];
   name: string;
-  team: (typeof PLAYER_TEAMS)[number];
+  /** Slug de l'équipe (`Team.slug`) à laquelle la fiche est rattachée. */
+  team: string;
   number: number;
   line: (typeof PLAYER_LINES)[number];
   position: string;
@@ -79,7 +86,12 @@ const playerSchema = new Schema<IPlayer>(
   {
     kind: { type: String, enum: PLAYER_KINDS, default: 'player', index: true },
     name: { type: String, required: true, trim: true, maxlength: 150 },
-    team: { type: String, enum: PLAYER_TEAMS, required: true, index: true },
+    // Le slug d'une équipe, et non plus une valeur d'une liste fermée : une
+    // équipe créée dans l'administration doit pouvoir recevoir des joueurs le
+    // jour même. Le formulaire propose les équipes existantes ; l'intégrité se
+    // joue là, et une fiche orpheline se réaffecte en deux clics — ce qu'une
+    // énumération, elle, rendait simplement impossible.
+    team: { type: String, required: true, trim: true, maxlength: 80, index: true },
     // 0 vaut « pas de numéro » : l'encadrement n'en porte pas, et une recrue
     // peut être inscrite avant que le sien ne soit arrêté.
     number: { type: Number, default: 0, min: 0, max: 99 },

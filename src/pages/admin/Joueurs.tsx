@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Plus, Search, Users, X } from 'lucide-react';
 import useEditableResource from '../../hooks/useEditableResource';
+import { useTeams } from '../../hooks/useContent';
 import { teamMembers as teamMembersApi, TeamMemberRecord } from '../../services/site/content.service';
 import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
 import ImageField from '../../components/admin/ImageField';
@@ -9,7 +10,6 @@ import {
   PLAYER_KINDS,
   PLAYER_LINES,
   PLAYER_STATUSES,
-  PLAYER_TEAMS,
   PLAYER_TEAM_LABELS,
   PlayerKind,
   PlayerLine,
@@ -91,6 +91,28 @@ const Joueurs: React.FC = () => {
     remove,
   } = useEditableResource<TeamMemberRecord>(teamMembersApi);
 
+  const { data: teams } = useTeams();
+
+  /**
+   * Rang d'une équipe dans la liste du club.
+   *
+   * Une fiche rattachée à une équipe supprimée depuis n'est pas perdue : elle
+   * se range en fin de liste, où on la voit et où on la réaffecte.
+   */
+  const teamOrder = useCallback(
+    (slug: string) => {
+      const index = teams.findIndex((team) => team.slug === slug);
+      return index === -1 ? teams.length : index;
+    },
+    [teams]
+  );
+
+  /** Nom affiché d'une équipe ; à défaut son slug, qui reste parlant. */
+  const teamLabel = useCallback(
+    (slug: string) => teams.find((team) => team.slug === slug)?.name ?? PLAYER_TEAM_LABELS[slug] ?? slug,
+    [teams]
+  );
+
   const [query, setQuery] = useState('');
   const [teamFilter, setTeamFilter] = useState<PlayerTeam | ''>('');
   const [kindFilter, setKindFilter] = useState<PlayerKind | ''>('');
@@ -118,14 +140,14 @@ const Joueurs: React.FC = () => {
       .sort((a, b) => {
         // Ordre du terrain, pas ordre alphabétique : l'encadrement ferme la
         // liste de son équipe, les joueurs se rangent gardiens en tête.
-        if (a.team !== b.team) return PLAYER_TEAMS.indexOf(a.team) - PLAYER_TEAMS.indexOf(b.team);
+        if (a.team !== b.team) return teamOrder(a.team) - teamOrder(b.team);
         if (a.kind !== b.kind) return a.kind === 'player' ? -1 : 1;
         if (a.kind === 'player' && a.line !== b.line) {
           return PLAYER_LINES.indexOf(a.line) - PLAYER_LINES.indexOf(b.line);
         }
         return (a.rank ?? 0) - (b.rank ?? 0) || (a.number ?? 0) - (b.number ?? 0) || a.name.localeCompare(b.name);
       });
-  }, [members, query, teamFilter, kindFilter]);
+  }, [members, query, teamFilter, kindFilter, teamOrder]);
 
   /** Combien de fiches par équipe, pour situer d'un coup d'œil. */
   const countByTeam = useMemo(() => {
@@ -276,16 +298,16 @@ const Joueurs: React.FC = () => {
         >
           Toutes les équipes ({members.length})
         </button>
-        {PLAYER_TEAMS.map((team) => (
+        {teams.map((team) => (
           <button
-            key={team}
+            key={team.slug}
             type="button"
-            onClick={() => setTeamFilter(team)}
+            onClick={() => setTeamFilter(team.slug)}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-              teamFilter === team ? 'bg-club-yellow text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'
+              teamFilter === team.slug ? 'bg-club-yellow text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'
             }`}
           >
-            {PLAYER_TEAM_LABELS[team]} ({countByTeam.get(team) ?? 0})
+            {team.name} ({countByTeam.get(team.slug) ?? 0})
           </button>
         ))}
       </div>
@@ -332,7 +354,7 @@ const Joueurs: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs">{PLAYER_TEAM_LABELS[member.team]}</td>
+                  <td className="px-4 py-3 text-xs">{teamLabel(member.team)}</td>
                   <td className="px-4 py-3 text-xs">
                     {member.kind === 'staff'
                       ? member.role || '—'
@@ -437,9 +459,9 @@ const Joueurs: React.FC = () => {
                     onChange={(event) => setForm((f) => ({ ...f, team: event.target.value as PlayerTeam }))}
                     className={field}
                   >
-                    {PLAYER_TEAMS.map((team) => (
-                      <option key={team} value={team} className="bg-graphite">
-                        {PLAYER_TEAM_LABELS[team]}
+                    {teams.map((team) => (
+                      <option key={team.slug} value={team.slug} className="bg-graphite">
+                        {team.name}
                       </option>
                     ))}
                   </select>

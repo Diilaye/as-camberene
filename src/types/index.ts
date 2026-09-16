@@ -42,11 +42,20 @@ export interface Player {
  * Ces listes remplissent les menus de l'administration et le backend valide
  * les mêmes valeurs : une équipe ajoutée ici doit l'être aussi là-bas.
  */
+/**
+ * Équipes livrées avec le site.
+ *
+ * Ce n'est plus la liste des équipes possibles — le club les crée depuis
+ * l'administration, et `Team.slug` fait foi. Elle reste le repli hors ligne et
+ * la source des libellés d'origine.
+ */
 export const PLAYER_TEAMS = ['equipe-a', 'equipe-u19', 'equipe-u17', 'equipe-u15', 'equipe-u12'] as const;
-export type PlayerTeam = (typeof PLAYER_TEAMS)[number];
+
+/** Slug d'une équipe. Ouvert : une équipe créée aujourd'hui en a un nouveau. */
+export type PlayerTeam = string;
 
 /** Libellés d'équipe, pour l'affichage. */
-export const PLAYER_TEAM_LABELS: Record<PlayerTeam, string> = {
+export const PLAYER_TEAM_LABELS: Record<string, string> = {
   'equipe-a': 'Équipe A',
   'equipe-u19': 'U19',
   'equipe-u17': 'U17',
@@ -194,6 +203,35 @@ export interface CartItem {
   product: Product;
   size: string;
   quantity: number;
+}
+
+export const TEAM_CATEGORIES = ['senior', 'youth'] as const;
+export type TeamCategory = (typeof TEAM_CATEGORIES)[number];
+
+/**
+ * Équipe du club : équipe première ou catégorie de jeunes.
+ *
+ * `slug` est son identité durable — son adresse (`/teams/equipe-u19`) et la
+ * clé que porte chaque fiche de l'effectif.
+ */
+export interface Team {
+  id: EntityId;
+  slug: string;
+  name: string;
+  category: TeamCategory;
+  /** Tranche d'âge affichée en pastille : « Seniors », « 17–19 ». */
+  ageRange: string;
+  subtitle: string;
+  description: string;
+  coach: string;
+  training: string;
+  stadium: string;
+  achievements: string[];
+  stats: { wins: number; draws: number; losses: number };
+  established: string;
+  image: string;
+  rank?: number;
+  isVisible?: boolean;
 }
 
 /** Le club reçoit, ou se déplace. */

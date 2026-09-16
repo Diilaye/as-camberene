@@ -44,6 +44,13 @@ const staffName = (staff?: FcTeamStaffRef | string | null): string =>
 export interface ApiTeam extends TeamData {
   fcId: string;
   season: string;
+  /**
+   * Effectif annoncé par fconnect.
+   *
+   * Propre à cette source : les équipes du site n'en portent pas, leurs pages
+   * comptant les fiches réellement rattachées.
+   */
+  players: number;
   players_list: ApiPlayer[];
 }
 
@@ -54,6 +61,9 @@ export const toTeam = (team: FcTeam): ApiTeam => {
 
   return {
     id: team.id,
+    // fconnect n'a pas de slug : son identifiant en tient lieu, et c'est déjà
+    // lui qui composait l'adresse de l'équipe.
+    slug: team.id,
     fcId: team.id,
     category: SENIOR_CATEGORIES.includes(category) ? 'senior' : 'youth',
     name: team.name.toUpperCase(),

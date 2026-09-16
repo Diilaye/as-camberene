@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Users } from 'lucide-react';
 import teamHero from '../../assets/img/asc-camberene-equipe-2025.webp';
-import { teamsData } from '../data/teams';
+import { useTeamMembers, useTeams } from '../hooks/useContent';
 import PageHero from '../components/ui/PageHero';
+import { handleImageError } from '../lib/imagePlaceholder';
 
 const CATEGORIES = [
   { id: 'all', name: 'Toutes les équipes' },
@@ -20,8 +21,25 @@ const CLUB_STATS = [
 
 const Teams: React.FC = () => {
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]['id']>('all');
+  const { data: teams } = useTeams();
+  const { data: members } = useTeamMembers();
 
-  const visible = category === 'all' ? teamsData : teamsData.filter((team) => team.category === category);
+  /**
+   * Effectif réel de chaque équipe.
+   *
+   * Compté sur les fiches rattachées plutôt que recopié sur l'équipe : un
+   * nombre saisi à la main se démentirait au premier départ, et c'est le genre
+   * de détail que personne ne pense à corriger.
+   */
+  const countByTeam = useMemo(() => {
+    const counts = new Map<string, number>();
+    members.forEach((member) => {
+      counts.set(member.team, (counts.get(member.team) ?? 0) + 1);
+    });
+    return counts;
+  }, [members]);
+
+  const visible = category === 'all' ? teams : teams.filter((team) => team.category === category);
 
   return (
     <div className="bg-graphite">
@@ -70,14 +88,15 @@ const Teams: React.FC = () => {
         <div className="site-container grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((team) => (
             <Link
-              key={team.id}
-              to={`/teams/${team.id}`}
+              key={team.slug}
+              to={`/teams/${team.slug}`}
               className="group overflow-hidden rounded-[20px] border border-white/10 bg-black/25 transition-colors hover:border-club-yellow/50"
             >
               <div className="relative aspect-[4/3] overflow-hidden">
                 <img
-                  src={team.image}
+                  src={team.image || teamHero}
                   alt={team.name}
+                  onError={handleImageError}
                   loading="lazy"
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -94,7 +113,9 @@ const Teams: React.FC = () => {
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-white/50">
                   <span className="flex items-center gap-1.5">
                     <Users size={13} className="text-club-yellow" />
-                    {team.players} joueurs
+                    {countByTeam.get(team.slug)
+                      ? `${countByTeam.get(team.slug)} joueurs`
+                      : 'Effectif à compléter'}
                   </span>
                   <span className="flex items-center gap-1.5">
                     <MapPin size={13} className="text-club-yellow" />
