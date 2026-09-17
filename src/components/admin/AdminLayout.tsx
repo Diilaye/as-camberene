@@ -19,6 +19,7 @@ const navItems: { to: string; label: string; icon: React.ReactNode; permission?:
   { to: '/admin/histoire', label: 'Histoire', icon: <Landmark size={18} />, permission: 'history:write' },
   { to: '/admin/produits', label: 'Produits', icon: <ShoppingBag size={18} />, permission: 'products:write' },
   { to: '/admin/commandes', label: 'Commandes', icon: <Package size={18} />, permission: 'orders:manage' },
+  { to: '/admin/equipes', label: 'Équipes', icon: <Shield size={18} />, permission: 'players:write' },
   { to: '/admin/joueurs', label: 'Effectif', icon: <Users size={18} />, permission: 'players:write' },
   { to: '/admin/calendrier', label: 'Calendrier', icon: <CalendarDays size={18} />, permission: 'matches:write' },
   { to: '/admin/galerie', label: 'Galerie', icon: <Images size={18} />, permission: 'gallery:write' },

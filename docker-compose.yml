@@ -31,6 +31,10 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?renseigner JWT_REFRESH_SECRET dans .env.docker}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-2h}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-30d}
+      # Adresse publique du site : les pages d'aperçu de partage composent avec
+      # elle les liens et les adresses absolues des images, que les réseaux
+      # chargent depuis leurs propres serveurs.
+      SITE_URL: ${SITE_URL:-https://ascamberene.sn}
       CORS_ORIGINS: ${SITE_URL:-https://ascamberene.sn}
       UPLOAD_DIR: uploads
       # Deux proxys devant l'API : l'Apache de l'hôte, puis celui du conteneur.

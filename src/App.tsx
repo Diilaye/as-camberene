@@ -41,6 +41,7 @@ import HistoireAdmin from './pages/admin/HistoireAdmin';
 import CarrouselAdmin from './pages/admin/CarrouselAdmin';
 import CalendrierAdmin from './pages/admin/CalendrierAdmin';
 import GalerieAdmin from './pages/admin/GalerieAdmin';
+import EquipesAdmin from './pages/admin/EquipesAdmin';
 import BilletterieAdmin from './pages/admin/BilletterieAdmin';
 import Commandes from './pages/admin/Commandes';
 import Utilisateurs from './pages/admin/Utilisateurs';
@@ -97,6 +98,7 @@ const InnerApp: React.FC = () => {
             <Route path="/admin/dashboard" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
             {/* Alias avec faute potentielle 'dashbord' pour tolérance utilisateur */}
             <Route path="/admin/dashbord" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
+            <Route path="/admin/equipes" element={<ProtectedRoute permission="players:write"><AdminLayout><EquipesAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/joueurs" element={<ProtectedRoute permission="players:write"><AdminLayout><Joueurs /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/produits" element={<ProtectedRoute permission="products:write"><AdminLayout><Produits /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/commandes" element={<ProtectedRoute permission="orders:manage"><AdminLayout><Commandes /></AdminLayout></ProtectedRoute>} />

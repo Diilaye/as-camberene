@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Mail, MapPin, Phone, Twitter, Youtube } from 'lucide-react';
+import ShareButtons from './ui/ShareButtons';
 
 const FOOTER_MENU = [
   {
@@ -134,6 +135,21 @@ const Footer: React.FC = () => {
               <Mail size={18} className="shrink-0 text-club-yellow" />
               contact@asccamberene.sn
             </p>
+          </div>
+
+          {/*
+            Faire connaître le site.
+
+            Distinct des icônes ci-dessous, qui mènent aux comptes du club :
+            ici on transmet l'adresse du site à quelqu'un, là on va voir ce que
+            le club publie ailleurs.
+          */}
+          <div className="mt-8 flex justify-center border-t border-white/10 pt-6">
+            <ShareButtons
+              title="ASC Cambérène — Club officiel"
+              url={typeof window !== 'undefined' ? window.location.origin : undefined}
+              label="Faire connaître le club"
+            />
           </div>
 
           {/* Logo et réseaux, aux deux extrémités */}

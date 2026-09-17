@@ -77,6 +77,18 @@ export const config = {
     accessTtl: process.env.JWT_ACCESS_TTL ?? '2h',
     refreshTtl: process.env.JWT_REFRESH_TTL ?? '30d',
   },
+  /**
+   * Adresse publique du site, utilisée par les pages d'aperçu de partage.
+   *
+   * Les réseaux chargent l'image depuis leurs propres serveurs : un chemin
+   * relatif n'y veut rien dire, et il faut donc pouvoir composer une adresse
+   * absolue. À défaut de réglage, la première origine autorisée fait l'affaire
+   * — c'est le domaine du site dans tous les déploiements du projet.
+   */
+  siteUrl: (process.env.SITE_URL ?? process.env.CORS_ORIGINS ?? 'http://localhost:5173')
+    .split(',')[0]
+    .trim()
+    .replace(/\/+$/, ''),
   corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
     .split(',')
     .map((origin) => origin.trim())

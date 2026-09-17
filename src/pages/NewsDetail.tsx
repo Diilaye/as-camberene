@@ -10,6 +10,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ArticleCard from '../components/ui/ArticleCard';
 import Rail from '../components/ui/Rail';
 import SectionHeader from '../components/ui/SectionHeader';
+import ShareButtons from '../components/ui/ShareButtons';
 
 const NewsDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -116,6 +117,14 @@ const NewsDetail: React.FC = () => {
             {article.content.split('\n').filter(Boolean).map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
             ))}
+          </div>
+
+          {/*
+            Le partage se place en fin d'article : on partage ce qu'on vient de
+            lire, pas ce qu'on s'apprête à lire.
+          */}
+          <div className="mt-10 border-t border-white/10 pt-6">
+            <ShareButtons title={article.title} label="Partager cet article" />
           </div>
         </div>
       </article>

@@ -2,7 +2,7 @@
  * Amorcage du contenu du site.
  *
  * Verse en base tout ce que l'administration du site gere : carrousel de tete,
- * calendrier, galerie, actualites, boutique, legendes, frise historique. De quoi ouvrir n'importe quelle page
+ * equipes, calendrier, galerie, actualites, boutique, legendes, frise historique. De quoi ouvrir n'importe quelle page
  * sur du contenu credible, et de quoi apprendre a se servir de l'administration
  * sur de la matiere plutot que sur du vide.
  *
@@ -14,7 +14,7 @@
  * n'est pas dupliquee. Relancer le script est donc sans danger.
  *
  *   npm run seed              # ajoute ce qui manque
- *   npm run seed -- --reset   # vide les sept collections puis reimporte
+ *   npm run seed -- --reset   # vide les huit collections puis reimporte
  *   npm run seed -- --dry-run # annonce ce qui serait ecrit, sans rien ecrire
  *
  * Ne cree aucun compte : `npm run create:admin -- <email>` s'en charge.
@@ -29,10 +29,12 @@ import HistoryEvent from '../src/models/HistoryEvent.model';
 import HeroSlide from '../src/models/HeroSlide.model';
 import Match from '../src/models/Match.model';
 import GalleryItem from '../src/models/GalleryItem.model';
+import Team from '../src/models/Team.model';
 import {
   seedArticles,
   seedGalleryItems,
   seedHeroSlides,
+  seedTeams,
   seedHistoryEvents,
   seedMatches,
   seedLegends,
@@ -113,6 +115,10 @@ async function main(): Promise<number> {
       (slide) => ({ title: slide.title }),
       (slide) => ({ ...slide })
     );
+
+    // Le slug identifie l'équipe : c'est lui que portent les fiches de
+    // l'effectif, et deux équipes ne peuvent pas le partager.
+    await importAll('équipes', Team, seedTeams, (t) => ({ slug: t.slug }), (team) => ({ ...team }));
 
     // Adversaire et date font la rencontre : deux matchs qui les partagent
     // sont le même, importé deux fois.

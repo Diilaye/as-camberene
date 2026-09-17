@@ -99,3 +99,20 @@ export interface SeedGalleryItem {
   /** Jour de la prise de vue, `AAAA-MM-JJ`. */
   date: string;
 }
+
+export interface SeedTeam {
+  /** Identifiant d'URL, et cle de rattachement de l'effectif. */
+  slug: string;
+  name: string;
+  category: 'senior' | 'youth';
+  ageRange: string;
+  subtitle: string;
+  description: string;
+  coach: string;
+  training: string;
+  stadium: string;
+  achievements: string[];
+  stats: { wins: number; draws: number; losses: number };
+  established: string;
+  rank: number;
+}

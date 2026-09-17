@@ -1,0 +1,89 @@
+/**
+ * Équipes d'amorçage.
+ *
+ * Les cinq équipes livrées avec le site. Leurs identifiants sont exactement
+ * ceux que portaient déjà les fiches de l'effectif (`equipe-a`, `equipe-u19`…) :
+ * changer ne serait-ce qu'un tiret détacherait les joueurs de leur équipe sans
+ * que rien ne le signale.
+ *
+ * Aucun effectif annoncé : les pages comptent les fiches réellement rattachées.
+ */
+import { SeedTeam } from './types';
+
+export const seedTeams: SeedTeam[] = [
+  {
+    slug: 'equipe-a',
+    name: 'ÉQUIPE A',
+    category: 'senior',
+    ageRange: 'Seniors',
+    subtitle: 'Groupe Elite',
+    description: "Performance et identité du club, en Ligue 1 sénégalaise.",
+    coach: 'Mamadou Diallo',
+    training: 'Lun · Mer · Ven — 17h00',
+    stadium: 'Stade Léopold Senghor',
+    achievements: ['Champion 2023', 'Finale 2024'],
+    stats: { wins: 18, draws: 4, losses: 2 },
+    established: '1965',
+    rank: 0,
+  },
+  {
+    slug: 'equipe-u19',
+    name: 'U19',
+    category: 'youth',
+    ageRange: '17–19',
+    subtitle: 'Transition',
+    description: 'Préparation au haut niveau et passerelle vers le groupe professionnel.',
+    coach: 'Ibrahima Sarr',
+    training: 'Mar · Jeu · Sam — 16h00',
+    stadium: 'Centre de formation',
+    achievements: ['Champion 2024'],
+    stats: { wins: 15, draws: 3, losses: 2 },
+    established: '1985',
+    rank: 1,
+  },
+  {
+    slug: 'equipe-u17',
+    name: 'U17',
+    category: 'youth',
+    ageRange: '15–17',
+    subtitle: 'Avancée',
+    description: 'Tactique et discipline collective.',
+    coach: 'Ousmane Ba',
+    training: 'Lun · Mer · Sam — 15h30',
+    stadium: "Terrain d'entraînement",
+    achievements: ['Meilleure défense 2024'],
+    stats: { wins: 12, draws: 5, losses: 3 },
+    established: '1990',
+    rank: 2,
+  },
+  {
+    slug: 'equipe-u15',
+    name: 'U15',
+    category: 'youth',
+    ageRange: '13–15',
+    subtitle: 'Base',
+    description: 'Bases techniques et premières compétitions.',
+    coach: 'Abdoulaye Ndiaye',
+    training: 'Mar · Jeu · Sam — 15h00',
+    stadium: "Terrain d'entraînement",
+    achievements: ['Champion 2024'],
+    stats: { wins: 14, draws: 4, losses: 2 },
+    established: '1995',
+    rank: 3,
+  },
+  {
+    slug: 'equipe-u12',
+    name: 'U12',
+    category: 'youth',
+    ageRange: '10–12',
+    subtitle: 'Éveil',
+    description: 'Jeu, plaisir et découverte du football.',
+    coach: 'Fatou Seck',
+    training: 'Mer · Sam — 14h30',
+    stadium: "Terrain d'entraînement",
+    achievements: ['Festival 2024'],
+    stats: { wins: 10, draws: 6, losses: 4 },
+    established: '2000',
+    rank: 4,
+  },
+];

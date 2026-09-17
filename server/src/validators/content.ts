@@ -243,6 +243,14 @@ export const historyEventPatchSchema = asPatch(historyEventSchema);
 export const playerPatchSchema = asPatch(playerSchema);
 export const heroSlidePatchSchema = asPatch(heroSlideSchema);
 export const matchPatchSchema = asPatch(matchSchema);
-// `slug` retiré du patch : il identifie l'équipe, il ne se corrige pas.
 export const galleryItemPatchSchema = asPatch(galleryItemSchema);
-export const teamPatchSchema = asPatch(teamSchema.fork(['slug'], (f) => f.forbidden()));
+
+/**
+ * `slug` refusé en modification : il identifie l'équipe, il ne se corrige pas.
+ *
+ * L'interdiction vient APRÈS `asPatch`, et non avant : `asPatch` repasse tous
+ * les champs en `optional()`, ce qui annulait le `forbidden()` posé d'abord.
+ * L'identifiant redevenait alors modifiable, et en changer une lettre aurait
+ * détaché tout l'effectif de son équipe sans que rien ne le signale.
+ */
+export const teamPatchSchema = asPatch(teamSchema).fork(['slug'], (f) => f.forbidden());

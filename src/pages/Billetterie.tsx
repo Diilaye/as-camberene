@@ -6,6 +6,7 @@ import { reserveTickets, ReservationConfirmation } from '../services/site/ticket
 import { ApiError } from '../lib/api';
 import { handleImageError } from '../lib/imagePlaceholder';
 import PageHero from '../components/ui/PageHero';
+import ShareButtons from '../components/ui/ShareButtons';
 import ticketHero from '../../assets/img/asc-camberene-equipe-2025.webp';
 
 const formatDate = (value: string): string =>
@@ -148,6 +149,29 @@ const Billetterie: React.FC = () => {
                   </button>
                 );
               })}
+            </div>
+          )}
+
+          {/*
+            Le lien partagé porte l'identifiant du match : celui qui le reçoit
+            arrive sur cette page avec la bonne rencontre déjà sélectionnée, et
+            l'aperçu du réseau montre son affiche.
+          */}
+          {match && (
+            <div className="mt-6 border-t border-white/10 pt-6">
+              <ShareButtons
+                title={
+                  match.venue === 'Domicile'
+                    ? `ASC Cambérène — ${match.opponent}`
+                    : `${match.opponent} — ASC Cambérène`
+                }
+                url={
+                  typeof window !== 'undefined'
+                    ? `${window.location.origin}/billetterie?match=${match.id}`
+                    : undefined
+                }
+                label="Partager la rencontre"
+              />
             </div>
           )}
         </div>

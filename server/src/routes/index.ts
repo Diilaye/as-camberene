@@ -43,6 +43,7 @@ import orderRoutes from './orders.routes';
 import commentRoutes from './comments.routes';
 import uploadRoutes from './uploads.routes';
 import ticketRoutes from './tickets.routes';
+import shareRoutes from './share.routes';
 
 const router = Router();
 
@@ -200,6 +201,9 @@ router.use('/orders', orderRoutes);
 
 // Billetterie : réservation ouverte au public, suivi réservé au club.
 router.use('/tickets', ticketRoutes);
+
+// Aperçus de partage : lus par les robots des réseaux, jamais par le site.
+router.use('/share', shareRoutes);
 
 router.use('/uploads', uploadRoutes);
 
