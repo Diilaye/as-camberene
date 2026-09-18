@@ -304,6 +304,26 @@ export type MatchVenue = (typeof MATCH_VENUES)[number];
 export const MATCH_STATUSES = ['À venir', 'En cours', 'Terminé'] as const;
 export type MatchStatus = (typeof MATCH_STATUSES)[number];
 
+/** Camp du buteur : l'équipe du club, ou celle d'en face. */
+export const SCORER_SIDES = ['club', 'opponent'] as const;
+export type ScorerSide = (typeof SCORER_SIDES)[number];
+
+/**
+ * Un but de la rencontre.
+ *
+ * Le nom est recopié plutôt que lu à travers `player` : un buteur adverse n'a
+ * pas de fiche, et un joueur retiré de l'effectif ne doit pas effacer le but
+ * qu'il a marqué. `player` ne sert qu'à relier le but à sa fiche quand elle
+ * existe.
+ */
+export interface MatchScorer {
+  player?: string | null;
+  name: string;
+  /** Minute du but ; 0 quand elle n'a pas été notée. */
+  minute: number;
+  side: ScorerSide;
+}
+
 export interface Match {
   id: EntityId;
   opponent: string;
@@ -327,6 +347,13 @@ export interface Match {
     away: number;
   } | null;
   status: MatchStatus;
+  /**
+   * Buteurs de la rencontre, les deux camps confondus.
+   *
+   * Facultative et possiblement incomplète : le club saisit le score le soir
+   * du match et la feuille quand il l'a.
+   */
+  scorers?: MatchScorer[];
   /** Affiche de la rencontre ou photo d'après-match. Facultative. */
   image?: string;
 }

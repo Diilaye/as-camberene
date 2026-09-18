@@ -10,7 +10,7 @@ import Joi from 'joi';
 import { ARTICLE_CATEGORIES } from '../models/Article.model';
 import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../models/Product.model';
 import { LEGEND_ERAS } from '../models/Legend.model';
-import { MATCH_STATUSES, MATCH_VENUES } from '../models/Match.model';
+import { MATCH_STATUSES, MATCH_VENUES, SCORER_SIDES } from '../models/Match.model';
 import { TEAM_CATEGORIES } from '../models/Team.model';
 import { GALLERY_CATEGORIES } from '../models/GalleryItem.model';
 import {
@@ -133,6 +133,23 @@ export const matchSchema = Joi.object({
     .allow(null)
     .default(null),
   status: Joi.string().valid(...MATCH_STATUSES).default('À venir'),
+  /*
+    Feuille des buteurs. `player` relie le but à une fiche de l'effectif quand
+    il y en a une : `empty('')` traduit le « aucun joueur choisi » du
+    formulaire en `null`, là où une chaîne vide ferait échouer la conversion en
+    identifiant côté Mongoose.
+  */
+  scorers: Joi.array()
+    .items(
+      Joi.object({
+        player: Joi.string().hex().length(24).allow(null).empty('').default(null),
+        name: Joi.string().trim().max(150).required(),
+        minute: Joi.number().integer().min(0).max(130).default(0),
+        side: Joi.string().valid(...SCORER_SIDES).default('club'),
+      })
+    )
+    .max(30)
+    .default([]),
   image: Joi.string().allow('').max(500).default(''),
 });
 

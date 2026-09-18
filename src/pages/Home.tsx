@@ -397,6 +397,9 @@ const Home: React.FC = () => {
                         : scored === conceded
                           ? { label: 'Nul', className: 'bg-white/15 text-white' }
                           : { label: 'Défaite', className: 'bg-red-500/20 text-red-300' };
+                  const clubScorers = (match.scorers ?? []).filter(
+                    (scorer) => scorer.side === 'club'
+                  );
 
                   return (
                     <article key={String(match.id)} className="panel panel-hover flex items-center gap-4 p-4">
@@ -420,6 +423,21 @@ const Home: React.FC = () => {
                         <p className="mt-1 text-xs text-white/60">
                           {match.competition} · {formatMatchDate(match.date)}
                         </p>
+                        {/*
+                          Les buteurs du club seulement : la carte est étroite,
+                          et c'est le renseignement qu'on vient y chercher. La
+                          feuille complète, adversaire compris, appartient à la
+                          page du match le jour où elle existera.
+                        */}
+                        {clubScorers.length > 0 && (
+                          <p className="mt-1 truncate text-xs text-club-yellow/80">
+                            {clubScorers
+                              .map((scorer) =>
+                                scorer.minute ? `${scorer.name} ${scorer.minute}’` : scorer.name
+                              )
+                              .join(' · ')}
+                          </p>
+                        )}
                       </div>
                       {outcome && <span className={`chip shrink-0 ${outcome.className}`}>{outcome.label}</span>}
                     </article>

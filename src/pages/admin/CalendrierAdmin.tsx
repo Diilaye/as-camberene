@@ -1,14 +1,49 @@
 import React, { useMemo, useState } from 'react';
-import { CalendarDays, Plus, Search, X } from 'lucide-react';
+import { CalendarDays, Plus, Search, Trash2, X } from 'lucide-react';
 import useEditableResource from '../../hooks/useEditableResource';
+import { useTeamMembers } from '../../hooks/useContent';
 import { matches as matchesApi, MatchRecord } from '../../services/site/content.service';
 import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
 import ImageField from '../../components/admin/ImageField';
-import { MATCH_STATUSES, MATCH_VENUES, MatchStatus, MatchVenue } from '../../types';
+import {
+  MATCH_STATUSES,
+  MATCH_VENUES,
+  MatchScorer,
+  MatchStatus,
+  MatchVenue,
+  ScorerSide,
+} from '../../types';
 import { handleImageError } from '../../lib/imagePlaceholder';
 
 /** Le jour même, au format que `<input type="date">` attend. */
 const today = (): string => new Date().toISOString().slice(0, 10);
+
+/**
+ * Une ligne de la feuille des buteurs, en cours de saisie.
+ *
+ * `minute` est une chaîne et non un nombre : c'est ce que rend un champ de
+ * saisie, et le convertir à chaque frappe empêcherait d'effacer la valeur pour
+ * la retaper. La conversion attend l'envoi.
+ *
+ * `uid` n'est jamais enregistré. Il sert de clé React, que l'indice de la ligne
+ * ne peut pas tenir : supprimer un buteur du milieu décale tous les suivants,
+ * et React recyclerait les champs de saisie sur les mauvaises lignes.
+ */
+interface ScorerDraft {
+  uid: string;
+  name: string;
+  minute: string;
+  side: ScorerSide;
+}
+
+let scorerUid = 0;
+
+const newScorer = (): ScorerDraft => ({
+  uid: `scorer-${(scorerUid += 1)}`,
+  name: '',
+  minute: '',
+  side: 'club',
+});
 
 const EMPTY_FORM = {
   opponent: '',
@@ -20,6 +55,7 @@ const EMPTY_FORM = {
   image: '',
   scoreHome: '',
   scoreAway: '',
+  scorers: [] as ScorerDraft[],
 };
 
 const formatDate = (value: string): string =>
@@ -52,6 +88,12 @@ const STATUS_STYLES: Record<MatchStatus, string> = {
  * à l'extérieur, les buts de Cambérène sont ceux de l'équipe visiteuse. C'est
  * la convention des données d'origine, et le formulaire l'affiche en toutes
  * lettres plutôt que de laisser deviner.
+ *
+ * Les buteurs accompagnent le score, sans le commander : le club saisit le
+ * résultat le soir du match et la feuille quand il l'a. Un total de buts qui
+ * ne retombe pas sur le score est donc signalé, jamais refusé — bloquer
+ * l'enregistrement ferait perdre la saisie déjà faite pour un renseignement
+ * que le club n'a pas encore.
  */
 const CalendrierAdmin: React.FC = () => {
   const {
@@ -65,6 +107,23 @@ const CalendrierAdmin: React.FC = () => {
     update,
     remove,
   } = useEditableResource<MatchRecord>(matchesApi, { sort: 'date time' });
+
+  /*
+    Le calendrier est celui de l'équipe première : c'est son effectif que les
+    suggestions proposent. Elles ne ferment rien — le champ reste libre, pour
+    le buteur adverse comme pour le joueur dont la fiche n'est pas encore
+    saisie.
+  */
+  const { data: roster } = useTeamMembers('equipe-a');
+
+  const playerNames = useMemo(
+    () =>
+      roster
+        .filter((member) => member.kind === 'player')
+        .map((member) => member.name)
+        .sort((a, b) => a.localeCompare(b, 'fr')),
+    [roster]
+  );
 
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -87,7 +146,7 @@ const CalendrierAdmin: React.FC = () => {
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ ...EMPTY_FORM, date: today() });
+    setForm({ ...EMPTY_FORM, date: today(), scorers: [] });
     setModalOpen(true);
   };
 
@@ -103,9 +162,63 @@ const CalendrierAdmin: React.FC = () => {
       image: match.image ?? '',
       scoreHome: match.result ? String(match.result.home) : '',
       scoreAway: match.result ? String(match.result.away) : '',
+      scorers: (match.scorers ?? []).map((scorer) => ({
+        uid: `scorer-${(scorerUid += 1)}`,
+        name: scorer.name,
+        // 0 code la minute inconnue ; le champ la montre vide, comme elle a
+        // été laissée.
+        minute: scorer.minute ? String(scorer.minute) : '',
+        side: scorer.side,
+      })),
     });
     setModalOpen(true);
   };
+
+  const addScorer = () =>
+    setForm((f) => ({ ...f, scorers: [...f.scorers, newScorer()] }));
+
+  const updateScorer = (uid: string, patch: Partial<ScorerDraft>) =>
+    setForm((f) => ({
+      ...f,
+      scorers: f.scorers.map((scorer) => (scorer.uid === uid ? { ...scorer, ...patch } : scorer)),
+    }));
+
+  const removeScorer = (uid: string) =>
+    setForm((f) => ({ ...f, scorers: f.scorers.filter((scorer) => scorer.uid !== uid) }));
+
+  /** Fiche de l'effectif portant ce nom, à la casse et aux espaces près. */
+  const findPlayerId = (name: string): string | null => {
+    const needle = name.trim().toLowerCase();
+    return roster.find((member) => member.name.trim().toLowerCase() === needle)?.id ?? null;
+  };
+
+  /*
+    Le score dit combien de buts chaque camp a marqués, la feuille combien on
+    en a saisi. Les deux se rapprochent ici pour signaler l'écart : c'est le
+    genre d'oubli qu'on ne voit pas en relisant sa propre saisie.
+
+    `venue` fait la traduction : le score suit l'affiche, la feuille suit les
+    équipes. À l'extérieur, les buts du club sont ceux de l'équipe visiteuse.
+  */
+  const scoreCheck = useMemo(() => {
+    if (form.status !== 'Terminé' || form.scoreHome === '' || form.scoreAway === '') return null;
+
+    const home = Number(form.scoreHome);
+    const away = Number(form.scoreAway);
+    const named = form.scorers.filter((scorer) => scorer.name.trim() !== '');
+
+    const expected = { club: form.venue === 'Domicile' ? home : away, opponent: form.venue === 'Domicile' ? away : home };
+    const saisis = {
+      club: named.filter((scorer) => scorer.side === 'club').length,
+      opponent: named.filter((scorer) => scorer.side === 'opponent').length,
+    };
+
+    return {
+      ...saisis,
+      expected,
+      complete: saisis.club === expected.club && saisis.opponent === expected.opponent,
+    };
+  }, [form.status, form.scoreHome, form.scoreAway, form.venue, form.scorers]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -118,6 +231,31 @@ const CalendrierAdmin: React.FC = () => {
     const hasScore =
       form.status === 'Terminé' && form.scoreHome !== '' && form.scoreAway !== '';
 
+    /*
+      Les buteurs suivent le score : ils ne valent que pour une rencontre
+      jouée, et une liste vide part explicitement pour effacer celle d'un match
+      qu'on remet « À venir ».
+
+      Une ligne sans nom est abandonnée plutôt que refusée : c'est le « Ajouter
+      un buteur » de trop, pas une saisie à corriger. Les buts partent rangés
+      par minute, celles qu'on n'a pas notées en dernier — la feuille se relit
+      dans l'ordre du match, quel que soit l'ordre de saisie.
+    */
+    const scorers: MatchScorer[] =
+      form.status === 'Terminé'
+        ? form.scorers
+            .filter((scorer) => scorer.name.trim() !== '')
+            .map((scorer) => ({
+              name: scorer.name.trim(),
+              minute: Number(scorer.minute) || 0,
+              side: scorer.side,
+              // Le lien vers la fiche ne tient qu'au nom : le champ reste
+              // libre, et un buteur adverse n'a pas de fiche.
+              player: scorer.side === 'club' ? findPlayerId(scorer.name) : null,
+            }))
+            .sort((a, b) => (a.minute || Infinity) - (b.minute || Infinity))
+        : [];
+
     const payload = {
       opponent: form.opponent,
       date: form.date,
@@ -129,6 +267,7 @@ const CalendrierAdmin: React.FC = () => {
       result: hasScore
         ? { home: Number(form.scoreHome), away: Number(form.scoreAway) }
         : null,
+      scorers,
     };
 
     const saved = editingId ? await update(editingId, payload) : await create(payload);
@@ -142,6 +281,10 @@ const CalendrierAdmin: React.FC = () => {
 
   const field =
     'w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none';
+
+  // Même champ, resserré : une ligne de buteur en tient trois de front.
+  const rowField =
+    'w-full min-w-0 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white focus:border-club-yellow outline-none';
 
   return (
     <div>
@@ -235,6 +378,16 @@ const CalendrierAdmin: React.FC = () => {
                       </span>
                     ) : (
                       <span className="text-white/30">—</span>
+                    )}
+                    {/* Les buteurs du club sous le score : ce qu'il reste à
+                        compléter se voit sans ouvrir chaque rencontre. */}
+                    {(match.scorers ?? []).some((scorer) => scorer.side === 'club') && (
+                      <p className="mt-1 max-w-[12rem] truncate text-[11px] text-white/40">
+                        {(match.scorers ?? [])
+                          .filter((scorer) => scorer.side === 'club')
+                          .map((scorer) => (scorer.minute ? `${scorer.name} ${scorer.minute}’` : scorer.name))
+                          .join(' · ')}
+                      </p>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -432,6 +585,112 @@ const CalendrierAdmin: React.FC = () => {
                   <p className="mt-2 text-[11px] text-white/40">
                     Laisser vide tant que le score n’est pas connu.
                   </p>
+                </div>
+              )}
+
+              {/* Feuille des buteurs — elle n'a de sens qu'avec un score. */}
+              {form.status === 'Terminé' && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-white/60">Buteurs</p>
+                    <button
+                      type="button"
+                      onClick={addScorer}
+                      className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-[11px] text-white hover:bg-white/20"
+                    >
+                      <Plus size={12} /> Ajouter un buteur
+                    </button>
+                  </div>
+
+                  {form.scorers.length === 0 ? (
+                    <p className="text-[11px] text-white/40">
+                      Aucun buteur saisi — le score reste affiché seul.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {form.scorers.map((scorer) => (
+                        <div
+                          key={scorer.uid}
+                          className="grid grid-cols-[3.25rem_minmax(0,1fr)_6.5rem_1.5rem] items-center gap-2"
+                        >
+                          <input
+                            type="number"
+                            min={0}
+                            max={130}
+                            value={scorer.minute}
+                            onChange={(event) =>
+                              updateScorer(scorer.uid, { minute: event.target.value })
+                            }
+                            placeholder="min"
+                            aria-label="Minute du but"
+                            className={rowField}
+                          />
+                          <input
+                            value={scorer.name}
+                            onChange={(event) =>
+                              updateScorer(scorer.uid, { name: event.target.value })
+                            }
+                            /*
+                              Les suggestions ne valent que pour le club : la
+                              liste de l'adversaire n'existe nulle part, et un
+                              nom de Cambérène proposé en face serait une
+                              erreur offerte d'un clic.
+                            */
+                            list={scorer.side === 'club' ? 'match-scorer-players' : undefined}
+                            placeholder="Nom du buteur"
+                            aria-label="Nom du buteur"
+                            className={rowField}
+                          />
+                          <select
+                            value={scorer.side}
+                            onChange={(event) =>
+                              updateScorer(scorer.uid, { side: event.target.value as ScorerSide })
+                            }
+                            aria-label="Équipe du buteur"
+                            className={rowField}
+                          >
+                            <option value="club" className="bg-graphite">Cambérène</option>
+                            <option value="opponent" className="bg-graphite">
+                              {form.opponent.trim() || 'Adversaire'}
+                            </option>
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => removeScorer(scorer.uid)}
+                            aria-label={`Retirer ${scorer.name.trim() || 'ce buteur'}`}
+                            className="text-white/40 hover:text-red-300"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/*
+                    Une seule liste pour toutes les lignes : les suggestions
+                    sont les mêmes, et la répéter par buteur multiplierait le
+                    même effectif dans la page.
+                  */}
+                  <datalist id="match-scorer-players">
+                    {playerNames.map((name) => (
+                      <option key={name} value={name} />
+                    ))}
+                  </datalist>
+
+                  {scoreCheck && !scoreCheck.complete && (
+                    <p className="mt-3 text-[11px] text-club-yellow/80">
+                      {scoreCheck.club}/{scoreCheck.expected.club} but
+                      {scoreCheck.expected.club > 1 ? 's' : ''} de Cambérène et{' '}
+                      {scoreCheck.opponent}/{scoreCheck.expected.opponent} de l’adversaire saisis.
+                      La feuille peut rester incomplète : elle s’enregistre telle quelle.
+                    </p>
+                  )}
+                  {scoreCheck?.complete && form.scorers.length > 0 && (
+                    <p className="mt-3 text-[11px] text-green-300/80">
+                      Feuille complète : tous les buts du score sont attribués.
+                    </p>
+                  )}
                 </div>
               )}
 

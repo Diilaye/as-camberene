@@ -23,6 +23,26 @@ export type MatchVenue = (typeof MATCH_VENUES)[number];
 export const MATCH_STATUSES = ['À venir', 'En cours', 'Terminé'] as const;
 export type MatchStatus = (typeof MATCH_STATUSES)[number];
 
+/** Camp du buteur : l'équipe du club, ou celle d'en face. */
+export const SCORER_SIDES = ['club', 'opponent'] as const;
+export type ScorerSide = (typeof SCORER_SIDES)[number];
+
+/**
+ * Un but de la rencontre.
+ *
+ * `name` est toujours renseigné, `player` seulement quand le buteur est une
+ * fiche de l'effectif. Le nom est donc recopié plutôt que lu à travers la
+ * référence : un buteur adverse n'a pas de fiche, et un joueur retiré de
+ * l'effectif ne doit pas effacer le but qu'il a marqué.
+ */
+export interface IMatchScorer {
+  player: mongoose.Types.ObjectId | null;
+  name: string;
+  /** Minute du but ; 0 quand le club ne l'a pas notée. */
+  minute: number;
+  side: ScorerSide;
+}
+
 export interface IMatch extends Document {
   _id: mongoose.Types.ObjectId;
   opponent: string;
@@ -42,6 +62,15 @@ export interface IMatch extends Document {
   result?: { home: number; away: number };
   status: MatchStatus;
   /**
+   * Buteurs de la rencontre, les deux camps confondus.
+   *
+   * À côté du score et non à sa place : le club saisit d'abord un résultat, et
+   * complète la feuille de match quand il l'a. Rien n'impose que les buts
+   * saisis totalisent le score — une liste incomplète reste plus utile
+   * qu'absente, et l'administration signale l'écart sans le refuser.
+   */
+  scorers: IMatchScorer[];
+  /**
    * Affiche de la rencontre, ou photo d'après-match.
    *
    * Facultative : sans elle, les cartes du site gardent leur mise en page
@@ -49,6 +78,20 @@ export interface IMatch extends Document {
    */
   image: string;
 }
+
+/*
+  `_id: false` : un but n'a pas d'existence propre, il n'est jamais adressé ni
+  modifié seul. La liste se réenregistre entière à chaque édition.
+*/
+const scorerSchema = new Schema<IMatchScorer>(
+  {
+    player: { type: Schema.Types.ObjectId, ref: 'Player', default: null },
+    name: { type: String, required: true, trim: true, maxlength: 150 },
+    minute: { type: Number, default: 0, min: 0, max: 130 },
+    side: { type: String, enum: SCORER_SIDES, default: 'club' },
+  },
+  { _id: false }
+);
 
 const matchSchema = new Schema<IMatch>(
   {
@@ -81,6 +124,13 @@ const matchSchema = new Schema<IMatch>(
       _id: false,
     },
     status: { type: String, enum: MATCH_STATUSES, default: 'À venir', index: true },
+    scorers: {
+      type: [scorerSchema],
+      default: [],
+      // Une feuille de match ne dépasse pas cette longueur ; la borne est là
+      // contre une saisie qui part en boucle, pas contre un match prolifique.
+      validate: [(value: IMatchScorer[]) => value.length <= 30, 'Trop de buteurs saisis'],
+    },
     image: { type: String, maxlength: 500, default: '' },
   },
   {
