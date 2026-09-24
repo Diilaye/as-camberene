@@ -25,6 +25,7 @@ export const PERMISSIONS = [
   'hero:write',
   'matches:write',
   'gallery:write',
+  'settings:write',
   'comments:moderate',
   'media:upload',
 ] as const;
@@ -48,6 +49,7 @@ const MATRIX: Record<UserRole, Permission[]> = {
     'players:write',
     'hero:write',
     'matches:write',
+    'settings:write',
   ],
   journalist: [...EDITORIAL],
   'shop-admin': ['products:write', 'orders:manage', 'media:upload'],

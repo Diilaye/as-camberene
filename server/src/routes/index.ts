@@ -17,6 +17,7 @@ import Match from '../models/Match.model';
 import Team from '../models/Team.model';
 import GalleryItem from '../models/GalleryItem.model';
 import { buildResourceRouter } from '../lib/resource';
+import { syncMatchStats } from '../lib/matchStats';
 import {
   articlePatchSchema,
   articleSchema,
@@ -44,6 +45,8 @@ import commentRoutes from './comments.routes';
 import uploadRoutes from './uploads.routes';
 import ticketRoutes from './tickets.routes';
 import shareRoutes from './share.routes';
+import settingsRoutes from './settings.routes';
+import playerOfMonthRoutes from './playerOfMonth.routes';
 
 const router = Router();
 
@@ -177,6 +180,8 @@ router.use(
     // Tout le calendrier est public : une rencontre n'a pas de brouillon.
     searchable: ['opponent', 'competition'],
     filters: ['status', 'venue', 'competition'],
+    // Buteurs et passeurs du club : leurs buts et passes vont sur leur fiche.
+    afterWrite: (before, after) => syncMatchStats(before, after),
   })
 );
 
@@ -201,6 +206,12 @@ router.use('/orders', orderRoutes);
 
 // Billetterie : réservation ouverte au public, suivi réservé au club.
 router.use('/tickets', ticketRoutes);
+
+// Textes et réglages du site hors rubriques : un seul document.
+router.use('/settings', settingsRoutes);
+
+// Joueur du mois : nommés par le club, élus par les supporters connectés.
+router.use('/player-of-month', playerOfMonthRoutes);
 
 // Aperçus de partage : lus par les robots des réseaux, jamais par le site.
 router.use('/share', shareRoutes);

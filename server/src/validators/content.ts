@@ -40,6 +40,8 @@ export const articleSchema = Joi.object({
   content: Joi.string().allow('').max(50000).default(''),
   excerpt: Joi.string().allow('').max(1000).default(''),
   image: Joi.string().allow('').max(500).default(''),
+  // Deux pourcentages, horizontal puis vertical : « 50% 20% » garde le haut.
+  imagePosition: Joi.string().pattern(/^\d{1,3}% \d{1,3}%$/).default('50% 50%'),
   category: Joi.string().valid(...ARTICLE_CATEGORIES).default('Club'),
   publishedAt: Joi.date().default(() => new Date()),
   author: Joi.string().trim().max(120).default('ASC Cambérène'),
@@ -146,6 +148,8 @@ export const matchSchema = Joi.object({
         name: Joi.string().trim().max(150).required(),
         minute: Joi.number().integer().min(0).max(130).default(0),
         side: Joi.string().valid(...SCORER_SIDES).default('club'),
+        assistName: Joi.string().trim().allow('').max(150).default(''),
+        assistPlayer: Joi.string().hex().length(24).allow(null).empty('').default(null),
       })
     )
     .max(30)

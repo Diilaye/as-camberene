@@ -253,6 +253,11 @@
       linear-gradient(rgba(24, 25, 28, 0), rgba(24, 25, 28, 0.95) 99%);
   }
 
+  /* Voile allégé : la photo reste lisible, seul le bas s'assombrit sous le titre. */
+  .page-hero--soft::before {
+    background: linear-gradient(rgba(24, 25, 28, 0) 35%, rgba(24, 25, 28, 0.85) 100%);
+  }
+
   .page-hero__title {
     @apply text-4xl md:text-6xl font-extrabold uppercase text-white;
   }

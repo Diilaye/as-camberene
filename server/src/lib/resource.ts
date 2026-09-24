@@ -43,6 +43,13 @@ export interface ResourceOptions<T> {
   searchable?: string[];
   /** Filtres d'égalité simples acceptés en query. */
   filters?: string[];
+  /**
+   * Appelé après chaque écriture réussie, avec l'élément avant et après
+   * (`null` à la création pour l'un, à la suppression pour l'autre). Sert aux
+   * ressources dont l'écriture a des conséquences ailleurs — une feuille de
+   * match qui compte des buts aux joueurs.
+   */
+  afterWrite?: (before: T | null, after: T | null) => Promise<void>;
 }
 
 const MAX_LIMIT = 100;
@@ -113,6 +120,7 @@ export const buildResourceRouter = <T>(options: ResourceOptions<T>): Router => {
     handler(async (req, res) => {
       const value = await options.createSchema.validateAsync(req.body, { stripUnknown: true });
       const created = await model.create(value);
+      await options.afterWrite?.(null, created.toObject() as T);
       res.status(201).json({ success: true, data: created });
     })
   );
@@ -124,6 +132,9 @@ export const buildResourceRouter = <T>(options: ResourceOptions<T>): Router => {
     handler(async (req, res) => {
       const value = await options.updateSchema.validateAsync(req.body, { stripUnknown: true });
 
+      // L'état d'avant n'est lu que si quelqu'un en a besoin.
+      const before = options.afterWrite ? await model.findById(req.params.id).lean() : null;
+
       // `runValidators` : sans lui, une mise à jour contourne les contraintes du
       // schéma que la création respecte.
       const updated = await model.findByIdAndUpdate(req.params.id, value, {
@@ -132,6 +143,7 @@ export const buildResourceRouter = <T>(options: ResourceOptions<T>): Router => {
       });
 
       if (!updated) throw notFound();
+      await options.afterWrite?.(before as T | null, updated.toObject() as T);
       res.json({ success: true, data: updated });
     })
   );
@@ -143,6 +155,7 @@ export const buildResourceRouter = <T>(options: ResourceOptions<T>): Router => {
     handler(async (req, res) => {
       const deleted = await model.findByIdAndDelete(req.params.id);
       if (!deleted) throw notFound();
+      await options.afterWrite?.(deleted.toObject() as T, null);
       res.json({ success: true, message: 'Supprimé' });
     })
   );

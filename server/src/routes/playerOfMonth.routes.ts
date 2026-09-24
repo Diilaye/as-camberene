@@ -1,0 +1,202 @@
+/**
+ * Joueur du mois : élection publique, dépouillement réservé au club.
+ *
+ * Le public voit les nommés et, une fois l'élection close, le vainqueur. Les
+ * décomptes ne sortent que vers l'administration : afficher le classement en
+ * cours ferait voter pour le favori plutôt que pour son joueur.
+ */
+
+import { Router } from 'express';
+import mongoose from 'mongoose';
+import PlayerOfMonth, { PlayerOfMonthVote } from '../models/PlayerOfMonth.model';
+import Player from '../models/Player.model';
+import { HttpError, handler, notFound } from '../lib/http';
+import { authenticate, optionalAuth, requirePermission } from '../middlewares/auth';
+import { createPotmSchema, updatePotmSchema, voteSchema } from '../validators/playerOfMonth';
+
+const router = Router();
+const requireManage = requirePermission('players:write');
+
+const NOMINEE_FIELDS = 'name photo number line position team';
+
+/** Votes par joueur, du plus voté au moins voté. */
+const countVotes = async (pollId: mongoose.Types.ObjectId) => {
+  const rows = await PlayerOfMonthVote.aggregate<{ _id: mongoose.Types.ObjectId; votes: number }>([
+    { $match: { poll: pollId } },
+    { $group: { _id: '$player', votes: { $sum: 1 } } },
+  ]);
+  return new Map(rows.map((row) => [String(row._id), row.votes]));
+};
+
+const shapeNominee = (player: { _id: unknown; name?: string; photo?: string; number?: number; line?: string; position?: string }) => ({
+  id: String(player._id),
+  name: player.name ?? '',
+  photo: player.photo ?? '',
+  number: player.number ?? 0,
+  line: player.line ?? '',
+  position: player.position ?? '',
+});
+
+/** Ouvrir une élection ferme les autres : il n'y en a qu'une à la fois. */
+const closeOthers = (keepId: mongoose.Types.ObjectId) =>
+  PlayerOfMonth.updateMany({ _id: { $ne: keepId }, status: 'open' }, { status: 'closed' });
+
+const assertNomineesExist = async (ids: string[]) => {
+  const found = await Player.countDocuments({ _id: { $in: ids }, kind: 'player' });
+  if (found !== ids.length) throw new HttpError(400, 'Un joueur nommé ne fait pas partie de l’effectif');
+};
+
+// --------------------------------------------------------------------------
+// Public
+// --------------------------------------------------------------------------
+
+/**
+ * L'élection à montrer : celle qui est ouverte, sinon la dernière close.
+ * `myVote` dit au supporter connecté pour qui il a voté.
+ */
+router.get(
+  '/current',
+  optionalAuth,
+  handler(async (req, res) => {
+    const poll =
+      (await PlayerOfMonth.findOne({ status: 'open' }).sort('-month').populate('nominees', NOMINEE_FIELDS).lean()) ??
+      (await PlayerOfMonth.findOne({ status: 'closed' }).sort('-month').populate('nominees', NOMINEE_FIELDS).lean());
+
+    if (!poll) return res.json({ success: true, data: null });
+
+    const nominees = (poll.nominees as unknown as Parameters<typeof shapeNominee>[0][]).filter(Boolean).map(shapeNominee);
+
+    let myVote: string | null = null;
+    if (req.auth) {
+      const vote = await PlayerOfMonthVote.findOne({ poll: poll._id, user: req.auth.userId }).lean();
+      myVote = vote ? String(vote.player) : null;
+    }
+
+    // Le vainqueur n'est révélé qu'à la clôture.
+    let winner: string | null = null;
+    if (poll.status === 'closed') {
+      const counts = await countVotes(poll._id);
+      const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+      winner = best ? best[0] : null;
+    }
+
+    res.json({
+      success: true,
+      data: { id: String(poll._id), month: poll.month, title: poll.title, status: poll.status, nominees, myVote, winner },
+    });
+  })
+);
+
+router.post(
+  '/:id/vote',
+  authenticate,
+  handler(async (req, res) => {
+    const { player } = await voteSchema.validateAsync(req.body);
+    if (!mongoose.isValidObjectId(req.params.id)) throw notFound();
+
+    const poll = await PlayerOfMonth.findById(req.params.id).lean();
+    if (!poll) throw notFound('Élection introuvable');
+    if (poll.status !== 'open') throw new HttpError(409, 'Le vote est clos');
+    if (!poll.nominees.some((id) => String(id) === player)) {
+      throw new HttpError(400, 'Ce joueur n’est pas nommé ce mois-ci');
+    }
+
+    try {
+      await PlayerOfMonthVote.create({ poll: poll._id, player, user: req.auth!.userId });
+    } catch (error) {
+      // Index unique (poll, user) : le second vote d'un même compte.
+      if ((error as { code?: number }).code === 11000) throw new HttpError(409, 'Vous avez déjà voté ce mois-ci');
+      throw error;
+    }
+
+    res.status(201).json({ success: true, data: { myVote: player } });
+  })
+);
+
+// --------------------------------------------------------------------------
+// Administration
+// --------------------------------------------------------------------------
+
+/** Toutes les élections, avec leur dépouillement. */
+router.get(
+  '/',
+  authenticate,
+  requireManage,
+  handler(async (_req, res) => {
+    const polls = await PlayerOfMonth.find().sort('-month').populate('nominees', NOMINEE_FIELDS).lean();
+
+    const data = await Promise.all(
+      polls.map(async (poll) => {
+        const counts = await countVotes(poll._id);
+        const results = (poll.nominees as unknown as Parameters<typeof shapeNominee>[0][])
+          .filter(Boolean)
+          .map((nominee) => ({ ...shapeNominee(nominee), votes: counts.get(String(nominee._id)) ?? 0 }))
+          .sort((a, b) => b.votes - a.votes || a.name.localeCompare(b.name));
+        return {
+          id: String(poll._id),
+          month: poll.month,
+          title: poll.title,
+          status: poll.status,
+          totalVotes: results.reduce((sum, row) => sum + row.votes, 0),
+          results,
+        };
+      })
+    );
+
+    res.json({ success: true, data });
+  })
+);
+
+router.post(
+  '/',
+  authenticate,
+  requireManage,
+  handler(async (req, res) => {
+    const value = await createPotmSchema.validateAsync(req.body, { stripUnknown: true });
+    await assertNomineesExist(value.nominees);
+    if (await PlayerOfMonth.exists({ month: value.month })) {
+      throw new HttpError(409, 'Une élection existe déjà pour ce mois');
+    }
+    const poll = await PlayerOfMonth.create(value);
+    if (poll.status === 'open') await closeOthers(poll._id);
+    res.status(201).json({ success: true, data: { id: String(poll._id) } });
+  })
+);
+
+router.put(
+  '/:id',
+  authenticate,
+  requireManage,
+  handler(async (req, res) => {
+    const value = await updatePotmSchema.validateAsync(req.body, { stripUnknown: true });
+    if (!mongoose.isValidObjectId(req.params.id)) throw notFound();
+    if (value.nominees) await assertNomineesExist(value.nominees);
+
+    const poll = await PlayerOfMonth.findByIdAndUpdate(req.params.id, value, { new: true, runValidators: true });
+    if (!poll) throw notFound('Élection introuvable');
+
+    // Un joueur retiré de la liste emporte ses votes : ils ne désignent plus
+    // personne, et leurs auteurs peuvent revoter.
+    if (value.nominees) {
+      await PlayerOfMonthVote.deleteMany({ poll: poll._id, player: { $nin: value.nominees } });
+    }
+    if (poll.status === 'open') await closeOthers(poll._id);
+
+    res.json({ success: true, data: { id: String(poll._id) } });
+  })
+);
+
+router.delete(
+  '/:id',
+  authenticate,
+  requireManage,
+  handler(async (req, res) => {
+    if (!mongoose.isValidObjectId(req.params.id)) throw notFound();
+    const poll = await PlayerOfMonth.findByIdAndDelete(req.params.id);
+    if (!poll) throw notFound('Élection introuvable');
+    await PlayerOfMonthVote.deleteMany({ poll: poll._id });
+    res.json({ success: true, message: 'Supprimé' });
+  })
+);
+
+export default router;

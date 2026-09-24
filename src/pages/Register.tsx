@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Lock, Mail, User } from 'lucide-react';
 import { authErrorMessage, useAuth } from '../hooks/useAuth';
 import AuthLayout from '../components/ui/AuthLayout';
@@ -8,6 +8,8 @@ const TEAMS = ['Equipe A', 'U19', 'U17', 'U15', 'U12'];
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  // Venu d'une page qui demandait un compte (le vote du joueur du mois) : on l'y ramène.
+  const location = useLocation();
   const { register } = useAuth();
 
   const [name, setName] = useState('');
@@ -23,7 +25,7 @@ const Register: React.FC = () => {
     setLoading(true);
     try {
       await register({ name, email, password, favorite });
-      navigate('/', { replace: true });
+      navigate((location.state as { from?: string } | null)?.from ?? '/', { replace: true });
     } catch (cause) {
       // Le serveur dit précisément ce qui cloche — email déjà pris, mot de
       // passe trop court : autant le montrer plutôt qu'un message générique.

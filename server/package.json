@@ -15,7 +15,8 @@
     "create:admin": "node scripts/run.js create-user --role admin",
     "create:user": "node scripts/run.js create-user",
     "bootstrap:admins": "node scripts/run.js bootstrap-admins",
-    "seed": "node scripts/run.js seed-site"
+    "seed": "node scripts/run.js seed-site",
+    "recount:stats": "node scripts/run.js recount-stats"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

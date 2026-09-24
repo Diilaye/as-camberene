@@ -1,20 +1,37 @@
 import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { useArticles } from '../hooks/useContent';
 import { ARTICLE_CATEGORIES } from '../types';
 import ArticleCard from '../components/ui/ArticleCard';
 import PageHero from '../components/ui/PageHero';
+import NewsTicker from '../components/ui/NewsTicker';
+import PlayerOfMonthVote from '../components/PlayerOfMonthVote';
 
-const FILTERS = ['Toutes', ...ARTICLE_CATEGORIES] as const;
+/** Onglet du vote, rangé après les rubriques d'articles. */
+const POTM_TAB = 'Joueur du mois';
+const POTM_PARAM = 'joueur-du-mois';
+
+const FILTERS = ['Toutes', ...ARTICLE_CATEGORIES, POTM_TAB] as const;
 
 const News: React.FC = () => {
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState<string>('Toutes');
+  // L'onglet du vote se lit dans l'adresse : après s'être connecté pour voter,
+  // le supporter revient directement dessus.
+  const [params, setParams] = useSearchParams();
+  const [category, setCategoryState] = useState<string>(params.get('onglet') === POTM_PARAM ? POTM_TAB : 'Toutes');
+  const setCategory = (item: string) => {
+    setCategoryState(item);
+    setParams(item === POTM_TAB ? { onglet: POTM_PARAM } : {}, { replace: true });
+  };
+  const isPotm = category === POTM_TAB;
   const { data: articles } = useArticles();
 
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase();
+    // Une actualité sans photo ne défile que dans le bandeau : pas de carte.
     return articles.filter((article) => {
+      if (!article.image) return false;
       const matchesCategory = category === 'Toutes' || article.category === category;
       const matchesSearch =
         !needle ||
@@ -52,7 +69,7 @@ const News: React.FC = () => {
             ))}
           </div>
 
-          <div className="relative w-full lg:w-80">
+          <div className={`relative w-full lg:w-80 ${isPotm ? 'invisible' : ''}`}>
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
             <label htmlFor="news-search" className="sr-only">Rechercher un article</label>
             <input
@@ -67,16 +84,21 @@ const News: React.FC = () => {
         </div>
       </section>
 
+      <NewsTicker />
+
       {/* Grille d'articles, au gabarit de carte du site */}
       <section className="band-green py-12">
         <div className="site-container">
-          {filtered.length > 0 ? (
+          {isPotm ? (
+            <PlayerOfMonthVote />
+          ) : filtered.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-5 sm:justify-start">
               {filtered.map((article) => (
                 <ArticleCard
                   key={String(article.id)}
                   to={`/news/${article.id}`}
                   image={article.image}
+                  imagePosition={article.imagePosition}
                   kicker={article.category}
                   title={article.title}
                   date={article.publishedAt}

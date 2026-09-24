@@ -108,7 +108,12 @@ export const useHeroSlides = (): ApiResource<HeroSlide[]> => {
  * seconde à la première demanderait un appel conditionnel, et ferait attendre
  * un aller-retour de plus les visiteurs dont le club n'a rien saisi.
  */
-export const useMatches = (): ApiResource<Match[]> => {
+/**
+ * `withDemo: false` écarte les rencontres de démonstration : le calendrier ne
+ * doit montrer que des matchs réels, sans quoi une base vide afficherait une
+ * saison 2025 entièrement passée, et aucun « prochain match ».
+ */
+export const useMatches = ({ withDemo = true }: { withDemo?: boolean } = {}): ApiResource<Match[]> => {
   const site = useApiResource<MatchRecord[]>(
     (signal) => matchesApi.list({ sort: 'date time' }, signal),
     [],
@@ -119,7 +124,7 @@ export const useMatches = (): ApiResource<Match[]> => {
   // rencontres d'origine, qui sont bien le dernier recours voulu.
   const external = useApiResource<Match[]>(
     (signal) => getMatches({ limit: 50 }, signal).then(toMatches),
-    staticMatches,
+    withDemo ? staticMatches : [],
     { enabled: isFconnectConfigured() }
   );
 

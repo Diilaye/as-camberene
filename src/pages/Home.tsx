@@ -5,17 +5,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Facebook,
-  Instagram,
   MapPin,
   Pause,
   Play,
-  Twitter,
   Volume2,
   VolumeX,
-  Youtube,
 } from 'lucide-react';
-import { partners } from '../data/heroSlides';
 import { useArticles, useHeroSlides, useLegends, useMatches, useProducts } from '../hooks/useContent';
 import { formatCFA } from '../lib/currency';
 import { formatVideoTime, youtubeId } from '../lib/youtube';
@@ -24,26 +19,21 @@ import ArticleCard from '../components/ui/ArticleCard';
 import HeroVideo from '../components/ui/HeroVideo';
 import Rail from '../components/ui/Rail';
 import SectionHeader from '../components/ui/SectionHeader';
+import NewsTicker from '../components/ui/NewsTicker';
 import TeamGallery from '../components/TeamGallery';
-
-const HERO_SOCIALS = [
-  { label: 'Facebook', icon: Facebook, href: 'https://www.facebook.com/p/Asc-camb%C3%A9r%C3%A8ne-officiel-100063673796089/' },
-  { label: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/asc.camberene/' },
-  { label: 'X', icon: Twitter, href: 'https://x.com/asccamberene' },
-  { label: 'YouTube', icon: Youtube, href: 'https://youtube.com/@asccamberene' },
-];
-
-const CLUB_FACTS = [
-  { value: '1965', label: 'Fondation' },
-  { value: '8', label: 'Titres nationaux' },
-  { value: '25K+', label: 'Supporters' },
-  { value: 'L1', label: 'Championnat' },
-];
+import { useSiteSettings } from '../hooks/useSiteSettings';
+import { socialLinks } from '../lib/socials';
+import { settingsImage } from '../services/site/settings.service';
 
 const formatMatchDate = (value: string) =>
   new Date(value).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
 
 const Home: React.FC = () => {
+  // Textes, chiffres et sections affichées : onglet « Contenu du site ».
+  const settings = useSiteSettings();
+  const show = settings.homeSections;
+  const HERO_SOCIALS = socialLinks(settings);
+  const partners = settings.partners.filter((partner) => partner.logo);
   const [slide, setSlide] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [muted, setMuted] = useState(true);
@@ -106,7 +96,9 @@ const Home: React.FC = () => {
     setProgress({ current, duration });
   }, []);
 
-  const { data: articles } = useArticles({ limit: 9 });
+  const { data: allArticles } = useArticles({ limit: 30 });
+  // Une actualité sans photo ne défile que dans le bandeau : pas de carte.
+  const articles = allArticles.filter((article) => article.image).slice(0, 9);
   const { data: products } = useProducts({ limit: 8 });
   const { data: legends } = useLegends({ limit: 8 });
   const { data: matches } = useMatches();
@@ -119,6 +111,7 @@ const Home: React.FC = () => {
       {/* ------------------------------------------------------------------ *
        * Carrousel de tête
        * ------------------------------------------------------------------ */}
+      {show.hero && (
       <section className="relative h-[95vh] min-h-[520px] overflow-hidden bg-graphite xl:h-[56.25vw] xl:max-h-none">
         {slides.map((item, index) => (
           <div
@@ -224,13 +217,13 @@ const Home: React.FC = () => {
               {partners.map((partner) => (
                 <a
                   key={partner.name}
-                  href={partner.href ?? '#'}
+                  href={partner.href || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-1.5 text-center"
                 >
                   <img
-                    src={partner.logo}
+                    src={settingsImage(partner.logo)}
                     alt={partner.name}
                     className="h-[30px] w-auto brightness-0 invert transition-[filter] hover:filter-none"
                   />
@@ -318,13 +311,15 @@ const Home: React.FC = () => {
           )}
         </div>
       </section>
+      )}
 
       {/* ------------------------------------------------------------------ *
        * Centre de match : prochaines rencontres et derniers résultats
        * ------------------------------------------------------------------ */}
+      {show.matchCenter && (
       <section className="band-charcoal border-y border-white/5">
         <div className="site-container py-12">
-          <SectionHeader title="Centre de match" linkLabel="Calendrier" linkTo="/teams" className="mb-8" />
+          <SectionHeader title="Centre de match" linkLabel="Calendrier" linkTo="/calendrier" className="mb-8" />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="min-w-0">
@@ -451,14 +446,17 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* ------------------------------------------------------------------ *
        * Actualités : le rail éditorial, sur la bande du club
        * ------------------------------------------------------------------ */}
+      {show.news && (
       <section className="band-green py-8">
         <div className="site-container">
-          <SectionHeader title="Actualités" linkLabel="Toutes les actualités" linkTo="/news" className="mb-8" />
+          <SectionHeader title="Actualités" linkLabel="Toutes les actualités" linkTo="/news" className="mb-6" />
         </div>
+        <NewsTicker className="mb-6" />
         <div className="site-container">
           <Rail>
             {articles.map((article, index) => (
@@ -466,6 +464,7 @@ const Home: React.FC = () => {
                 key={String(article.id)}
                 to={`/news/${article.id}`}
                 image={article.image}
+                imagePosition={article.imagePosition}
                 kicker={article.category}
                 title={article.title}
                 date={article.publishedAt}
@@ -476,13 +475,15 @@ const Home: React.FC = () => {
           </Rail>
         </div>
       </section>
+      )}
 
       {/* ------------------------------------------------------------------ *
        * Chiffres du club
        * ------------------------------------------------------------------ */}
+      {show.facts && (
       <section className="band-graphite">
         <div className="site-container grid grid-cols-2 gap-6 py-12 md:grid-cols-4">
-          {CLUB_FACTS.map((fact) => (
+          {settings.facts.map((fact) => (
             <div key={fact.label} className="text-center">
               <p className="text-4xl font-extrabold text-club-yellow md:text-5xl">{fact.value}</p>
               <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/50">{fact.label}</p>
@@ -490,10 +491,12 @@ const Home: React.FC = () => {
           ))}
         </div>
       </section>
+      )}
 
       {/* ------------------------------------------------------------------ *
        * Boutique
        * ------------------------------------------------------------------ */}
+      {show.shop && (
       <section className="band-charcoal py-8">
         <div className="site-container">
           <SectionHeader title="Boutique officielle" linkLabel="Toute la collection" linkTo="/shop" className="mb-8" />
@@ -512,13 +515,15 @@ const Home: React.FC = () => {
           </Rail>
         </div>
       </section>
+      )}
 
       {/* ------------------------------------------------------------------ *
        * Bannière image : l'équipe de la saison
        * ------------------------------------------------------------------ */}
+      {show.banner && (
       <section className="relative overflow-hidden">
         <img
-          src="/assets/img/asc-camberene-equipe-2025.webp"
+          src={settingsImage(settings.banner.image)}
           alt="Effectif de l'ASC Cambérène"
           onError={handleImageError}
           className="h-[420px] w-full object-cover md:h-[520px]"
@@ -533,10 +538,10 @@ const Home: React.FC = () => {
         <div className="site-container absolute inset-0 flex flex-col justify-center">
           <div className="max-w-xl">
             <p className="text-shadow-hero text-lg font-bold uppercase text-club-yellow md:text-2xl">
-              Effectif 2025
+              {settings.banner.kicker}
             </p>
             <h2 className="text-shadow-hero mt-2 text-3xl font-extrabold uppercase text-white md:text-5xl">
-              Le groupe qui a ramené le club en Ligue 1
+              {settings.banner.title}
             </h2>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/players" className="btn-yellow">Voir l'effectif</Link>
@@ -545,10 +550,12 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* ------------------------------------------------------------------ *
        * Légendes
        * ------------------------------------------------------------------ */}
+      {show.legends && (
       <section className="band-green py-8">
         <div className="site-container">
           <SectionHeader title="Légendes du club" linkLabel="Hall of Fame" linkTo="/legends" className="mb-8" />
@@ -567,9 +574,12 @@ const Home: React.FC = () => {
           </Rail>
         </div>
       </section>
+      )}
 
       {/* Galerie de l'équipe */}
+      {show.gallery && (
       <TeamGallery />
+      )}
     </div>
   );
 };

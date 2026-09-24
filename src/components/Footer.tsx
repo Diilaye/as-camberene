@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Mail, MapPin, Phone, Twitter, Youtube } from 'lucide-react';
+import { Mail, MapPin, Phone } from 'lucide-react';
+import { useSiteSettings } from '../hooks/useSiteSettings';
+import { socialLinks } from '../lib/socials';
 import ShareButtons from './ui/ShareButtons';
 
 const FOOTER_MENU = [
@@ -40,13 +42,6 @@ const FOOTER_MENU = [
   },
 ];
 
-const SOCIALS = [
-  { label: 'Facebook', icon: Facebook, href: 'https://www.facebook.com/p/Asc-camb%C3%A9r%C3%A8ne-officiel-100063673796089/' },
-  { label: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/asc.camberene/' },
-  { label: 'X', icon: Twitter, href: 'https://x.com/asccamberene' },
-  { label: 'YouTube', icon: Youtube, href: 'https://youtube.com/@asccamberene' },
-];
-
 const POLICY_LINKS = [
   { name: 'Politique de confidentialité', path: '/privacy' },
   { name: "Conditions d'utilisation", path: '/terms' },
@@ -55,6 +50,9 @@ const POLICY_LINKS = [
 ];
 
 const Footer: React.FC = () => {
+  const settings = useSiteSettings();
+  const SOCIALS = socialLinks(settings);
+  const { contact, newsletter } = settings;
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -75,9 +73,9 @@ const Footer: React.FC = () => {
       <section className="band-graphite border-t border-white/5">
         <div className="site-container flex flex-col items-center gap-6 py-14 text-center lg:flex-row lg:justify-between lg:text-left">
           <div>
-            <h2 className="text-2xl font-extrabold uppercase text-white md:text-3xl">Restez informé</h2>
+            <h2 className="text-2xl font-extrabold uppercase text-white md:text-3xl">{newsletter.title}</h2>
             <p className="mt-2 max-w-md text-sm text-white/60">
-              Recevez l'actualité du club, les convocations et les offres de la boutique.
+              {newsletter.text}
             </p>
           </div>
 
@@ -123,18 +121,24 @@ const Footer: React.FC = () => {
 
           {/* Coordonnées du club */}
           <div className="mt-12 grid gap-6 border-t border-white/15 pt-8 text-sm text-white/80 sm:grid-cols-3">
-            <p className="flex items-start gap-3">
-              <MapPin size={18} className="mt-0.5 shrink-0 text-club-yellow" />
-              Stade Municipal de Cambérène<br />Cambérène, Dakar, Sénégal
-            </p>
-            <p className="flex items-center gap-3">
-              <Phone size={18} className="shrink-0 text-club-yellow" />
-              +221 33 123 45 67
-            </p>
-            <p className="flex items-center gap-3">
-              <Mail size={18} className="shrink-0 text-club-yellow" />
-              contact@asccamberene.sn
-            </p>
+            {contact.address && (
+              <p className="flex items-start gap-3 whitespace-pre-line">
+                <MapPin size={18} className="mt-0.5 shrink-0 text-club-yellow" />
+                {contact.address}
+              </p>
+            )}
+            {contact.phone && (
+              <a href={`tel:${contact.phone.replace(/s+/g, '')}`} className="flex items-center gap-3 hover:text-white">
+                <Phone size={18} className="shrink-0 text-club-yellow" />
+                {contact.phone}
+              </a>
+            )}
+            {contact.email && (
+              <a href={`mailto:${contact.email}`} className="flex items-center gap-3 hover:text-white">
+                <Mail size={18} className="shrink-0 text-club-yellow" />
+                {contact.email}
+              </a>
+            )}
           </div>
 
           {/*
@@ -183,8 +187,7 @@ const Footer: React.FC = () => {
       <section className="bg-graphite">
         <div className="site-container flex flex-col gap-4 py-5 md:flex-row md:items-center">
           <p className="text-xs leading-none text-[#808084] md:w-1/2 md:pr-5">
-            © 1965-{new Date().getFullYear()} ASC Cambérène. Tous droits réservés. Club de football sénégalais,
-            fondé en 1965 par le Khalife Seydina El Hadji Abdoulaye Thiaw Laye.
+            © 1965-{new Date().getFullYear()} {settings.footerNote}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-y-1 md:mx-auto">
             {POLICY_LINKS.map((link, index) => (

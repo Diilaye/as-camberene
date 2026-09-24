@@ -24,6 +24,8 @@ export interface IArticle extends Document {
   content: string;
   excerpt: string;
   image: string;
+  /** Point de l'image à garder visible quand elle est recadrée : `object-position` CSS. */
+  imagePosition: string;
   category: ArticleCategory;
   publishedAt: Date;
   author: string;
@@ -55,6 +57,7 @@ const articleSchema = new Schema<IArticle>(
     content: { type: String, default: '', maxlength: 50000 },
     excerpt: { type: String, default: '', maxlength: 1000 },
     image: { type: String, default: '', maxlength: 500 },
+    imagePosition: { type: String, default: '50% 50%', maxlength: 20 },
     category: { type: String, enum: ARTICLE_CATEGORIES, default: 'Club', index: true },
     // Date de parution affichée, distincte de la date de création : un article
     // peut être écrit aujourd'hui et daté d'un match d'il y a trois jours.

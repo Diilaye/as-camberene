@@ -8,6 +8,7 @@ import { useTeamMembers, useTeams } from '../hooks/useContent';
 import { TeamMember } from '../types';
 import PageHero from './ui/PageHero';
 import PlayerCard from './ui/PlayerCard';
+import PlayerStatsTable from './ui/PlayerStatsTable';
 
 interface TeamRosterViewProps {
   teamId: string;
@@ -91,6 +92,8 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
     ? members.length
     : Object.values(sectionsOf(roster)).reduce((total, list) => total + list.length, 0);
   const [activeSection, setActiveSection] = useState<string>('Attaquants');
+  /** Joueurs de l'effectif saisi, sans l'encadrement : ceux qui ont des statistiques. */
+  const players = useMemo(() => members.filter((member) => member.kind === 'player'), [members]);
 
   if (!team) {
     return (
@@ -248,6 +251,16 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
           )}
         </div>
       </section>
+
+      {/* Statistiques des joueurs, saisies dans l'administration */}
+      {players.length > 0 && (
+        <section className="band-graphite py-12">
+          <div className="site-container">
+            <h2 className="section-title mb-8">Statistiques des joueurs</h2>
+            <PlayerStatsTable players={players} />
+          </div>
+        </section>
+      )}
     </div>
   );
 };

@@ -32,6 +32,8 @@ export const PERMISSIONS = [
   'matches:write',
   /** Les photos de la galerie : matchs, entraînements, vie du club. */
   'gallery:write',
+  /** Textes et réglages du site : chiffres du club, bannière, coordonnées, sections de l'accueil. */
+  'settings:write',
   'comments:moderate',
   'media:upload',
 ] as const;
@@ -63,6 +65,7 @@ const MATRIX: Record<UserRole, Permission[]> = {
     'players:write',
     'hero:write',
     'matches:write',
+    'settings:write',
   ],
   journalist: [...EDITORIAL],
   'shop-admin': ['products:write', 'orders:manage', 'media:upload'],

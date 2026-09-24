@@ -34,15 +34,33 @@ interface ScorerDraft {
   name: string;
   minute: string;
   side: ScorerSide;
+  /** Passeur décisif, pour un but du club ; vide s'il n'y en a pas. */
+  assist: string;
 }
 
 let scorerUid = 0;
+
+/**
+ * Dit si un nom saisi correspond à une fiche de l'effectif — la condition pour
+ * que le but ou la passe arrive dans ses statistiques.
+ */
+const StatLink: React.FC<{ name: string; linked: boolean; long?: boolean }> = ({ name, linked, long }) => {
+  if (!name.trim()) return <span />;
+  return linked ? (
+    <span className="text-[10px] text-green-300/80">✓ {long ? 'Compté dans les statistiques du joueur' : 'Compté'}</span>
+  ) : (
+    <span className="text-[10px] text-club-yellow/80" title="Choisissez un nom dans la liste de l'effectif pour qu'il soit compté.">
+      ⚠ {long ? 'Pas dans l’effectif : non compté dans les statistiques' : 'Hors effectif'}
+    </span>
+  );
+};
 
 const newScorer = (): ScorerDraft => ({
   uid: `scorer-${(scorerUid += 1)}`,
   name: '',
   minute: '',
   side: 'club',
+  assist: '',
 });
 
 const EMPTY_FORM = {
@@ -169,6 +187,7 @@ const CalendrierAdmin: React.FC = () => {
         // été laissée.
         minute: scorer.minute ? String(scorer.minute) : '',
         side: scorer.side,
+        assist: scorer.assistName ?? '',
       })),
     });
     setModalOpen(true);
@@ -252,6 +271,10 @@ const CalendrierAdmin: React.FC = () => {
               // Le lien vers la fiche ne tient qu'au nom : le champ reste
               // libre, et un buteur adverse n'a pas de fiche.
               player: scorer.side === 'club' ? findPlayerId(scorer.name) : null,
+              // Le passeur n'a de sens que pour un but du club. Relié à sa
+              // fiche, il reçoit la passe dans ses statistiques.
+              assistName: scorer.side === 'club' ? scorer.assist.trim() : '',
+              assistPlayer: scorer.side === 'club' && scorer.assist.trim() ? findPlayerId(scorer.assist) : null,
             }))
             .sort((a, b) => (a.minute || Infinity) - (b.minute || Infinity))
         : [];
@@ -592,7 +615,7 @@ const CalendrierAdmin: React.FC = () => {
               {form.status === 'Terminé' && (
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <div className="mb-3 flex items-center justify-between gap-3">
-                    <p className="text-white/60">Buteurs</p>
+                    <p className="text-white/60">Buteurs et passeurs</p>
                     <button
                       type="button"
                       onClick={addScorer}
@@ -609,10 +632,8 @@ const CalendrierAdmin: React.FC = () => {
                   ) : (
                     <div className="space-y-2">
                       {form.scorers.map((scorer) => (
-                        <div
-                          key={scorer.uid}
-                          className="grid grid-cols-[3.25rem_minmax(0,1fr)_6.5rem_1.5rem] items-center gap-2"
-                        >
+                        <div key={scorer.uid} className="space-y-1.5 rounded-lg bg-white/[0.02] p-2">
+                        <div className="grid grid-cols-[3.25rem_minmax(0,1fr)_6.5rem_1.5rem] items-center gap-2">
                           <input
                             type="number"
                             min={0}
@@ -662,6 +683,26 @@ const CalendrierAdmin: React.FC = () => {
                           >
                             <Trash2 size={14} />
                           </button>
+                        </div>
+                        {scorer.side === 'club' && (
+                          <div className="grid grid-cols-[3.25rem_minmax(0,1fr)_8.5rem] items-center gap-2">
+                            <span className="text-right text-[10px] uppercase tracking-wide text-white/40">Passe</span>
+                            <input
+                              value={scorer.assist}
+                              onChange={(event) => updateScorer(scorer.uid, { assist: event.target.value })}
+                              list="match-scorer-players"
+                              placeholder="Passeur décisif (facultatif)"
+                              aria-label="Passeur décisif"
+                              className={rowField}
+                            />
+                            <StatLink name={scorer.assist} linked={Boolean(findPlayerId(scorer.assist))} />
+                          </div>
+                        )}
+                        {scorer.side === 'club' && scorer.name.trim() && (
+                          <p className="pl-[3.75rem] text-[10px]">
+                            <StatLink name={scorer.name} linked={Boolean(findPlayerId(scorer.name))} long />
+                          </p>
+                        )}
                         </div>
                       ))}
                     </div>

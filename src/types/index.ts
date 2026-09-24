@@ -122,6 +122,8 @@ export interface Article {
   content: string;
   excerpt: string;
   image: string;
+  /** Point à garder visible au recadrage, en `object-position` CSS. */
+  imagePosition?: string;
   category: ArticleCategory;
   publishedAt: string;
   author: string;
@@ -322,6 +324,9 @@ export interface MatchScorer {
   /** Minute du but ; 0 quand elle n'a pas été notée. */
   minute: number;
   side: ScorerSide;
+  /** Passeur décisif, pour un but du club ; vide s'il n'y en a pas. */
+  assistName?: string;
+  assistPlayer?: string | null;
 }
 
 export interface Match {

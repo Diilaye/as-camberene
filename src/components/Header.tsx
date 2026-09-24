@@ -3,21 +3,19 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   ArrowRight,
   ChevronDown,
-  Facebook,
-  Instagram,
   LayoutDashboard,
   LogOut,
   Search,
   ShoppingCart,
   Ticket,
-  Twitter,
   X,
-  Youtube,
 } from 'lucide-react';
 import Notification from './Notification';
 import { useAuth } from '../hooks/useAuth';
 import { useCart } from '../hooks/useCart';
-import { partners } from '../data/heroSlides';
+import { useSiteSettings } from '../hooks/useSiteSettings';
+import { socialLinks } from '../lib/socials';
+import { settingsImage } from '../services/site/settings.service';
 
 interface NavColumn {
   title: string;
@@ -41,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
         links: [
           { name: 'Équipe A', path: '/equipe-a' },
           { name: 'Effectif', path: '/players' },
+          { name: 'Calendrier', path: '/calendrier' },
           { name: 'Toutes les équipes', path: '/teams' },
         ],
       },
@@ -102,14 +101,10 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export const SOCIALS = [
-  { label: 'Facebook', icon: Facebook, href: 'https://www.facebook.com/p/Asc-camb%C3%A9r%C3%A8ne-officiel-100063673796089/' },
-  { label: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/asc.camberene/' },
-  { label: 'X', icon: Twitter, href: 'https://x.com/asccamberene' },
-  { label: 'YouTube', icon: Youtube, href: 'https://youtube.com/@asccamberene' },
-];
-
 const Header: React.FC = () => {
+  const settings = useSiteSettings();
+  const SOCIALS = socialLinks(settings);
+  const partners = settings.partners.filter((partner) => partner.logo);
   const [fullscreenOpen, setFullscreenOpen] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -206,18 +201,18 @@ const Header: React.FC = () => {
               {partners.map((partner) => (
                 <a
                   key={partner.name}
-                  href={partner.href ?? '#'}
+                  href={partner.href || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-4 items-center"
                 >
-                  <img src={partner.logo} alt={partner.name} className="h-full w-auto brightness-0" />
+                  <img src={settingsImage(partner.logo)} alt={partner.name} className="h-full w-auto brightness-0" />
                 </a>
               ))}
             </>
           ) : (
             <span className="hidden truncate text-[10px] font-bold uppercase tracking-[0.18em] text-black sm:block">
-              Club officiel · Fondé en 1965 · Ligue 2 Sénégal
+              {settings.topBar}
             </span>
           )}
 

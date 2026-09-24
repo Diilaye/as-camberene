@@ -112,7 +112,9 @@ const normalizeComment = (comment: Comment): Comment => ({
 
 const normalizeArticle = (article: ArticleRecord): ArticleRecord => ({
   ...article,
-  image: siteMediaUrl(article.image, 'assets/img/coupe.jpg'),
+  // Pas d'image de remplacement : une actualité sans photo ne passe que dans le
+  // bandeau défilant, et les pages doivent pouvoir la reconnaître.
+  image: siteMediaUrl(article.image),
   // Le backend rend une date ISO complète ; les pages n'affichent que le jour.
   publishedAt: String(article.publishedAt),
   comments: (article.comments ?? []).map(normalizeComment),

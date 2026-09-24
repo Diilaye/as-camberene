@@ -491,6 +491,19 @@ frise) :
 sudo -u www-data npm run seed
 ```
 
+Les buts et passes décisives des joueurs se reportent d'eux-mêmes à chaque
+feuille de match enregistrée. Pour les recompter entièrement à partir des
+matchs terminés — après une reprise de données, ou si des corrections à la main
+les ont décalés :
+
+```bash
+sudo -u www-data npm run recount:stats
+```
+
+Les chiffres saisis à la main dans l'onglet « Statistiques » sont alors
+remplacés par ceux des feuilles de match ; matchs joués et cartons ne changent
+pas.
+
 ---
 
 ## Mises à jour

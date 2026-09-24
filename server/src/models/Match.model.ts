@@ -41,6 +41,12 @@ export interface IMatchScorer {
   /** Minute du but ; 0 quand le club ne l'a pas notée. */
   minute: number;
   side: ScorerSide;
+  /**
+   * Passeur décisif du but, pour un but du club. Même règle que le buteur :
+   * le nom toujours, la fiche quand il en a une.
+   */
+  assistName: string;
+  assistPlayer: mongoose.Types.ObjectId | null;
 }
 
 export interface IMatch extends Document {
@@ -89,6 +95,8 @@ const scorerSchema = new Schema<IMatchScorer>(
     name: { type: String, required: true, trim: true, maxlength: 150 },
     minute: { type: Number, default: 0, min: 0, max: 130 },
     side: { type: String, enum: SCORER_SIDES, default: 'club' },
+    assistName: { type: String, trim: true, maxlength: 150, default: '' },
+    assistPlayer: { type: Schema.Types.ObjectId, ref: 'Player', default: null },
   },
   { _id: false }
 );

@@ -5,6 +5,8 @@ import { handleImageError } from '../../lib/imagePlaceholder';
 interface ArticleCardProps {
   to: string;
   image: string;
+  /** Point à garder visible au recadrage (`object-position`). */
+  imagePosition?: string;
   /** Surtitre en capitales jaunes : rubrique, compétition, catégorie. */
   kicker: string;
   title: string;
@@ -26,10 +28,10 @@ const formatDate = (value: string) =>
  * dégradé. Une carte sur trois passe en paysage pour casser la régularité du
  * rail — c'est le rôle de `wide`, que les rubriques appliquent au rang 3n.
  */
-const ArticleCard: React.FC<ArticleCardProps> = ({ to, image, kicker, title, date, note, wide }) => (
+const ArticleCard: React.FC<ArticleCardProps> = ({ to, image, imagePosition, kicker, title, date, note, wide }) => (
   <Link to={to} className={`card-portrait group ${wide ? 'card-portrait--wide' : ''}`}>
     <div className="card-portrait__media">
-      <img src={image} alt="" loading="lazy" onError={handleImageError} />
+      <img src={image} alt="" loading="lazy" onError={handleImageError} style={imagePosition ? { objectPosition: imagePosition } : undefined} />
     </div>
     <div className="card-portrait__body">
       <span className="card-portrait__kicker">{kicker}</span>

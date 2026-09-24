@@ -116,7 +116,7 @@ const Dashboard: React.FC = () => {
             <a href="/admin/produits" className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/85"><ShoppingBag size={14}/>Produits</a>
           )}
           {can('articles:write') && (
-            <a href="/admin/articles" className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/85"><Newspaper size={14}/>Articles</a>
+            <a href="/admin/articles" className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/85"><Newspaper size={14}/>Actualités</a>
           )}
           {can('users:manage') && (
             <a href="/admin/utilisateurs" className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/85"><Users size={14}/>Comptes</a>

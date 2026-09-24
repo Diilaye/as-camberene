@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
 import Home from './pages/Home';
 import News from './pages/News';
+import Calendrier from './pages/Calendrier';
 import NewsDetail from './pages/NewsDetail';
 import Players from './pages/Players';
 import PlayerDetail from './pages/PlayerDetail';
@@ -45,6 +46,9 @@ import EquipesAdmin from './pages/admin/EquipesAdmin';
 import BilletterieAdmin from './pages/admin/BilletterieAdmin';
 import Commandes from './pages/admin/Commandes';
 import Utilisateurs from './pages/admin/Utilisateurs';
+import StatistiquesAdmin from './pages/admin/StatistiquesAdmin';
+import ContenuSiteAdmin from './pages/admin/ContenuSiteAdmin';
+import JoueurDuMoisAdmin from './pages/admin/JoueurDuMoisAdmin';
 import NotFound from './pages/NotFound';
 import { CartProvider } from './hooks/useCart';
 
@@ -62,6 +66,7 @@ const InnerApp: React.FC = () => {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/calendrier" element={<Calendrier />} />
             <Route path="/news" element={<News />} />
             <Route path="/news/:id" element={<NewsDetail />} />
             <Route path="/players" element={<Players />} />
@@ -100,6 +105,9 @@ const InnerApp: React.FC = () => {
             <Route path="/admin/dashbord" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/equipes" element={<ProtectedRoute permission="players:write"><AdminLayout><EquipesAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/joueurs" element={<ProtectedRoute permission="players:write"><AdminLayout><Joueurs /></AdminLayout></ProtectedRoute>} />
+            <Route path="/admin/contenu" element={<ProtectedRoute permission="settings:write"><AdminLayout><ContenuSiteAdmin /></AdminLayout></ProtectedRoute>} />
+            <Route path="/admin/joueur-du-mois" element={<ProtectedRoute permission="players:write"><AdminLayout><JoueurDuMoisAdmin /></AdminLayout></ProtectedRoute>} />
+            <Route path="/admin/statistiques" element={<ProtectedRoute permission="players:write"><AdminLayout><StatistiquesAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/produits" element={<ProtectedRoute permission="products:write"><AdminLayout><Produits /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/commandes" element={<ProtectedRoute permission="orders:manage"><AdminLayout><Commandes /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/articles" element={<ProtectedRoute permission="articles:write"><AdminLayout><ArticlesAdmin /></AdminLayout></ProtectedRoute>} />

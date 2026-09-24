@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { BarChart3, Users, ShoppingBag, Newspaper, Settings, Menu, Shield, LogOut, User as UserIcon, UserCog, Crown, Landmark, Package, Clapperboard, CalendarDays, Images, Ticket, ChevronLeft } from 'lucide-react';
+import { BarChart3, Users, ShoppingBag, Newspaper, Settings, Menu, Shield, LogOut, User as UserIcon, UserCog, Crown, Landmark, Package, Clapperboard, CalendarDays, Images, Ticket, Trophy, Award, LayoutTemplate, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Permission, ROLE_LABELS } from '../../lib/roles';
 
@@ -13,14 +13,17 @@ import { Permission, ROLE_LABELS } from '../../lib/roles';
  */
 const navItems: { to: string; label: string; icon: React.ReactNode; permission?: Permission }[] = [
   { to: '/admin/dashboard', label: 'Tableau de bord', icon: <BarChart3 size={18} /> },
+  { to: '/admin/contenu', label: 'Contenu du site', icon: <LayoutTemplate size={18} />, permission: 'settings:write' },
   { to: '/admin/carrousel', label: 'Carrousel', icon: <Clapperboard size={18} />, permission: 'hero:write' },
-  { to: '/admin/articles', label: 'Articles', icon: <Newspaper size={18} />, permission: 'articles:write' },
+  { to: '/admin/articles', label: 'Actualités', icon: <Newspaper size={18} />, permission: 'articles:write' },
   { to: '/admin/legendes', label: 'Légendes', icon: <Crown size={18} />, permission: 'legends:write' },
   { to: '/admin/histoire', label: 'Histoire', icon: <Landmark size={18} />, permission: 'history:write' },
   { to: '/admin/produits', label: 'Produits', icon: <ShoppingBag size={18} />, permission: 'products:write' },
   { to: '/admin/commandes', label: 'Commandes', icon: <Package size={18} />, permission: 'orders:manage' },
   { to: '/admin/equipes', label: 'Équipes', icon: <Shield size={18} />, permission: 'players:write' },
   { to: '/admin/joueurs', label: 'Effectif', icon: <Users size={18} />, permission: 'players:write' },
+  { to: '/admin/statistiques', label: 'Statistiques', icon: <Trophy size={18} />, permission: 'players:write' },
+  { to: '/admin/joueur-du-mois', label: 'Joueur du mois', icon: <Award size={18} />, permission: 'players:write' },
   { to: '/admin/calendrier', label: 'Calendrier', icon: <CalendarDays size={18} />, permission: 'matches:write' },
   { to: '/admin/galerie', label: 'Galerie', icon: <Images size={18} />, permission: 'gallery:write' },
   { to: '/admin/billetterie', label: 'Billetterie', icon: <Ticket size={18} />, permission: 'orders:manage' },

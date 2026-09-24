@@ -4,6 +4,7 @@ import useEditableResource from '../../hooks/useEditableResource';
 import { articles as articlesApi, ArticleRecord } from '../../services/site/content.service';
 import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
 import ImageField from '../../components/admin/ImageField';
+import ImagePositionField, { DEFAULT_IMAGE_POSITION } from '../../components/admin/ImagePositionField';
 import { ARTICLE_CATEGORIES } from '../../types';
 
 /**
@@ -32,7 +33,7 @@ const ArticlesAdmin: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: '', category: 'Club', excerpt: '', content: '', image: '', author: '', status: 'draft' });
+  const [form, setForm] = useState({ title: '', category: 'Club', excerpt: '', content: '', image: '', imagePosition: DEFAULT_IMAGE_POSITION, author: '', status: 'draft' });
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const filtered = useMemo(() => articles
@@ -47,7 +48,7 @@ const ArticlesAdmin: React.FC = () => {
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ title: '', category: 'Club', excerpt: '', content: '', image: '', author: '', status: 'draft' });
+    setForm({ title: '', category: 'Club', excerpt: '', content: '', image: '', imagePosition: DEFAULT_IMAGE_POSITION, author: '', status: 'draft' });
     setModalOpen(true);
   };
 
@@ -59,6 +60,7 @@ const ArticlesAdmin: React.FC = () => {
       excerpt: article.excerpt,
       content: article.content,
       image: article.image || '',
+      imagePosition: article.imagePosition || DEFAULT_IMAGE_POSITION,
       author: article.author || '',
       status: article.status || 'published',
     });
@@ -76,6 +78,7 @@ const ArticlesAdmin: React.FC = () => {
       // d'article court, comme avant.
       content: form.content || form.excerpt,
       image: form.image,
+      imagePosition: form.imagePosition,
       author: form.author || 'ASC Cambérène',
       status: form.status as 'draft' | 'published',
     };
@@ -95,7 +98,7 @@ const ArticlesAdmin: React.FC = () => {
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Articles</h2>
+          <h2 className="text-2xl font-bold text-white mb-1">Actualités</h2>
           <p className="text-sm text-white/60">Contenu ({filtered.length})</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -162,13 +165,14 @@ const ArticlesAdmin: React.FC = () => {
           <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={()=>setModalOpen(false)} />
           <div className="relative w-full max-w-lg bg-white/[0.05] border border-white/10 rounded-2xl p-6">
             <button onClick={()=>setModalOpen(false)} className="absolute top-3 right-3 text-white/60 hover:text-white"><X size={16}/></button>
-            <h3 className="text-lg font-semibold text-white mb-4">{editingId ? 'Modifier article' : 'Nouvel article'}</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">{editingId ? "Modifier l'actualité" : 'Nouvelle actualité'}</h3>
             <form onSubmit={submit} className="space-y-4 text-xs">
               <input required value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="Titre" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none" />
               <select required value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none">
                 {ARTICLE_CATEGORIES.map(c => <option key={c} value={c} className="bg-black">{c}</option>)}
               </select>
               <ImageField value={form.image} onChange={value=>setForm(f=>({...f,image:value}))} label="Visuel de l'article" />
+              <ImagePositionField image={form.image} value={form.imagePosition} onChange={value=>setForm(f=>({...f,imagePosition:value}))} />
               <input value={form.author} onChange={e=>setForm(f=>({...f,author:e.target.value}))} placeholder="Auteur" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none" />
               <textarea value={form.excerpt} onChange={e=>setForm(f=>({...f,excerpt:e.target.value}))} placeholder="Résumé (affiché dans la liste des actualités)" rows={2} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none resize-none" />
               <textarea value={form.content} onChange={e=>setForm(f=>({...f,content:e.target.value}))} placeholder="Article complet" rows={6} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none resize-none" />

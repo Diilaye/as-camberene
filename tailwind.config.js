@@ -37,10 +37,16 @@ export default {
           from: { opacity: '0' },
           to: { opacity: '1' },
         },
+        // Bandeau défilant : le contenu est doublé, glisser de moitié boucle sans saut.
+        ticker: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'fade-up': 'fade-up .5s ease-out both',
         'fade-in': 'fade-in .6s ease-out both',
+        ticker: 'ticker 40s linear infinite',
       },
     },
   },

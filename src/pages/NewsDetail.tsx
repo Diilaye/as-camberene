@@ -16,7 +16,16 @@ const NewsDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { article, loading } = useArticle(id);
-  const { data: allArticles } = useArticles({ limit: 8 });
+  const { data: allArticles } = useArticles({ limit: 20 });
+  // Photo de l'article affichée en plein écran.
+  const [zoomed, setZoomed] = useState(false);
+
+  useEffect(() => {
+    if (!zoomed) return;
+    const close = (event: KeyboardEvent) => event.key === 'Escape' && setZoomed(false);
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, [zoomed]);
 
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState<Comment[]>([]);
@@ -73,13 +82,15 @@ const NewsDetail: React.FC = () => {
     }
   };
 
-  const related = allArticles.filter((item) => String(item.id) !== String(article.id)).slice(0, 6);
+  const related = allArticles
+    .filter((item) => item.image && String(item.id) !== String(article.id))
+    .slice(0, 6);
 
   return (
     <div className="bg-graphite">
       {/* Bannière de l'article */}
-      <section className="page-hero page-hero--image min-h-[420px] bg-graphite">
-        <img src={article.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      <section className={`page-hero min-h-[420px] bg-graphite ${article.image ? 'page-hero--image page-hero--soft' : ''}`}>
+        {article.image && <img src={article.image} alt="" className="absolute inset-0 h-full w-full object-cover" style={article.imagePosition ? { objectPosition: article.imagePosition } : undefined} />}
         <div className="site-container relative z-20 pb-12 pt-32">
           <Link
             to="/news"
@@ -110,6 +121,25 @@ const NewsDetail: React.FC = () => {
       {/* Corps de l'article */}
       <article className="band-charcoal py-14">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          {/*
+            La bannière recadre la photo pour le titre ; ici elle est montrée
+            entière, sans rien couper ni assombrir. Un clic l'agrandit.
+          */}
+          {article.image && (
+            <button
+              type="button"
+              onClick={() => setZoomed(true)}
+              className="group mb-10 block w-full cursor-zoom-in overflow-hidden rounded-2xl bg-black/40"
+              aria-label="Agrandir la photo"
+            >
+              <img
+                src={article.image}
+                alt={article.title}
+                className="mx-auto max-h-[75vh] w-auto max-w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+              />
+            </button>
+          )}
+
           <p className="border-l-2 border-club-yellow pl-5 text-lg font-medium leading-relaxed text-white/90 md:text-xl">
             {article.excerpt}
           </p>
@@ -192,6 +222,7 @@ const NewsDetail: React.FC = () => {
                   key={String(item.id)}
                   to={`/news/${item.id}`}
                   image={item.image}
+                  imagePosition={item.imagePosition}
                   kicker={item.category}
                   title={item.title}
                   date={item.publishedAt}
@@ -200,6 +231,25 @@ const NewsDetail: React.FC = () => {
             </Rail>
           </div>
         </section>
+      )}
+
+      {/* Photo en plein écran : un clic ou Échap referme. */}
+      {zoomed && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setZoomed(false)}
+          className="fixed inset-0 z-[100] flex cursor-zoom-out items-center justify-center bg-black/95 p-4"
+        >
+          <img src={article.image} alt={article.title} className="max-h-full max-w-full object-contain" />
+          <button
+            type="button"
+            className="absolute right-5 top-5 text-3xl leading-none text-white/80 hover:text-white"
+            aria-label="Fermer"
+          >
+            ×
+          </button>
+        </div>
       )}
     </div>
   );
