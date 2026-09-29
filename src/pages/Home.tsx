@@ -22,7 +22,7 @@ import SectionHeader from '../components/ui/SectionHeader';
 import NewsTicker from '../components/ui/NewsTicker';
 import TeamGallery from '../components/TeamGallery';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import { socialLinks } from '../lib/socials';
+import { safeHref, socialLinks } from '../lib/socials';
 import { settingsImage } from '../services/site/settings.service';
 
 const formatMatchDate = (value: string) =>
@@ -217,7 +217,7 @@ const Home: React.FC = () => {
               {partners.map((partner) => (
                 <a
                   key={partner.name}
-                  href={partner.href || '#'}
+                  href={safeHref(partner.href) || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-1.5 text-center"

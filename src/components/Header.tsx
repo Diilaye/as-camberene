@@ -14,7 +14,7 @@ import Notification from './Notification';
 import { useAuth } from '../hooks/useAuth';
 import { useCart } from '../hooks/useCart';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import { socialLinks } from '../lib/socials';
+import { safeHref, socialLinks } from '../lib/socials';
 import { settingsImage } from '../services/site/settings.service';
 
 interface NavColumn {
@@ -201,7 +201,7 @@ const Header: React.FC = () => {
               {partners.map((partner) => (
                 <a
                   key={partner.name}
-                  href={partner.href || '#'}
+                  href={safeHref(partner.href) || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-4 items-center"

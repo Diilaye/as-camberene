@@ -7,6 +7,7 @@
  */
 
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 import PlayerOfMonth, { PlayerOfMonthVote } from '../models/PlayerOfMonth.model';
 import Player from '../models/Player.model';
@@ -16,6 +17,23 @@ import { createPotmSchema, updatePotmSchema, voteSchema } from '../validators/pl
 
 const router = Router();
 const requireManage = requirePermission('players:write');
+
+/**
+ * Un vote par compte, c'est l'index unique qui le garantit. Cette limite vise
+ * l'autre fraude : des comptes créés en série depuis une même machine pour
+ * voter plusieurs fois. Une famille qui partage une connexion reste largement
+ * en dessous.
+ */
+const voteLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Trop de votes depuis cet appareil. Réessayez plus tard.',
+  },
+});
 
 const NOMINEE_FIELDS = 'name photo number line position team';
 
@@ -89,6 +107,7 @@ router.get(
 
 router.post(
   '/:id/vote',
+  voteLimiter,
   authenticate,
   handler(async (req, res) => {
     const { player } = await voteSchema.validateAsync(req.body);

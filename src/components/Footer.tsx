@@ -128,7 +128,7 @@ const Footer: React.FC = () => {
               </p>
             )}
             {contact.phone && (
-              <a href={`tel:${contact.phone.replace(/s+/g, '')}`} className="flex items-center gap-3 hover:text-white">
+              <a href={`tel:${contact.phone.replace(/\s+/g, '')}`} className="flex items-center gap-3 hover:text-white">
                 <Phone size={18} className="shrink-0 text-club-yellow" />
                 {contact.phone}
               </a>
