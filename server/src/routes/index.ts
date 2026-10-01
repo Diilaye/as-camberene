@@ -47,6 +47,7 @@ import ticketRoutes from './tickets.routes';
 import shareRoutes from './share.routes';
 import settingsRoutes from './settings.routes';
 import playerOfMonthRoutes from './playerOfMonth.routes';
+import donationRoutes from './donations.routes';
 
 const router = Router();
 
@@ -206,6 +207,9 @@ router.use('/orders', orderRoutes);
 
 // Billetterie : réservation ouverte au public, suivi réservé au club.
 router.use('/tickets', ticketRoutes);
+
+// Dons : paiement par PayTech, suivi réservé au club.
+router.use('/donations', donationRoutes);
 
 // Textes et réglages du site hors rubriques : un seul document.
 router.use('/settings', settingsRoutes);

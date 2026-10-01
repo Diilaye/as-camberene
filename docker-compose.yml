@@ -41,6 +41,11 @@ services:
       # Sans ce nombre, la limite de débit compterait tout le trafic comme
       # venant d'un seul visiteur.
       TRUST_PROXY: 2
+      # Dons en ligne. Vides, la page des dons annonce qu'ils ne sont pas
+      # encore ouverts ; le reste du site n'en dépend pas.
+      PAYTECH_API_KEY: ${PAYTECH_API_KEY:-}
+      PAYTECH_API_SECRET: ${PAYTECH_API_SECRET:-}
+      PAYTECH_ENV: ${PAYTECH_ENV:-test}
     volumes:
       # Les images téléversées survivent aux reconstructions d'image. Elles ne
       # sont pas dans la base : cette pile a donc bien un état à sauvegarder,

@@ -28,6 +28,8 @@ import Checkout from './pages/Checkout';
 import Subscriptions from './pages/Subscriptions';
 import Gallery from './pages/Gallery';
 import Billetterie from './pages/Billetterie';
+import Dons from './pages/Dons';
+import DonMerci from './pages/DonMerci';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -49,6 +51,7 @@ import Utilisateurs from './pages/admin/Utilisateurs';
 import StatistiquesAdmin from './pages/admin/StatistiquesAdmin';
 import ContenuSiteAdmin from './pages/admin/ContenuSiteAdmin';
 import JoueurDuMoisAdmin from './pages/admin/JoueurDuMoisAdmin';
+import DonsAdmin from './pages/admin/DonsAdmin';
 import NotFound from './pages/NotFound';
 import { CartProvider } from './hooks/useCart';
 
@@ -89,6 +92,8 @@ const InnerApp: React.FC = () => {
             <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/galerie" element={<Gallery />} />
             <Route path="/billetterie" element={<Billetterie />} />
+            <Route path="/dons" element={<Dons />} />
+            <Route path="/dons/merci" element={<DonMerci />} />
             <Route path="/login" element={<Login />} />
             <Route path="/inscription" element={<Register />} />
             {/*
@@ -117,6 +122,7 @@ const InnerApp: React.FC = () => {
             <Route path="/admin/calendrier" element={<ProtectedRoute permission="matches:write"><AdminLayout><CalendrierAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/galerie" element={<ProtectedRoute permission="gallery:write"><AdminLayout><GalerieAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/billetterie" element={<ProtectedRoute permission="orders:manage"><AdminLayout><BilletterieAdmin /></AdminLayout></ProtectedRoute>} />
+            <Route path="/admin/dons" element={<ProtectedRoute permission="orders:manage"><AdminLayout><DonsAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/utilisateurs" element={<ProtectedRoute permission="users:manage"><AdminLayout><Utilisateurs /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/parametres" element={<ProtectedRoute><AdminLayout><Parametres /></AdminLayout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
