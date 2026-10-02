@@ -236,3 +236,26 @@ export const useLegend = (id: string | undefined) => {
 
   return { legend: known ?? single.data ?? undefined, loading: list.loading || single.loading };
 };
+
+/**
+ * Une rencontre du calendrier, pour sa page de détail.
+ *
+ * Lue directement au backend du site : la page s'ouvre aussi depuis un lien
+ * partagé, sans passer par la liste.
+ */
+export const useMatch = (id: string | undefined) => {
+  const single = useApiResource<MatchRecord | null>(
+    (signal) => matchesApi.get(id!, signal),
+    null,
+    { enabled: Boolean(id), deps: [id] }
+  );
+  return { match: single.data ?? undefined, loading: single.loading, error: single.error };
+};
+
+/** Photos de la galerie rattachées à une rencontre. */
+export const useMatchGallery = (matchId: string | undefined): ApiResource<GalleryItem[]> =>
+  useApiResource<GalleryItemRecord[]>(
+    (signal) => galleryApi.list({ category: 'match', match: matchId }, signal),
+    [],
+    { enabled: Boolean(matchId), deps: [matchId] }
+  );

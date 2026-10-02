@@ -22,6 +22,7 @@ import SectionHeader from '../components/ui/SectionHeader';
 import NewsTicker from '../components/ui/NewsTicker';
 import TeamGallery from '../components/TeamGallery';
 import { useSiteSettings } from '../hooks/useSiteSettings';
+import { recentResults, upcomingMatches } from '../lib/matches';
 import { safeHref, socialLinks } from '../lib/socials';
 import { settingsImage } from '../services/site/settings.service';
 
@@ -103,8 +104,11 @@ const Home: React.FC = () => {
   const { data: legends } = useLegends({ limit: 8 });
   const { data: matches } = useMatches();
 
-  const upcomingMatches = matches.filter((match) => match.status === 'À venir').slice(0, 3);
-  const recentMatches = matches.filter((match) => match.status === 'Terminé').slice(0, 3);
+  // Les 3 prochains matchs (le plus proche d'abord) et les 3 derniers résultats
+  // (le plus récent d'abord), selon la date du jour : la liste se renouvelle
+  // d'elle-même à chaque match joué.
+  const upcoming = upcomingMatches(matches, 3);
+  const recent = recentResults(matches, 3);
 
   return (
     <div className="bg-graphite">
@@ -327,7 +331,7 @@ const Home: React.FC = () => {
                 Prochaines rencontres
               </p>
               <div className="space-y-3">
-                {upcomingMatches.map((match) => (
+                {upcoming.map((match) => (
                   <article key={String(match.id)} className="panel panel-hover flex items-center gap-4 p-4">
                     <div className="w-16 shrink-0 text-center">
                       <p className="text-xs uppercase text-white/50">{formatMatchDate(match.date)}</p>
@@ -370,7 +374,7 @@ const Home: React.FC = () => {
                     </Link>
                   </article>
                 ))}
-                {upcomingMatches.length === 0 && (
+                {upcoming.length === 0 && (
                   <p className="panel p-6 text-sm text-white/60">Aucune rencontre programmée pour le moment.</p>
                 )}
               </div>
@@ -381,7 +385,7 @@ const Home: React.FC = () => {
                 Derniers résultats
               </p>
               <div className="space-y-3">
-                {recentMatches.map((match) => {
+                {recent.map((match) => {
                   const scored = match.venue === 'Domicile' ? match.result?.home : match.result?.away;
                   const conceded = match.venue === 'Domicile' ? match.result?.away : match.result?.home;
                   const outcome =
@@ -438,7 +442,7 @@ const Home: React.FC = () => {
                     </article>
                   );
                 })}
-                {recentMatches.length === 0 && (
+                {recent.length === 0 && (
                   <p className="panel p-6 text-sm text-white/60">Aucun résultat enregistré pour le moment.</p>
                 )}
               </div>

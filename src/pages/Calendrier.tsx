@@ -1,26 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Ticket, Trophy } from 'lucide-react';
+import { ChevronRight, MapPin, Ticket, Trophy } from 'lucide-react';
 import { useMatches } from '../hooks/useContent';
 import { Match } from '../types';
 import PageHero from '../components/ui/PageHero';
 import { handleImageError } from '../lib/imagePlaceholder';
-
-/** Durée après le coup d'envoi au-delà de laquelle une rencontre est jouée. */
-const MATCH_LENGTH_MS = 3 * 60 * 60 * 1000;
+import { isOver, kickoff } from '../lib/matches';
 
 const FILTERS = ['Tous', 'À venir', 'Résultats'] as const;
 type Filter = (typeof FILTERS)[number];
-
-const kickoff = (match: Match): number => new Date(`${match.date}T${match.time || '00:00'}:00`).getTime();
-
-/**
- * Une rencontre est finie quand le club l'a marquée « Terminé » — ou, s'il a
- * oublié de le faire, trois heures après le coup d'envoi. Sans ce filet, un
- * match passé resterait « prochain match » jusqu'à la saisie du score.
- */
-const isOver = (match: Match, now: number): boolean =>
-  match.status === 'Terminé' || (match.status === 'À venir' && kickoff(match) + MATCH_LENGTH_MS < now);
 
 const monthLabel = (date: string) =>
   new Date(`${date}T12:00:00`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
@@ -51,19 +39,12 @@ const Calendrier: React.FC = () => {
   // Les vrais matchs seulement : jamais la saison de démonstration.
   const { data: matches, loading } = useMatches({ withDemo: false });
   const [filter, setFilter] = useState<Filter>('Tous');
-  // L'heure courante est relue chaque minute : la barre avance aussi quand un
-  // match se termine pendant qu'on regarde la page.
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(timer);
-  }, []);
 
   const ordered = useMemo(() => [...matches].sort((a, b) => kickoff(a) - kickoff(b)), [matches]);
-  const next = useMemo(() => ordered.find((match) => !isOver(match, now)), [ordered, now]);
+  const next = useMemo(() => ordered.find((match) => !isOver(match)), [ordered]);
 
   const visible = ordered.filter((match) =>
-    filter === 'Tous' ? true : filter === 'À venir' ? !isOver(match, now) : isOver(match, now)
+    filter === 'Tous' ? true : filter === 'À venir' ? !isOver(match) : isOver(match)
   );
 
   // Regroupement par mois, dans l'ordre du calendrier.
@@ -87,7 +68,7 @@ const Calendrier: React.FC = () => {
     nextRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }, [next]);
 
-  const played = ordered.filter((match) => isOver(match, now)).length;
+  const played = ordered.filter((match) => isOver(match)).length;
   const counts: Record<Filter, number> = { Tous: ordered.length, 'À venir': ordered.length - played, Résultats: played };
 
   return (
@@ -137,7 +118,7 @@ const Calendrier: React.FC = () => {
                   <div className="space-y-3">
                     {month.matches.map((match) => {
                       const isNext = next?.id === match.id;
-                      const over = isOver(match, now);
+                      const over = isOver(match);
                       const live = match.status === 'En cours';
                       const outcome = over ? outcomeOf(match) : null;
                       const home = match.venue === 'Domicile';
@@ -145,7 +126,7 @@ const Calendrier: React.FC = () => {
                         <article
                           key={String(match.id)}
                           ref={isNext ? nextRef : undefined}
-                          className={`relative flex items-center gap-4 overflow-hidden rounded-[20px] border p-4 pl-6 transition-colors sm:gap-6 ${
+                          className={`group relative flex items-center gap-4 overflow-hidden rounded-[20px] border p-4 pl-6 transition-colors hover:border-white/40 sm:gap-6 ${
                             isNext
                               ? 'border-green-400 bg-club-green/30 ring-2 ring-green-400/50'
                               : 'border-white/10 bg-white/[0.04]'
@@ -193,7 +174,17 @@ const Calendrier: React.FC = () => {
                               </span>
                             </div>
                             <h3 className="truncate text-base font-extrabold uppercase text-white sm:text-lg">
-                              {home ? `ASC Cambérène — ${match.opponent}` : `${match.opponent} — ASC Cambérène`}
+                              {/*
+                                Le lien couvre toute la carte (pseudo-élément étiré) :
+                                un clic n'importe où ouvre le détail du match, sans
+                                imbriquer de lien autour du bouton « Billets ».
+                              */}
+                              <Link
+                                to={`/calendrier/${match.id}`}
+                                className="after:absolute after:inset-0 after:content-[''] group-hover:text-club-yellow"
+                              >
+                                {home ? `ASC Cambérène — ${match.opponent}` : `${match.opponent} — ASC Cambérène`}
+                              </Link>
                             </h3>
                             <p className="mt-0.5 flex items-center gap-1 text-xs text-white/50">
                               <MapPin size={11} /> {match.venue}
@@ -208,10 +199,11 @@ const Calendrier: React.FC = () => {
                               {outcome.label}
                             </span>
                           ) : isNext && home ? (
-                            <Link to="/billetterie" className="btn-yellow hidden shrink-0 sm:inline-flex">
+                            <Link to="/billetterie" className="btn-yellow relative z-10 hidden shrink-0 sm:inline-flex">
                               <Ticket size={15} /> Billets
                             </Link>
                           ) : null}
+                          <ChevronRight size={18} className="shrink-0 text-white/30 transition-colors group-hover:text-club-yellow" aria-hidden />
                         </article>
                       );
                     })}
