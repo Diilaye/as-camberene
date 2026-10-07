@@ -7,6 +7,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import Home from './pages/Home';
 import News from './pages/News';
 import Calendrier from './pages/Calendrier';
+import MatchDetail from './pages/MatchDetail';
 import NewsDetail from './pages/NewsDetail';
 import Players from './pages/Players';
 import PlayerDetail from './pages/PlayerDetail';
@@ -70,6 +71,7 @@ const InnerApp: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/calendrier" element={<Calendrier />} />
+            <Route path="/calendrier/:id" element={<MatchDetail />} />
             <Route path="/news" element={<News />} />
             <Route path="/news/:id" element={<NewsDetail />} />
             <Route path="/players" element={<Players />} />
