@@ -274,6 +274,23 @@ cmd_restore() {
   green "✓ Base restaurée"
 }
 
+# Blocage du site : un simple fichier dans le volume `etat`, que la règle de
+# deploy/httpd-site.conf teste à chaque requête. Ni redémarrage ni
+# reconstruction : l'effet est immédiat, et il survit aux redéploiements.
+cmd_bloquer() {
+  require_env_file
+  step "Blocage du site"
+  compose exec -T web touch /usr/local/apache2/etat/bloque
+  green "✓ Site bloqué : les visiteurs voient « Ce site est inaccessible »"
+}
+
+cmd_debloquer() {
+  require_env_file
+  step "Déblocage du site"
+  compose exec -T web rm -f /usr/local/apache2/etat/bloque
+  green "✓ Site rétabli"
+}
+
 usage() {
   cat <<'USAGE'
 Pilote de la pile Docker — ASC Cambérène
@@ -290,6 +307,8 @@ Pilote de la pile Docker — ASC Cambérène
   seed                    charge le contenu de démonstration
   backup                  sauvegarde base + images téléversées
   restore <archive>       restaure une sauvegarde de base
+  bloquer                 affiche une fausse erreur DNS à la place du site
+  debloquer               rétablit le site
 
 Environnement lu dans .env.docker (voir .env.docker.example).
 USAGE
@@ -308,6 +327,8 @@ case "${1:-}" in
   seed)        shift; cmd_seed ;;
   backup)      shift; cmd_backup ;;
   restore)     shift; cmd_restore "$@" ;;
+  bloquer)     shift; cmd_bloquer ;;
+  debloquer)   shift; cmd_debloquer ;;
   ""|-h|--help|help) usage ;;
   *) red "Commande inconnue : $1"; echo; usage; exit 1 ;;
 esac

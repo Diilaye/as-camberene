@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>ascamberene.sn</title>
+<style>
+  :root {
+    --bg: #fff;
+    --text: #202124;
+    --muted: #5f6368;
+    --icon: #5f6368;
+    --btn-bg: #1a73e8;
+    --btn-text: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #202124;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --icon: #9aa0a6;
+      --btn-bg: #8ab4f8;
+      --btn-text: #202124;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--muted);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 14vh 24px 40px;
+  }
+  .icon { width: 72px; height: 72px; margin-bottom: 40px; color: var(--icon); }
+  h1 {
+    color: var(--text);
+    font-size: 1.6em;
+    font-weight: 500;
+    line-height: 1.25;
+    margin: 0 0 16px;
+  }
+  p { margin: 0 0 16px; }
+  strong { color: var(--text); font-weight: 600; }
+  .code {
+    font-size: .86em;
+    text-transform: uppercase;
+    margin-top: 16px;
+  }
+  .actions { margin-top: 48px; display: flex; justify-content: flex-end; }
+  button {
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    border: 0;
+    border-radius: 999px;
+    padding: 9px 24px;
+    font: inherit;
+    font-size: .93em;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  @media (max-width: 600px) {
+    .wrap { padding-top: 60px; }
+    .actions button { width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <svg class="icon" viewBox="0 0 72 72" aria-hidden="true">
+      <path fill="currentColor" d="M18 6h26l16 16v40a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4zm24 4v14h14L42 10z"/>
+      <circle cx="28" cy="38" r="2.6" fill="var(--bg)"/>
+      <circle cx="46" cy="38" r="2.6" fill="var(--bg)"/>
+      <path d="M28 52c2.6-3.4 5.6-5 9-5s6.4 1.6 9 5" fill="none" stroke="var(--bg)" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>
+
+    <h1>Ce site est inaccessible</h1>
+    <p>Vérifiez si l'adresse <strong id="host">ascamberene.sn</strong> est correcte.</p>
+    <div class="code">DNS_PROBE_FINISHED_NXDOMAIN</div>
+
+    <div class="actions">
+      <button type="button" onclick="location.reload()">Actualiser</button>
+    </div>
+  </div>
+  <script>
+    // Affiche l'adresse réellement tapée (avec ou sans www).
+    var h = location.hostname;
+    if (h) document.getElementById('host').textContent = h;
+  </script>
+</body>
+</html>

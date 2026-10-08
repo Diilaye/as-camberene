@@ -68,6 +68,10 @@ services:
     ports:
       # Boucle locale uniquement : rien n'est exposé directement sur Internet.
       - "127.0.0.1:${WEB_PORT:-8080}:80"
+    volumes:
+      # Drapeau de blocage du site (deploy/docker.sh bloquer / debloquer).
+      - etat:/usr/local/apache2/etat
 
 volumes:
   uploads:
+  etat:
