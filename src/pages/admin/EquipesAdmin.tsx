@@ -13,18 +13,12 @@ const CATEGORY_LABELS: Record<TeamCategory, string> = {
   youth: 'Formation',
 };
 
-/** Une ligne par distinction : c'est la saisie la plus simple pour une liste courte. */
+
 const toLines = (values: string[] = []): string => values.join('\n');
 const fromLines = (value: string): string[] =>
   value.split('\n').map((line) => line.trim()).filter(Boolean);
 
-/**
- * Identifiant d'URL tiré du nom.
- *
- * Les accents sont décomposés puis retirés : « Équipe A » donnerait sinon un
- * slug que le serveur refuse, et l'erreur arriverait après coup sans dire d'où
- * elle vient.
- */
+
 const slugify = (value: string): string =>
   value
     .normalize('NFD')
@@ -53,21 +47,7 @@ const EMPTY_FORM = {
   isVisible: true,
 };
 
-/**
- * Équipes du club.
- *
- * Équipe première et catégories de jeunes : ce que présente la page `/teams`,
- * et ce à quoi chaque fiche de l'effectif est rattachée. Les cinq équipes
- * étaient figées dans le code — en ajouter une demandait un développeur.
- *
- * L'identifiant se déduit du nom à la création, et n'est plus modifiable
- * ensuite : c'est lui que porte chaque joueur et qui compose l'adresse de
- * l'équipe. Le changer détacherait tout l'effectif d'un coup et casserait les
- * liens déjà partagés — le nom affiché, lui, se corrige librement.
- *
- * Le nombre de joueurs ne se saisit pas : il est compté sur les fiches
- * rattachées. Un compteur recopié se démentirait au premier transfert.
- */
+
 const EquipesAdmin: React.FC = () => {
   const {
     items: teams,
@@ -87,7 +67,7 @@ const EquipesAdmin: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
-  /** Vrai tant que l'identifiant suit le nom : une saisie manuelle le fige. */
+ 
   const [slugTouched, setSlugTouched] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<TeamRecord | null>(null);
 
@@ -144,8 +124,8 @@ const EquipesAdmin: React.FC = () => {
     setForm((f) => ({
       ...f,
       name: value,
-      // À la création, l'identifiant suit le nom tant que personne ne l'a
-      // touché : le club n'a pas à savoir ce qu'est un slug.
+     
+     
       slug: editingId || slugTouched ? f.slug : slugify(value),
     }));
   };
@@ -174,8 +154,8 @@ const EquipesAdmin: React.FC = () => {
       isVisible: form.isVisible,
     };
 
-    // `slug` n'accompagne que la création : le serveur le refuse en modification,
-    // et c'est voulu — il est l'identité de l'équipe.
+   
+   
     const saved = editingId
       ? await update(editingId, common)
       : await create({ ...common, slug: form.slug });
@@ -191,7 +171,7 @@ const EquipesAdmin: React.FC = () => {
   const field =
     'w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none';
 
-  /** Fiches qui perdraient leur équipe si celle-ci était supprimée. */
+ 
   const orphansOf = (team: TeamRecord) => countByTeam.get(team.slug) ?? 0;
 
   return (

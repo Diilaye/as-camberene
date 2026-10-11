@@ -2,13 +2,7 @@ import React from 'react';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { ApiError } from '../../lib/api';
 
-/**
- * Bandeaux d'état de l'administration.
- *
- * Un écran d'administration qui n'affiche rien laisse croire que le contenu a
- * disparu, alors que c'est le serveur qui n'a pas répondu. Ces trois messages
- * disent lequel des deux s'est produit.
- */
+
 
 export const AdminError: React.FC<{ error: ApiError | null; onRetry?: () => void }> = ({
   error,

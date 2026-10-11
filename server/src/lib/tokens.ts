@@ -1,15 +1,4 @@
-/**
- * Jetons d'accès et de rafraîchissement.
- *
- * Les deux sont signés avec des secrets distincts, et le type est inscrit dans
- * la charge utile : un jeton de rafraîchissement présenté comme jeton d'accès
- * est refusé deux fois plutôt qu'une.
- *
- * La révocation n'est pas gérée : un jeton de rafraîchissement vole jusqu'à son
- * expiration, même après déconnexion. Pour une administration de club à
- * quelques comptes, la liste noire coûterait plus qu'elle ne rapporte — mais
- * c'est un choix à revoir si le nombre de comptes grandit.
- */
+
 
 import jwt from 'jsonwebtoken';
 import config from '../config/env';

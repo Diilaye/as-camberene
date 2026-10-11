@@ -1,10 +1,4 @@
-/**
- * Démarrage du serveur.
- *
- * La base est jointe avant d'ouvrir le port : un serveur qui répond alors que
- * Mongo est absent ne rend que des erreurs 500, et laisse croire que la panne
- * vient de l'application.
- */
+
 
 import config from './config/env';
 import { connectDatabase, disconnectDatabase } from './config/database';

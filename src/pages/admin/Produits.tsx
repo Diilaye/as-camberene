@@ -7,16 +7,7 @@ import GalleryField from '../../components/admin/GalleryField';
 import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../../types';
 import { formatCFA } from '../../lib/currency';
 
-/**
- * Boutique du club.
- *
- * Catalogue propre au site, sans rapport avec la marketplace de fconnect : le
- * club vend depuis chez lui, et décide seul de ce qui s'y affiche.
- *
- * Un produit retiré de la vitrine (`isVisible`) reste en base : les paniers et
- * l'historique qui le citent gardent un sens, ce qu'une suppression franche
- * leur retirerait.
- */
+
 const Produits: React.FC = () => {
   const {
     items: products,
@@ -62,11 +53,11 @@ const Produits: React.FC = () => {
       category: product.category,
       type: product.type,
       price: String(product.price),
-      // La vignette ouvre la galerie ; le modèle garde les deux alignés.
+     
       images: product.images?.length ? product.images : [product.image].filter(Boolean),
       description: product.description,
-      // Les tailles se saisissent en une ligne — « S, M, L, XL » — plutôt qu'en
-      // champ répétable : c'est plus court à remplir, et le format est évident.
+     
+     
       sizes: (product.sizes ?? []).join(', '),
       inStock: product.inStock,
       isVisible: product.isVisible !== false,
@@ -82,8 +73,8 @@ const Produits: React.FC = () => {
       category: form.category as ProductRecord['category'],
       type: form.type as ProductRecord['type'],
       price: Number(form.price) || 0,
-      // Le premier visuel fait la vignette : c'est lui que la boutique et le
-      // panier affichent.
+     
+     
       image: form.images[0] ?? '',
       images: form.images,
       description: form.description,

@@ -18,11 +18,7 @@ export const createUserSchema = Joi.object({
     .valid(...ASSIGNABLE_ROLES)
     .required()
     .messages({ 'any.only': 'Profil inconnu', 'any.required': 'Profil requis' }),
-  /**
-   * Facultatif : sans mot de passe fourni, la route en tire un au sort et le
-   * rend une fois. C'est le cas courant — la personne qui crée le compte n'a pas
-   * à inventer un mot de passe pour quelqu'un d'autre.
-   */
+ 
   password: password.optional(),
   is_active: Joi.boolean().default(true),
 });

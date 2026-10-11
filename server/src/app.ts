@@ -10,24 +10,24 @@ import { errorHandler, routeNotFound } from './middlewares/errors';
 export const createApp = (): Application => {
   const app = express();
 
-  // Derrière un proxy, `req.ip` vaut l'adresse du proxy tant qu'Express ne sait
-  // pas combien de maillons lui appartiennent. La limite de débit ci-dessous en
-  // dépend directement.
+ 
+ 
+ 
   if (config.trustProxy > 0) app.set('trust proxy', config.trustProxy);
 
-  // `crossOriginResourcePolicy` par défaut interdirait au site, servi sur un
-  // autre port, d'afficher les images de /uploads.
+ 
+ 
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
-  // En développement, le serveur de Vite prend le premier port libre — 5173,
-  // puis 5174, 5175… Figer la liste obligerait à la corriger à chaque fois :
-  // toute origine locale est donc admise hors production, et elle seule.
+ 
+ 
+ 
   const localhostOrigin = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
   app.use(
     cors({
       origin: (origin, done) => {
-        // Requête sans origine : curl, un test, une image chargée directement.
+       
         if (!origin) return done(null, true);
 
         const allowed =

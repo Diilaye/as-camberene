@@ -1,11 +1,4 @@
-/**
- * Frise historique du club.
- *
- * Reprend les etapes deja ecrites dans le site (`src/data/history.ts`) et les
- * prolonge jusqu'a la saison en cours. Les faits anterieurs a 2025 viennent du
- * contenu que le club avait deja redige ; ceux qui suivent decoulent de la
- * montee en Ligue 1.
- */
+
 import { SeedHistoryEvent } from './types';
 
 export const seedHistoryEvents: SeedHistoryEvent[] = [

@@ -1,15 +1,4 @@
-/**
- * Image de remplacement.
- *
- * Les visuels du site viennent de trois sources — le backend, les données de
- * repli de `src/data/`, et les fichiers de `public/assets/` — et l'une d'elles
- * peut toujours manquer un fichier. Sans filet, le navigateur affiche son icône
- * d'image brisée au beau milieu d'une carte ; avec, la carte garde sa forme et
- * porte les couleurs du club.
- *
- * Le visuel est une donnée en ligne : il s'affiche même quand le réseau est la
- * cause de l'échec.
- */
+
 export const IMAGE_PLACEHOLDER =
   "data:image/svg+xml;charset=utf-8," +
   encodeURIComponent(
@@ -23,12 +12,7 @@ export const IMAGE_PLACEHOLDER =
     </svg>`
   );
 
-/**
- * À brancher sur `onError` d'une balise `img`.
- *
- * `onerror` est retiré avant de changer `src` : si le remplacement échouait à
- * son tour, le gestionnaire se rappellerait sans fin.
- */
+
 export const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
   const image = event.currentTarget;
   image.onerror = null;

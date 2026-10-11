@@ -2,32 +2,20 @@ import React, { useState } from 'react';
 import { Check, Facebook, Link2, MessageCircle, Share2, Twitter } from 'lucide-react';
 
 interface Props {
-  /** Adresse à partager. Par défaut, celle de la page courante. */
+ 
   url?: string;
-  /** Titre repris dans le message pré-rempli. */
+ 
   title: string;
-  /** Libellé affiché devant les boutons. */
+ 
   label?: string;
   className?: string;
 }
 
-/**
- * Partage d'une page vers les réseaux.
- *
- * Trois réseaux et le presse-papier, plus le partage natif du téléphone quand
- * il existe : sur mobile, `navigator.share` ouvre la feuille du système, qui
- * connaît les applications réellement installées — bien plus utile qu'une
- * rangée de boutons figée.
- *
- * Ce que ces boutons transmettent, c'est un lien. L'image et le titre qui
- * apparaîtront dans l'aperçu ne viennent pas d'ici : le réseau va les chercher
- * lui-même en lisant les balises `og:` de la page. C'est le serveur qui les
- * fournit — voir `server/src/routes/share.routes.ts`.
- */
+
 const ShareButtons: React.FC<Props> = ({ url, title, label = 'Partager', className = '' }) => {
   const [copied, setCopied] = useState(false);
 
-  // `window` n'existe qu'au rendu : l'adresse est lue à l'usage, pas au montage.
+ 
   const shareUrl = url ?? (typeof window !== 'undefined' ? window.location.href : '');
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);

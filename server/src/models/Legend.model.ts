@@ -1,10 +1,4 @@
-/**
- * Légende du club.
- *
- * Un joueur qui a marqué l'histoire, avec son palmarès et sa citation. Rien de
- * tout cela n'existe dans fconnect, dont le modèle ne connaît que les membres
- * actuels : c'est du contenu de mémoire, écrit par le club.
- */
+
 
 import mongoose, { Document, Schema } from 'mongoose';
 
@@ -24,7 +18,7 @@ export interface ILegend extends Document {
   jerseyNumber: number;
   era: (typeof LEGEND_ERAS)[number];
   isHallOfFame: boolean;
-  /** Ordre d'affichage ; à défaut, le classement se fait par époque. */
+ 
   rank: number;
 }
 

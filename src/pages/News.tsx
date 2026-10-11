@@ -8,7 +8,6 @@ import PageHero from '../components/ui/PageHero';
 import NewsTicker from '../components/ui/NewsTicker';
 import PlayerOfMonthVote from '../components/PlayerOfMonthVote';
 
-/** Onglet du vote, rangé après les rubriques d'articles. */
 const POTM_TAB = 'Joueur du mois';
 const POTM_PARAM = 'joueur-du-mois';
 
@@ -16,8 +15,6 @@ const FILTERS = ['Toutes', ...ARTICLE_CATEGORIES, POTM_TAB] as const;
 
 const News: React.FC = () => {
   const [search, setSearch] = useState('');
-  // L'onglet du vote se lit dans l'adresse : après s'être connecté pour voter,
-  // le supporter revient directement dessus.
   const [params, setParams] = useSearchParams();
   const [category, setCategoryState] = useState<string>(params.get('onglet') === POTM_PARAM ? POTM_TAB : 'Toutes');
   const setCategory = (item: string) => {
@@ -29,7 +26,6 @@ const News: React.FC = () => {
 
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase();
-    // Une actualité sans photo ne défile que dans le bandeau : pas de carte.
     return articles.filter((article) => {
       if (!article.image) return false;
       const matchesCategory = category === 'Toutes' || article.category === category;

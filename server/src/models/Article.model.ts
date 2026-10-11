@@ -1,10 +1,4 @@
-/**
- * Actualité du club.
- *
- * Le contenu éditorial du site, celui que fconnect n'expose pas publiquement.
- * Les champs reprennent le type `Article` du front : le site n'a alors aucune
- * traduction à faire, contrairement aux données venues de fconnect.
- */
+
 
 import mongoose, { Document, Schema } from 'mongoose';
 
@@ -24,7 +18,7 @@ export interface IArticle extends Document {
   content: string;
   excerpt: string;
   image: string;
-  /** Point de l'image à garder visible quand elle est recadrée : `object-position` CSS. */
+ 
   imagePosition: string;
   category: ArticleCategory;
   publishedAt: Date;
@@ -59,8 +53,8 @@ const articleSchema = new Schema<IArticle>(
     image: { type: String, default: '', maxlength: 500 },
     imagePosition: { type: String, default: '50% 50%', maxlength: 20 },
     category: { type: String, enum: ARTICLE_CATEGORIES, default: 'Club', index: true },
-    // Date de parution affichée, distincte de la date de création : un article
-    // peut être écrit aujourd'hui et daté d'un match d'il y a trois jours.
+   
+   
     publishedAt: { type: Date, default: Date.now, index: true },
     author: { type: String, default: 'ASC Cambérène', trim: true, maxlength: 120 },
     status: { type: String, enum: ['draft', 'published'], default: 'draft', index: true },

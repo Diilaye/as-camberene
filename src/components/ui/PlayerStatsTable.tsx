@@ -11,14 +11,6 @@ const COLUMNS: { key: StatKey; label: string; short: string }[] = [
   { key: 'assists', label: 'Passes décisives', short: 'Passes' },
 ];
 
-/**
- * Statistiques individuelles d'une équipe, saisies dans l'onglet
- * « Statistiques » de l'administration.
- *
- * Tous les joueurs de l'effectif y figurent, même à zéro : c'est la feuille de
- * l'équipe, pas un palmarès. Un clic sur une colonne trie sur elle ; par
- * défaut, les buteurs d'abord.
- */
 const PlayerStatsTable: React.FC<{ players: TeamMember[] }> = ({ players }) => {
   const [sortKey, setSortKey] = useState<StatKey>('goals');
 

@@ -2,14 +2,7 @@ import type { Permission, UserRole } from '../lib/roles';
 
 export type { Permission, UserRole };
 
-/**
- * Identifiant d'entité.
- *
- * Les données statiques de `src/data/` numérotent leurs entrées ; fconnect les
- * identifie par un ObjectId Mongo, une chaîne de 24 caractères. Les deux
- * cohabitent le temps de la bascule, et les comparaisons passent donc par
- * `String(a) === String(b)` plutôt que par une égalité stricte.
- */
+
 export type EntityId = string | number;
 
 export interface Player {
@@ -29,32 +22,15 @@ export interface Player {
   joinedYear: number;
 }
 
-/**
- * Rubriques et déclinaisons, énumérées plutôt que décrites.
- *
- * Les formulaires de l'administration en tirent leurs listes déroulantes, et le
- * backend valide les mêmes valeurs : une rubrique ajoutée ici doit l'être aussi
- * dans `server/src/models/`, sans quoi la saisie sera refusée.
- */
-/**
- * Effectif — vocabulaire partagé avec `server/src/models/Player.model.ts`.
- *
- * Ces listes remplissent les menus de l'administration et le backend valide
- * les mêmes valeurs : une équipe ajoutée ici doit l'être aussi là-bas.
- */
-/**
- * Équipes livrées avec le site.
- *
- * Ce n'est plus la liste des équipes possibles — le club les crée depuis
- * l'administration, et `Team.slug` fait foi. Elle reste le repli hors ligne et
- * la source des libellés d'origine.
- */
+
+
+
 export const PLAYER_TEAMS = ['equipe-a', 'equipe-u19', 'equipe-u17', 'equipe-u15', 'equipe-u12'] as const;
 
-/** Slug d'une équipe. Ouvert : une équipe créée aujourd'hui en a un nouveau. */
+
 export type PlayerTeam = string;
 
-/** Libellés d'équipe, pour l'affichage. */
+
 export const PLAYER_TEAM_LABELS: Record<string, string> = {
   'equipe-a': 'Équipe A',
   'equipe-u19': 'U19',
@@ -63,7 +39,7 @@ export const PLAYER_TEAM_LABELS: Record<string, string> = {
   'equipe-u12': 'U12',
 };
 
-/** Ligne de jeu, dans l'ordre du terrain — c'est cet ordre qui sert au tri. */
+
 export const PLAYER_LINES = ['Gardien', 'Défenseur', 'Milieu', 'Attaquant'] as const;
 export type PlayerLine = (typeof PLAYER_LINES)[number];
 
@@ -76,7 +52,7 @@ export type PlayerStatus = (typeof PLAYER_STATUSES)[number];
 export const STRONG_FEET = ['droit', 'gauche', 'les deux'] as const;
 export type StrongFoot = (typeof STRONG_FEET)[number];
 
-/** Fiche complète telle que le backend du site la rend. */
+
 export interface TeamMember {
   id: string;
   kind: PlayerKind;
@@ -89,7 +65,7 @@ export interface TeamMember {
   photo: string;
   status: PlayerStatus;
   birthDate: string | null;
-  /** Calculé par le serveur à partir de `birthDate` ; 0 si elle est inconnue. */
+ 
   age: number;
   nationality: string;
   height: number;
@@ -100,7 +76,7 @@ export interface TeamMember {
   joinedYear: number;
   rank: number;
   isVisible: boolean;
-  /** Mis en avant dans l'onglet « Nos stars » de la galerie. */
+ 
   isFeatured?: boolean;
 }
 
@@ -122,7 +98,7 @@ export interface Article {
   content: string;
   excerpt: string;
   image: string;
-  /** Point à garder visible au recadrage, en `object-position` CSS. */
+ 
   imagePosition?: string;
   category: ArticleCategory;
   publishedAt: string;
@@ -149,19 +125,11 @@ export interface Product {
   description: string;
   sizes: string[];
   inStock: boolean;
-  /**
-   * Visible sur la boutique.
-   *
-   * Retirer un produit de la vitrine sans le supprimer garde un sens aux
-   * paniers qui le citent. Facultatif : les données statiques de repli, qui
-   * précèdent le backend, ne le portent pas.
-   */
+ 
   isVisible?: boolean;
 }
 
-/* ------------------------------------------------------------------ *
- * Commandes de la boutique
- * ------------------------------------------------------------------ */
+
 
 export const ORDER_STATUSES = ['recue', 'preparee', 'remise', 'annulee'] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
@@ -172,13 +140,7 @@ export type Fulfilment = (typeof FULFILMENTS)[number];
 export const PAYMENT_METHODS = ['a_la_remise', 'mobile_money'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
-/**
- * Ligne de commande.
- *
- * Le nom et le prix unitaire sont ceux du jour de la commande, pas ceux du
- * catalogue d'aujourd'hui : une commande ancienne reste lisible telle qu'elle
- * a été passée, même si le produit a changé de prix ou disparu.
- */
+
 export interface OrderItem {
   product?: string;
   name: string;
@@ -212,31 +174,28 @@ export interface CartItem {
 export const GALLERY_CATEGORIES = ['match', 'entrainement', 'club'] as const;
 export type GalleryCategory = (typeof GALLERY_CATEGORIES)[number];
 
-/** Libellés des onglets de la galerie. */
+
 export const GALLERY_CATEGORY_LABELS: Record<GalleryCategory, string> = {
   match: 'Matchs',
   entrainement: 'Entraînements',
   club: 'Vie du club',
 };
 
-/**
- * Photo de la galerie.
- *
- * `match` rattache la photo à une rencontre du calendrier : c'est ce qui
- * permet de présenter l'album d'un match sous son affiche plutôt qu'en vrac.
- */
+
 export interface GalleryItem {
   id: EntityId;
   image: string;
   title: string;
   description: string;
   category: GalleryCategory;
-  /** Identifiant de la rencontre, ou `null` hors catégorie « Matchs ». */
+ 
   match?: string | null;
-  /** Jour de la prise de vue, `AAAA-MM-JJ`. */
+ 
   date?: string;
   rank?: number;
   isVisible?: boolean;
+ 
+  createdAt?: string;
 }
 
 export const RESERVATION_STATUSES = ['nouvelle', 'confirmee', 'honoree', 'annulee'] as const;
@@ -249,13 +208,7 @@ export const RESERVATION_STATUS_LABELS: Record<ReservationStatus, string> = {
   annulee: 'Annulée',
 };
 
-/**
- * Réservation de places pour une rencontre.
- *
- * Rien n'est encaissé en ligne : c'est une place tenue, réglée au guichet. La
- * rencontre arrive jointe depuis le serveur, pour que la liste se lise sans un
- * aller-retour par ligne.
- */
+
 export interface TicketReservation {
   id: string;
   reference: string;
@@ -273,18 +226,13 @@ export interface TicketReservation {
 export const TEAM_CATEGORIES = ['senior', 'youth'] as const;
 export type TeamCategory = (typeof TEAM_CATEGORIES)[number];
 
-/**
- * Équipe du club : équipe première ou catégorie de jeunes.
- *
- * `slug` est son identité durable — son adresse (`/teams/equipe-u19`) et la
- * clé que porte chaque fiche de l'effectif.
- */
+
 export interface Team {
   id: EntityId;
   slug: string;
   name: string;
   category: TeamCategory;
-  /** Tranche d'âge affichée en pastille : « Seniors », « 17–19 ». */
+ 
   ageRange: string;
   subtitle: string;
   description: string;
@@ -299,32 +247,25 @@ export interface Team {
   isVisible?: boolean;
 }
 
-/** Le club reçoit, ou se déplace. */
+
 export const MATCH_VENUES = ['Domicile', 'Extérieur'] as const;
 export type MatchVenue = (typeof MATCH_VENUES)[number];
 
 export const MATCH_STATUSES = ['À venir', 'En cours', 'Terminé'] as const;
 export type MatchStatus = (typeof MATCH_STATUSES)[number];
 
-/** Camp du buteur : l'équipe du club, ou celle d'en face. */
+
 export const SCORER_SIDES = ['club', 'opponent'] as const;
 export type ScorerSide = (typeof SCORER_SIDES)[number];
 
-/**
- * Un but de la rencontre.
- *
- * Le nom est recopié plutôt que lu à travers `player` : un buteur adverse n'a
- * pas de fiche, et un joueur retiré de l'effectif ne doit pas effacer le but
- * qu'il a marqué. `player` ne sert qu'à relier le but à sa fiche quand elle
- * existe.
- */
+
 export interface MatchScorer {
   player?: string | null;
   name: string;
-  /** Minute du but ; 0 quand elle n'a pas été notée. */
+ 
   minute: number;
   side: ScorerSide;
-  /** Passeur décisif, pour un but du club ; vide s'il n'y en a pas. */
+ 
   assistName?: string;
   assistPlayer?: string | null;
 }
@@ -332,34 +273,21 @@ export interface MatchScorer {
 export interface Match {
   id: EntityId;
   opponent: string;
-  /** Jour de la rencontre, `AAAA-MM-JJ`. */
+ 
   date: string;
-  /** Heure du coup d'envoi, `HH:MM`. */
+ 
   time: string;
   venue: MatchVenue;
   competition: string;
-  /**
-   * Score, une fois la rencontre jouée.
-   *
-   * `home` et `away` suivent l'affiche et non le club : à l'extérieur, le score
-   * de Cambérène est `away`.
-   *
-   * `null` est accepté autant qu'absent : c'est ce que l'administration envoie
-   * pour retirer un score, quand une rencontre repasse « À venir ».
-   */
+ 
   result?: {
     home: number;
     away: number;
   } | null;
   status: MatchStatus;
-  /**
-   * Buteurs de la rencontre, les deux camps confondus.
-   *
-   * Facultative et possiblement incomplète : le club saisit le score le soir
-   * du match et la feuille quand il l'a.
-   */
+ 
   scorers?: MatchScorer[];
-  /** Affiche de la rencontre ou photo d'après-match. Facultative. */
+ 
   image?: string;
 }
 
@@ -376,15 +304,10 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  /**
-   * Droits du compte, tels que le serveur les a rendus.
-   *
-   * Ils décident des écrans affichés, jamais de ce qui est permis : le serveur
-   * revérifie chaque écriture. Voir `src/lib/roles.ts`.
-   */
+ 
   permissions: Permission[];
   subscription?: Subscription;
-  favoriteTeam?: string; // ajouté pour supporters
+  favoriteTeam?: string;
 }
 
 export interface Legend {
@@ -406,50 +329,38 @@ export interface Legend {
   jerseyNumber: number;
   era: LegendEra;
   isHallOfFame: boolean;
-  /** Ordre d'affichage ; à défaut, le classement se fait par époque. */
+ 
   rank?: number;
 }
-/**
- * Étape de la frise historique du club.
- *
- * Vivait dans `src/data/history.ts` du temps où la frise était écrite en dur ;
- * elle rejoint les types partagés maintenant que le backend du site la sert.
- */
-/**
- * Diapositive du carrousel de tête de l'accueil.
- *
- * Elle porte soit une photo, soit une vidéo YouTube : `youtube` l'emporte à
- * l'écran, `image` lui servant d'affiche puis de repli si la vidéo ne se
- * charge pas. Sans l'un ni l'autre, la diapositive s'affiche sur le fond vert
- * du club.
- */
+
+
 export interface HeroSlide {
   id: EntityId;
-  /** Photo de fond. Affiche de la vidéo quand `youtube` est renseigné. */
+ 
   image?: string;
-  /** Identifiant ou lien YouTube, sous n'importe laquelle de ses formes. */
+ 
   youtube?: string;
-  /** Surtitre jaune, en capitales. */
+ 
   kicker: string;
-  /** Titre blanc, en capitales, sur trois lignes au plus. */
+ 
   title: string;
   link: string;
   linkLabel: string;
-  /** Ordre d'apparition : les petits nombres passent devant. */
+ 
   rank?: number;
   isVisible?: boolean;
 }
 
 export interface HistoryEvent {
   id: EntityId;
-  /** Année pivot, celle qui range l'étape dans la frise. */
+ 
   year: number;
-  /** Précision libre quand l'année ne suffit pas : « Mai 1974 », « 1974-1976 ». */
+ 
   dateLabel?: string;
   title: string;
   description: string;
   tags?: string[];
   image?: string;
-  /** Ère à laquelle l'étape appartient : Fondation, Expansion, Modernisation… */
+ 
   phase?: string;
 }

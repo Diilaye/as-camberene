@@ -1,13 +1,7 @@
 import Joi from 'joi';
 import { FULFILMENTS, ORDER_STATUSES, PAYMENT_METHODS } from '../models/Order.model';
 
-/**
- * Panier envoyé par le site.
- *
- * Le client ne transmet que ce qu'il choisit — quel produit, quelle taille,
- * combien — jamais un prix. Les montants sont recalculés depuis le catalogue en
- * base : un total venu du navigateur se modifie depuis la console.
- */
+
 export const createOrderSchema = Joi.object({
   customer: Joi.object({
     name: Joi.string().trim().min(2).max(120).required().messages({

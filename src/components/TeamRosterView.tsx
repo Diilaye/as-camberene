@@ -22,7 +22,7 @@ const sectionsOf = (roster: ReturnType<typeof getRosterForTeam>) => ({
   Staff: roster?.staff ?? [],
 });
 
-/** De la ligne de jeu à l'onglet qui la présente. */
+
 const SECTION_OF_LINE: Record<string, string> = {
   Gardien: 'Gardiens',
   Défenseur: 'Défenseurs',
@@ -30,7 +30,7 @@ const SECTION_OF_LINE: Record<string, string> = {
   Attaquant: 'Attaquants',
 };
 
-/** Une fiche de l'effectif, ramenée à ce que la carte de joueur affiche. */
+
 const toEntry = (member: TeamMember): PlayerEntry => ({
   name: member.name,
   number: member.kind === 'player' ? member.number : undefined,
@@ -40,7 +40,7 @@ const toEntry = (member: TeamMember): PlayerEntry => ({
   photo: member.photo,
 });
 
-/** Les fiches saisies, rangées par ligne ; l'encadrement à part. */
+
 const sectionsOfMembers = (members: TeamMember[]) => {
   const sections: Record<string, PlayerEntry[]> = {
     Gardiens: [],
@@ -58,14 +58,7 @@ const sectionsOfMembers = (members: TeamMember[]) => {
   return sections;
 };
 
-/**
- * Page d'une équipe : identité, effectif par ligne, bilan de la saison.
- *
- * Les cinq catégories et la route `/teams/:teamId` partagent cette vue —
- * l'identifiant seul les distingue, et les données viennent de `data/teams` et
- * `data/teamRosters`. Auparavant chaque catégorie recopiait la page entière
- * avec son effectif en dur, ce qui laissait les mises en forme diverger.
- */
+
 const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
   const { data: teams } = useTeams();
   const { data: members } = useTeamMembers(teamId);
@@ -77,22 +70,26 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
 
   const roster = useMemo(() => getRosterForTeam(teamId), [teamId]);
 
-  /*
-    Les fiches saisies font autorité dès qu'il y en a une. Sans elles — une
-    équipe que le club vient de créer, ou un site dont l'effectif n'a pas
-    encore été repris — on montre l'effectif d'origine plutôt qu'une page vide.
-  */
+ 
+  const coach = useMemo(() => {
+    const head = members.find(
+      (member) => member.kind === 'staff' && /entra[iî]neur\s+principal/i.test(member.role ?? '')
+    );
+    return head?.name ?? team?.coach;
+  }, [members, team]);
+
+ 
   const sections = useMemo(
     () => (members.length > 0 ? sectionsOfMembers(members) : sectionsOf(roster)),
     [members, roster]
   );
 
-  /** Effectif réel : compté, jamais recopié sur l'équipe. */
+ 
   const headcount = members.length > 0
     ? members.length
     : Object.values(sectionsOf(roster)).reduce((total, list) => total + list.length, 0);
   const [activeSection, setActiveSection] = useState<string>('Attaquants');
-  /** Joueurs de l'effectif saisi, sans l'encadrement : ceux qui ont des statistiques. */
+ 
   const players = useMemo(() => members.filter((member) => member.kind === 'player'), [members]);
 
   if (!team) {
@@ -140,7 +137,7 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
         <div className="site-container grid gap-6 py-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-white/50">Entraîneur</p>
-            <p className="mt-1 font-extrabold uppercase text-white">{team.coach}</p>
+            <p className="mt-1 font-extrabold uppercase text-white">{coach}</p>
           </div>
           <div>
             <p className="flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-white/50">

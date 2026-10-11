@@ -1,11 +1,4 @@
-/**
- * Commandes de la boutique.
- *
- * La création est ouverte à tous : c'est la validation du panier. Le client
- * n'envoie que ses choix — quel produit, quelle taille, combien — et jamais un
- * prix : le serveur retarife depuis le catalogue, et c'est son total qui fait
- * foi. Le suivi, lui, exige le droit `orders:manage`.
- */
+
 
 import { siteApi } from '../../lib/api';
 import { Fulfilment, Order, OrderStatus, PaymentMethod } from '../../types';
@@ -26,7 +19,7 @@ export interface OrderListParams {
   limit?: number;
 }
 
-/** Libellés affichés ; le stockage garde des valeurs stables et sans accent. */
+
 export const STATUS_LABELS: Record<OrderStatus, string> = {
   recue: 'Reçue',
   preparee: 'Préparée',
@@ -45,8 +38,8 @@ export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
 };
 
 export const placeOrder = async (payload: PlaceOrderPayload): Promise<Order> => {
-  // `auth: true` sans être connecté ne joint rien : le jeton, s'il existe,
-  // rattache simplement la commande au compte supporter.
+ 
+ 
   const response = await siteApi.post<{ success: boolean; data: Order }>('/orders', payload, {
     auth: true,
   });

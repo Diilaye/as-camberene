@@ -1,10 +1,4 @@
-/**
- * Article de la boutique du club.
- *
- * La boutique du site est indépendante de la marketplace fconnect : le club
- * vend ses maillots depuis son propre site, sans passer par le catalogue
- * commun de la plateforme.
- */
+
 
 import mongoose, { Document, Schema } from 'mongoose';
 
@@ -22,7 +16,7 @@ export interface IProduct extends Document {
   description: string;
   sizes: string[];
   inStock: boolean;
-  /** Retiré de la vitrine sans être supprimé : l'historique du panier survit. */
+ 
   isVisible: boolean;
 }
 
@@ -53,8 +47,8 @@ const productSchema = new Schema<IProduct>(
   }
 );
 
-// La vignette vaut première image quand la galerie est vide, et inversement :
-// les pages du site attendent les deux renseignés.
+
+
 productSchema.pre('save', function alignImages(next) {
   if (!this.image && this.images.length > 0) this.image = this.images[0];
   if (this.images.length === 0 && this.image) this.images = [this.image];

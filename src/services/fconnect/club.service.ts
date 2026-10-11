@@ -1,8 +1,4 @@
-/**
- * Profil public du club dans fconnect.
- *
- * `GET /api/clubs/:clubId` — public, aucun jeton requis.
- */
+
 
 import { fconnectApi } from '../../lib/api';
 import { CLUB_ID } from '../../config/env';

@@ -26,20 +26,7 @@ const formatDate = (value?: string): string =>
       })
     : '';
 
-/**
- * Galerie photo du club.
- *
- * Les photos étaient une liste figée dans le code : le club ne pouvait pas
- * publier celles du match de la veille. Elles se rangent désormais en trois
- * onglets — matchs, entraînements, vie du club — et celles d'un match peuvent
- * en plus être rattachées à la rencontre exacte, ce qui les regroupe en album
- * sous son affiche.
- *
- * Le quatrième onglet du site, « Nos stars », ne se remplit pas ici : il
- * présente les joueurs cochés « vedette » dans l'Effectif, avec leur portrait
- * et un lien vers leur fiche. Une photo de plus à saisir aurait fait doublon
- * avec ce que le club tient déjà.
- */
+
 const GalerieAdmin: React.FC = () => {
   const {
     items: photos,
@@ -62,7 +49,7 @@ const GalerieAdmin: React.FC = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  /** Rencontres proposées au rattachement, de la plus récente à la plus ancienne. */
+ 
   const matchOptions = useMemo(
     () => [...matches].sort((a, b) => b.date.localeCompare(a.date)),
     [matches]
@@ -122,8 +109,8 @@ const GalerieAdmin: React.FC = () => {
       title: form.title,
       description: form.description,
       category: form.category,
-      // Le rattachement ne vaut que pour un match : changer de catégorie
-      // détache la photo, plutôt que de lui laisser un lien qu'on ne voit plus.
+     
+     
       match: form.category === 'match' && form.match ? form.match : null,
       date: form.date,
     };

@@ -1,34 +1,4 @@
-/**
- * Amorçage de l'administration du site : le super administrateur et
- * l'administrateur, en une commande.
- *
- * Un site fraîchement déployé n'a aucun compte, et `/api/users` — la route par
- * laquelle tous les autres se créent — est réservée au super administrateur.
- * Il faut donc un premier compte ouvert depuis le serveur, et ce script ouvre
- * dans la foulée celui qui tiendra le contenu au quotidien : la direction ne
- * se sert de son compte que pour distribuer les rôles.
- *
- * Qui peut quoi se lit dans `src/lib/roles.ts` :
- *   superadmin  tout, y compris les comptes  → direction du club
- *   admin       tout le contenu, aucun compte → rédaction, boutique, effectif
- *
- *   npm run bootstrap:admins
- *   npm run bootstrap:admins -- --superadmin direction@ascamberene.sn \
- *                               --admin redaction@ascamberene.sn
- *
- * Sans argument et dans un terminal, le script demande les deux adresses. En
- * CI ou dans un conteneur — pas de terminal — il faut les passer en options,
- * sinon il s'arrête plutôt que de deviner.
- *
- * Il est rejouable : un compte déjà là est laissé tel quel, son mot de passe
- * intact. `--reset-passwords` en tire de nouveaux — c'est le chemin de
- * récupération quand plus personne ne peut se connecter.
- *
- *   npm run bootstrap:admins -- --superadmin direction@ascamberene.sn --reset-passwords
- *
- * Les mots de passe ne sont affichés qu'une fois : ils ne sont stockés que
- * hachés, et rien ne permet de les relire ensuite.
- */
+
 import readline from 'readline';
 
 import { connectDatabase, disconnectDatabase, safeMongoUri } from '../src/config/database';
@@ -51,13 +21,7 @@ function readOption(name: string): string | undefined {
 
 const hasFlag = (name: string): boolean => process.argv.includes(`--${name}`);
 
-/**
- * Question posée au terminal, avec une réponse par défaut.
- *
- * `process.stdin.isTTY` distingue la personne du script : un `npm run` lancé
- * depuis un Dockerfile n'a personne pour répondre, et attendre indéfiniment y
- * ressemble à un déploiement figé.
- */
+
 async function ask(question: string, fallback: string): Promise<string> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   try {
@@ -70,7 +34,7 @@ async function ask(question: string, fallback: string): Promise<string> {
   }
 }
 
-/** Ce que le script doit ouvrir : une adresse et un mot de passe par rôle. */
+
 interface Target {
   role: UserRole;
   email: string;
@@ -102,8 +66,8 @@ async function collectTargets(): Promise<Target[] | null> {
     { role: 'superadmin', email: superadmin, password: readOption('superadmin-password') },
   ];
 
-  // L'administrateur est facultatif : la direction peut vouloir n'ouvrir que
-  // son propre compte et créer le reste depuis /admin/utilisateurs.
+ 
+ 
   if (admin) {
     targets.push({ role: 'admin', email: admin, password: readOption('admin-password') });
   }
@@ -114,8 +78,8 @@ async function collectTargets(): Promise<Target[] | null> {
     return null;
   }
 
-  // Deux rôles sur une même adresse : le second écraserait le premier sans que
-  // rien ne le signale, et la direction perdrait ses droits sur les comptes.
+ 
+ 
   const emails = targets.map((target) => target.email.trim().toLowerCase());
   if (new Set(emails).size !== emails.length) {
     console.error(

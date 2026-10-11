@@ -58,7 +58,7 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  // Certaines fiches n'ont qu'une image principale : la galerie retombe dessus.
+ 
   const gallery = product.images?.length ? product.images : [product.image];
 
   const handleAddToCart = () => {

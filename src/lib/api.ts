@@ -1,21 +1,4 @@
-/**
- * Clients HTTP du site.
- *
- * Le site s'adresse à deux serveurs :
- *
- * — `siteApi`, son propre backend (`server/`) : contenu éditorial, boutique,
- *   comptes. C'est lui qui reçoit les écritures de l'administration.
- * — `fconnectApi`, la gateway fconnect : données sportives du club, en lecture
- *   anonyme.
- *
- * Une seule mécanique pour les deux — requête, erreurs, rafraîchissement du
- * jeton — instanciée deux fois avec sa base et son magasin de jetons. `fetch`
- * suffit : aucune dépendance ajoutée pour cela.
- *
- * Les enveloppes de réponse diffèrent d'un service à l'autre (`{success, data}`
- * ici, `{success, matches}` là) : le client rend le corps tel quel, typé par
- * l'appelant, et chaque service sait dans quel champ regarder.
- */
+
 
 import { FCONNECT_API_URL, REQUEST_TIMEOUT_MS, SITE_API_URL } from '../config/env';
 import { AuthTokens, TokenStore, fconnectTokens, siteTokens } from './tokens';
@@ -24,17 +7,17 @@ export type QueryValue = string | number | boolean | undefined | null;
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  /** Paramètres d'URL ; les valeurs vides sont ignorées. */
+ 
   query?: Record<string, QueryValue>;
   body?: unknown;
-  /** Corps déjà formé (téléversement) : envoyé sans sérialisation JSON. */
+ 
   formData?: FormData;
-  /** Joindre le jeton du visiteur connecté, s'il y en a un. */
+ 
   auth?: boolean;
   signal?: AbortSignal;
 }
 
-/** Erreur portant le code HTTP et le message rendu par le serveur. */
+
 export class ApiError extends Error {
   readonly status: number;
   readonly details: string[];
@@ -46,7 +29,7 @@ export class ApiError extends Error {
     this.details = details;
   }
 
-  /** Le serveur est-il injoignable (réseau coupé, backend éteint) ? */
+ 
   get isNetworkError(): boolean {
     return this.status === 0;
   }
@@ -59,7 +42,7 @@ export class ApiError extends Error {
     return this.status === 401;
   }
 
-  /** Message d'ensemble, détails de validation compris. */
+ 
   get fullMessage(): string {
     return this.details.length > 0 ? `${this.message} : ${this.details.join(', ')}` : this.message;
   }
@@ -76,10 +59,10 @@ export interface ApiClient {
 }
 
 interface ClientOptions {
-  /** Racine de l'API, `/api` compris. */
+ 
   baseUrl: string;
   tokens: TokenStore;
-  /** Chemin de rafraîchissement, relatif à la base. */
+ 
   refreshPath: string;
 }
 
@@ -95,13 +78,7 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
     return url.toString();
   };
 
-  /**
-   * Rafraîchissement en cours, partagé.
-   *
-   * Plusieurs requêtes peuvent recevoir un 401 en même temps — une page
-   * d'administration en lance cinq. Sans ce verrou, chacune consommerait le
-   * jeton de rafraîchissement, et toutes échoueraient sauf la première.
-   */
+ 
   let refreshInFlight: Promise<string | null> | null = null;
 
   const refreshAccessToken = async (): Promise<string | null> => {
@@ -139,7 +116,7 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
     return refreshInFlight;
   };
 
-  /** Message d'erreur rendu par le serveur, ou un repli lisible. */
+ 
   const readError = async (response: Response): Promise<ApiError> => {
     let message = `Erreur ${response.status}`;
     let details: string[] = [];
@@ -159,13 +136,13 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
     token: string | null
   ): Promise<Response> => {
     const headers: Record<string, string> = {};
-    // Un FormData porte sa propre frontière multipart : fixer le Content-Type
-    // à la main la ferait disparaître, et le serveur ne lirait plus rien.
+   
+   
     if (options.body !== undefined) headers['Content-Type'] = 'application/json';
     if (token) headers.Authorization = `Bearer ${token}`;
 
-    // Le délai d'attente et l'annulation de l'appelant doivent tous deux pouvoir
-    // couper la requête : on relaie le signal externe vers le contrôleur interne.
+   
+   
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     const relayAbort = () => controller.abort();
@@ -184,14 +161,7 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
     }
   };
 
-  /**
-   * Exécute une requête et rend le corps JSON.
-   *
-   * Un 401 sur une requête authentifiée déclenche une tentative de
-   * rafraîchissement, puis un unique nouvel essai. Si elle échoue, les jetons
-   * sont effacés : le visiteur redevient anonyme, sans redirection forcée — une
-   * vitrine reste lisible déconnectée, et l'administration a ses propres gardes.
-   */
+ 
   const request = async <T>(path: string, options: RequestOptions = {}): Promise<T> => {
     const useAuth = options.auth ?? false;
     let token = useAuth ? tokens.getAccess() : null;
@@ -240,14 +210,14 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
   };
 };
 
-/** Backend du site : contenu éditorial, boutique, comptes. */
+
 export const siteApi = createApiClient({
   baseUrl: SITE_API_URL,
   tokens: siteTokens,
   refreshPath: '/auth/refresh',
 });
 
-/** Gateway fconnect : données sportives du club, en lecture. */
+
 export const fconnectApi = createApiClient({
   baseUrl: FCONNECT_API_URL,
   tokens: fconnectTokens,

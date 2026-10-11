@@ -25,7 +25,6 @@ interface NavColumn {
 interface NavItem {
   name: string;
   path: string;
-  /** Colonnes du panneau ; un item sans colonnes reste un simple lien. */
   columns?: NavColumn[];
 }
 
@@ -119,14 +118,12 @@ const Header: React.FC = () => {
   const headerRef = useRef<HTMLElement>(null);
   const lastScroll = useRef(0);
 
-  /** Changer de page referme tout. */
   useEffect(() => {
     setOpenMenu(null);
     setFullscreenOpen(false);
     setLangOpen(false);
   }, [location.pathname]);
 
-  /** Le menu plein écran occupe l'écran : on gèle le défilement derrière. */
   useEffect(() => {
     document.body.style.overflow = fullscreenOpen ? 'hidden' : '';
     return () => {
@@ -134,11 +131,6 @@ const Header: React.FC = () => {
     };
   }, [fullscreenOpen]);
 
-  /**
-   * Le bandeau partenaires se replie en descendant et revient en remontant,
-   * comme sur le modèle : la barre de navigation reste toujours accessible,
-   * l'habillage cède la place au contenu.
-   */
   useEffect(() => {
     const onScroll = () => {
       const current = window.scrollY;
@@ -149,7 +141,6 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  /** Un clic hors de l'en-tête referme le panneau. */
   useEffect(() => {
     const onPointerDown = (event: MouseEvent) => {
       if (headerRef.current && !headerRef.current.contains(event.target as Node)) {

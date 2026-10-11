@@ -1,17 +1,3 @@
-/**
- * Recalcul des buts et passes décisives à partir des feuilles de match.
- *
- * Le report automatique (`src/lib/matchStats.ts`) ne voit que les matchs
- * enregistrés depuis sa mise en place, et il ajoute à ce qui existe. Ce script
- * repart de zéro : pour chaque joueur, buts et passes deviennent exactement ce
- * que comptent les matchs terminés. Les chiffres saisis à la main dans
- * « Statistiques » sont donc remplacés — c'est le but.
- *
- * Seuls `goals` et `assists` sont touchés : matchs joués et cartons restent tels
- * quels, la feuille de match ne les renseigne pas.
- *
- *   npm run recount:stats
- */
 import { connectDatabase, disconnectDatabase, safeMongoUri } from '../src/config/database';
 import Match from '../src/models/Match.model';
 import Player from '../src/models/Player.model';
@@ -47,7 +33,6 @@ async function main(): Promise<number> {
       );
     }
 
-    // Un but relié à une fiche qui n'existe plus : signalé, jamais compté.
     const known = new Set(players.map((player) => String(player._id)));
     const orphans = [...totals.keys()].filter((id) => !known.has(id));
     if (orphans.length > 0) {

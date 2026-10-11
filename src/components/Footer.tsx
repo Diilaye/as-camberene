@@ -56,10 +56,7 @@ const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  /**
-   * L'inscription n'a pas encore de destinataire côté serveur : on accuse
-   * réception localement plutôt que d'appeler une route qui n'existe pas.
-   */
+ 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!email) return;

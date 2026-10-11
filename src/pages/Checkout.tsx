@@ -10,17 +10,7 @@ import { Fulfilment, Order, PaymentMethod } from '../types';
 import { FULFILMENT_LABELS, PAYMENT_LABELS, placeOrder } from '../services/site/orders.service';
 import PageHero from '../components/ui/PageHero';
 
-/**
- * Validation du panier.
- *
- * Le club n'encaisse pas en ligne : la commande est enregistrée, puis réglée au
- * retrait ou par mobile money. Le formulaire ne demande donc que ce qu'il faut
- * pour rappeler le client et lui remettre ses articles.
- *
- * Les montants affichés ici sont un aperçu. Le serveur retarife le panier
- * depuis le catalogue au moment d'enregistrer : c'est son total qui fait foi,
- * et c'est lui qui est montré sur la confirmation.
- */
+
 const Checkout: React.FC = () => {
   const { cart, getCartTotal, clearCart } = useCart();
   const { user } = useAuth();
@@ -65,8 +55,8 @@ const Checkout: React.FC = () => {
         note: note || undefined,
       });
 
-      // Le panier n'est vidé qu'une fois la commande acceptée : un échec laisse
-      // au client de quoi réessayer sans tout ressaisir.
+     
+     
       clearCart();
       setPlaced(order);
     } catch (cause) {
@@ -76,9 +66,7 @@ const Checkout: React.FC = () => {
     }
   };
 
-  /* --------------------------------------------------------------- *
-   * Confirmation
-   * --------------------------------------------------------------- */
+ 
   if (placed) {
     return (
       <div className="band-green flex min-h-screen items-center justify-center px-4 py-32">
@@ -126,9 +114,7 @@ const Checkout: React.FC = () => {
     );
   }
 
-  /* --------------------------------------------------------------- *
-   * Panier vide : rien à commander
-   * --------------------------------------------------------------- */
+ 
   if (cart.length === 0) {
     return (
       <div className="band-green flex min-h-screen items-center justify-center px-6 py-32 text-center">

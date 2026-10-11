@@ -1,8 +1,8 @@
-// Données de l'histoire du club (timeline linéaire)
-// Chaque événement représente une grande étape structurante.
-//
-// Repli utilisé tant que le backend du site n'a pas repris la frise
-// (server : npm run seed:content) ou qu'il est injoignable.
+
+
+
+
+
 import { HistoryEvent } from '../types';
 
 export const historyEvents: HistoryEvent[] = [

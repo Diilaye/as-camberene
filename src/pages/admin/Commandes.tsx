@@ -28,17 +28,7 @@ const formatDate = (value: string) =>
     minute: '2-digit',
   });
 
-/**
- * Carnet de commandes de la boutique.
- *
- * Les montants ne sont pas modifiables : une commande enregistrée est un
- * engagement, et c'est le serveur qui l'a tarifée depuis le catalogue. Ce qui
- * se pilote ici, c'est son avancement — reçue, préparée, remise, annulée — et
- * la note interne qui l'accompagne.
- *
- * Pour changer ce qui a été commandé, on annule et on ressaisit : la trace des
- * deux reste, ce qu'une modification en place effacerait.
- */
+
 const Commandes: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +53,7 @@ const Commandes: React.FC = () => {
     [search, statusFilter]
   );
 
-  // La recherche est temporisée : sans cela, chaque frappe partirait au serveur.
+ 
   useEffect(() => {
     const controller = new AbortController();
     const timer = setTimeout(() => void load(controller.signal), 250);
@@ -73,7 +63,7 @@ const Commandes: React.FC = () => {
     };
   }, [load]);
 
-  /** Compteurs par statut, sur le jeu affiché. */
+ 
   const counts = useMemo(() => {
     const byStatus = {} as Record<OrderStatus, number>;
     orders.forEach((order) => {
@@ -82,7 +72,7 @@ const Commandes: React.FC = () => {
     return byStatus;
   }, [orders]);
 
-  /** Chiffre des commandes qui ne sont pas annulées. */
+ 
   const revenue = useMemo(
     () => orders.filter((order) => order.status !== 'annulee').reduce((sum, o) => sum + o.total, 0),
     [orders]

@@ -7,17 +7,7 @@ import { FcClub } from '../../types/fconnect';
 import { AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
 import { useAuth } from '../../hooks/useAuth';
 
-/**
- * Paramètres — informations du club.
- *
- * Cet écran présentait un formulaire qui n'enregistrait rien : ses champs
- * avaient une valeur par défaut, un bouton « Sauvegarder » sans action, et le
- * club pouvait croire avoir modifié quelque chose. Il montre désormais l'état
- * réel, et dit où chaque réglage se modifie pour de bon.
- *
- * L'identité du club appartient à fconnect : nom, contact, année de fondation
- * s'y saisissent, et le site les lit.
- */
+
 
 const Field: React.FC<{ label: string; value?: string | number | null }> = ({ label, value }) => (
   <div>

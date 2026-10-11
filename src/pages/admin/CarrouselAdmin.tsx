@@ -18,23 +18,7 @@ const EMPTY_FORM = {
   isVisible: true,
 };
 
-/**
- * Carrousel de tête de la page d'accueil.
- *
- * C'est la première chose qu'un visiteur voit du club : une photo plein écran
- * ou une vidéo YouTube, un surtitre, un titre et un bouton. Ces diapositives
- * étaient figées dans le code — les changer demandait un développeur et un
- * déploiement ; elles se tiennent désormais ici.
- *
- * Une diapositive porte une photo, une vidéo, ou aucune des deux : sans visuel
- * elle s'affiche sur le fond vert du club, ce qui convient à une annonce. Avec
- * les deux, la vidéo passe et la photo lui sert d'affiche — c'est ce qui
- * s'affiche pendant son chargement, et ce qui reste si YouTube la refuse.
- *
- * L'ordre est celui de cette liste, et les flèches le changent. Masquer plutôt
- * que supprimer laisse une diapositive de côté sans perdre sa saisie : une
- * annonce de match revient à chaque rencontre.
- */
+
 const CarrouselAdmin: React.FC = () => {
   const {
     items: slides,
@@ -55,7 +39,7 @@ const CarrouselAdmin: React.FC = () => {
   const [reordering, setReordering] = useState(false);
   const [reorderError, setReorderError] = useState<ApiError | null>(null);
 
-  /** Identifiant tiré du lien saisi : il dit si la vidéo sera jouable. */
+ 
   const detectedVideo = useMemo(() => youtubeId(form.youtube), [form.youtube]);
 
   const openCreate = () => {
@@ -89,8 +73,8 @@ const CarrouselAdmin: React.FC = () => {
       link: form.link,
       linkLabel: form.linkLabel,
       isVisible: form.isVisible,
-      // Une nouvelle diapositive se range à la fin plutôt qu'en tête : elle ne
-      // doit pas déloger celle que le club a mise en avant.
+     
+     
       ...(editingId ? {} : { rank: slides.length }),
     };
 
@@ -98,13 +82,7 @@ const CarrouselAdmin: React.FC = () => {
     if (saved) setModalOpen(false);
   };
 
-  /**
-   * Déplacement d'une diapositive.
-   *
-   * Toute la liste est renumérotée, et pas seulement les deux diapositives
-   * échangées : au départ tous les rangs valent zéro, et un simple échange
-   * n'aurait alors rien changé à l'ordre affiché.
-   */
+ 
   const move = async (index: number, direction: -1 | 1) => {
     const target = index + direction;
     if (target < 0 || target >= slides.length) return;

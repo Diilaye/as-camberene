@@ -8,17 +8,11 @@ interface PlayerCardProps {
   name: string;
   position?: string;
   number?: number;
-  /** Ligne d'appoint : âge, nationalité, rôle au sein du staff. */
+ 
   meta?: string;
 }
 
-/**
- * Vignette de joueur.
- *
- * Photo en portrait, numéro en très gros filigrane dans l'angle et nom en
- * capitales sur le bandeau bas — la fiche d'effectif du modèle. Sans `to`, la
- * carte reste un simple bloc : les catégories de jeunes n'ont pas de fiche.
- */
+
 const PlayerCard: React.FC<PlayerCardProps> = ({ to, photo, name, position, number, meta }) => {
   const content = (
     <>

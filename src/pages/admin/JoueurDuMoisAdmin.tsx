@@ -19,13 +19,6 @@ import { PLAYER_TEAM_LABELS } from '../../types';
 
 const currentMonth = () => new Date().toISOString().slice(0, 7);
 
-/**
- * Joueur du mois : le club nomme, les supporters votent, le club dépouille.
- *
- * Les nommés se choisissent dans l'effectif. Les résultats — votes et
- * pourcentages — ne s'affichent qu'ici ; le public ne voit le vainqueur qu'à la
- * clôture.
- */
 const JoueurDuMoisAdmin: React.FC = () => {
   const { data: polls, loading, error, reload } = useApiResource<PotmAdmin[]>((signal) => listPotm(signal), []);
   const { items: roster } = useEditableResource<TeamMemberRecord>(teamMembersApi, { kind: 'player', limit: 100 });
@@ -39,7 +32,6 @@ const JoueurDuMoisAdmin: React.FC = () => {
 
   const teamName = (slug: string) => teams.find((team) => team.slug === slug)?.name ?? PLAYER_TEAM_LABELS[slug] ?? slug;
 
-  // L'effectif groupé par équipe, pour cocher les nommés.
   const byTeam = useMemo(() => {
     const groups = new Map<string, TeamMemberRecord[]>();
     [...roster]

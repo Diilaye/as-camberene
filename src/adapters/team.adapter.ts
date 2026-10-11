@@ -1,13 +1,4 @@
-/**
- * Équipe fconnect → `TeamData` du site.
- *
- * La tranche d'âge affichée relève de la présentation et non des données : elle
- * est dérivée de la catégorie plutôt que lue du backend, qui ne la publie pas.
- *
- * Les entraînements et le palmarès n'existent pas sur le modèle `Team` de
- * fconnect (les séances sont un module privé, `/api/clubs/me/trainings`) : ils
- * restent vides tant que le backend ne les publie pas.
- */
+
 
 import { TeamData } from '../data/teams';
 import { FcTeam, FcTeamCategory, FcTeamStaffRef } from '../types/fconnect';
@@ -16,7 +7,7 @@ import { fullName } from './helpers';
 import { ApiPlayer, toPlayers } from './player.adapter';
 import { rosterOf } from '../services/fconnect/members.service';
 
-/** Habillage par catégorie : la tranche d'âge telle qu'elle s'affiche. */
+
 const PRESENTATION: Record<FcTeamCategory, { ageRange: string }> = {
   senior: { ageRange: 'Seniors' },
   u23: { ageRange: '20–23' },
@@ -32,7 +23,7 @@ const PRESENTATION: Record<FcTeamCategory, { ageRange: string }> = {
 
 const DEFAULT_PRESENTATION = PRESENTATION.other;
 
-/** Le site ne connaît que deux familles ; fconnect en distingue dix. */
+
 const SENIOR_CATEGORIES: FcTeamCategory[] = ['senior', 'veterans', 'women'];
 
 export const TEAM_IMAGE_FALLBACK = 'assets/img/asc-camberene-equipe-2025.webp';
@@ -40,16 +31,11 @@ export const TEAM_IMAGE_FALLBACK = 'assets/img/asc-camberene-equipe-2025.webp';
 const staffName = (staff?: FcTeamStaffRef | string | null): string =>
   staff && typeof staff === 'object' ? fullName(staff.first_name, staff.last_name) : '';
 
-/** `TeamData` augmenté de l'effectif et de l'identifiant fconnect. */
+
 export interface ApiTeam extends TeamData {
   fcId: string;
   season: string;
-  /**
-   * Effectif annoncé par fconnect.
-   *
-   * Propre à cette source : les équipes du site n'en portent pas, leurs pages
-   * comptant les fiches réellement rattachées.
-   */
+ 
   players: number;
   players_list: ApiPlayer[];
 }
@@ -61,8 +47,8 @@ export const toTeam = (team: FcTeam): ApiTeam => {
 
   return {
     id: team.id,
-    // fconnect n'a pas de slug : son identifiant en tient lieu, et c'est déjà
-    // lui qui composait l'adresse de l'équipe.
+   
+   
     slug: team.id,
     fcId: team.id,
     category: SENIOR_CATEGORIES.includes(category) ? 'senior' : 'youth',
@@ -89,17 +75,12 @@ export const toTeam = (team: FcTeam): ApiTeam => {
 
 export const toTeams = (teams: FcTeam[]): ApiTeam[] => teams.map(toTeam);
 
-/**
- * Catégorie fconnect correspondant aux routes historiques du site.
- *
- * `/equipe-u19` doit continuer de fonctionner une fois les données branchées :
- * cette table fait le pont entre l'URL et la catégorie à demander.
- */
+
 export const CATEGORY_BY_ROUTE: Record<string, FcTeamCategory> = {
   'equipe-a': 'senior',
   'equipe-u19': 'u19',
   'equipe-u17': 'u17',
   'equipe-u15': 'u15',
-  // fconnect ne connaît pas de catégorie U12 : U13 est la plus proche.
+ 
   'equipe-u12': 'u13',
 };

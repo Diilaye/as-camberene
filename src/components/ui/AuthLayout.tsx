@@ -8,10 +8,7 @@ interface AuthLayoutProps {
   footer?: React.ReactNode;
 }
 
-/**
- * Cadre commun aux écrans de connexion et d'inscription : le blason sur la
- * bande verte, le formulaire dans un panneau graphite centré.
- */
+
 const AuthLayout: React.FC<AuthLayoutProps> = ({ kicker, title, description, children, footer }) => (
   <div className="band-green flex min-h-screen items-center justify-center px-4 py-28">
     <div className="w-full max-w-lg rounded-[20px] border border-white/10 bg-graphite p-8 shadow-2xl sm:p-10">

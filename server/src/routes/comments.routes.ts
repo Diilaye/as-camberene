@@ -1,10 +1,4 @@
-/**
- * Commentaires sous les actualités.
- *
- * Attachés à l'article, et non stockés à part : on ne les lit jamais sans lui.
- * Un visiteur peut en déposer un — la limite de débit globale de l'API borne
- * l'abus — et seuls les profils chargés de la modération peuvent en retirer un.
- */
+
 
 import { Router } from 'express';
 import Article from '../models/Article.model';
@@ -29,7 +23,7 @@ router.post(
   handler(async (req, res) => {
     const value = await commentSchema.validateAsync(req.body, { stripUnknown: true });
 
-    // Commenter un brouillon n'aurait pas de sens : il n'est pas visible.
+   
     const article = await Article.findOne({ _id: req.params.articleId, status: 'published' });
     if (!article) throw notFound('Article introuvable');
 

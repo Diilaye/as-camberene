@@ -17,7 +17,6 @@ const NewsDetail: React.FC = () => {
   const { user } = useAuth();
   const { article, loading } = useArticle(id);
   const { data: allArticles } = useArticles({ limit: 20 });
-  // Photo de l'article affichée en plein écran.
   const [zoomed, setZoomed] = useState(false);
 
   useEffect(() => {
@@ -32,8 +31,6 @@ const NewsDetail: React.FC = () => {
   const [commentError, setCommentError] = useState('');
   const [posting, setPosting] = useState(false);
 
-  // Les commentaires arrivent avec l'article ; ils sont recopiés dans l'état
-  // pour que celui qu'on vient d'écrire apparaisse sans recharger la page.
   useEffect(() => {
     setComments(article?.comments ?? []);
   }, [article]);
@@ -64,9 +61,6 @@ const NewsDetail: React.FC = () => {
     setPosting(true);
     setCommentError('');
     try {
-      // Le commentaire part au serveur : il survit au rechargement, et les
-      // autres visiteurs le voient. L'auteur est le nom du compte connecté,
-      // « Supporter » pour un visiteur anonyme.
       const saved = await postComment(String(article.id), {
         author: user?.name || 'Supporter',
         content: newComment.trim(),

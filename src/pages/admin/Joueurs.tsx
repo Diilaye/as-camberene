@@ -19,13 +19,13 @@ import {
   StrongFoot,
 } from '../../types';
 
-/** Compteurs et mesures : saisis en texte pour laisser le champ vide, fixés ici. */
+
 const toNumber = (value: string): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 };
 
-/** `<input type="date">` veut `AAAA-MM-JJ` ; le serveur rend une date ISO complète. */
+
 const toDateInput = (value: string | null): string => (value ? String(value).slice(0, 10) : '');
 
 const EMPTY_FORM = {
@@ -68,17 +68,7 @@ const KIND_LABELS: Record<PlayerKind, string> = {
   staff: 'Encadrement',
 };
 
-/**
- * Effectif — création et gestion.
- *
- * Chaque fiche est rattachée à une équipe (A, U19, U17, U15, U12) et à une
- * ligne de jeu ; c'est ce couple qui construit les pages publiques d'équipe.
- * L'encadrement se saisit ici aussi, distingué par `kind` : même fiche, mais
- * une fonction à la place d'un poste et d'un numéro.
- *
- * Le droit `players:write` est exigé, et le serveur le revérifie à chaque
- * écriture — ce que masque cet écran n'est jamais ce qui protège la donnée.
- */
+
 const Joueurs: React.FC = () => {
   const {
     items: members,
@@ -94,12 +84,7 @@ const Joueurs: React.FC = () => {
 
   const { data: teams } = useTeams();
 
-  /**
-   * Rang d'une équipe dans la liste du club.
-   *
-   * Une fiche rattachée à une équipe supprimée depuis n'est pas perdue : elle
-   * se range en fin de liste, où on la voit et où on la réaffecte.
-   */
+ 
   const teamOrder = useCallback(
     (slug: string) => {
       const index = teams.findIndex((team) => team.slug === slug);
@@ -108,7 +93,7 @@ const Joueurs: React.FC = () => {
     [teams]
   );
 
-  /** Nom affiché d'une équipe ; à défaut son slug, qui reste parlant. */
+ 
   const teamLabel = useCallback(
     (slug: string) => teams.find((team) => team.slug === slug)?.name ?? PLAYER_TEAM_LABELS[slug] ?? slug,
     [teams]
@@ -139,8 +124,8 @@ const Joueurs: React.FC = () => {
         return matchesQuery && matchesTeam && matchesKind;
       })
       .sort((a, b) => {
-        // Ordre du terrain, pas ordre alphabétique : l'encadrement ferme la
-        // liste de son équipe, les joueurs se rangent gardiens en tête.
+       
+       
         if (a.team !== b.team) return teamOrder(a.team) - teamOrder(b.team);
         if (a.kind !== b.kind) return a.kind === 'player' ? -1 : 1;
         if (a.kind === 'player' && a.line !== b.line) {
@@ -150,7 +135,7 @@ const Joueurs: React.FC = () => {
       });
   }, [members, query, teamFilter, kindFilter, teamOrder]);
 
-  /** Combien de fiches par équipe, pour situer d'un coup d'œil. */
+ 
   const countByTeam = useMemo(() => {
     const counts = new Map<PlayerTeam, number>();
     for (const member of members) counts.set(member.team, (counts.get(member.team) ?? 0) + 1);
@@ -159,7 +144,7 @@ const Joueurs: React.FC = () => {
 
   const openCreate = () => {
     setEditingId(null);
-    // L'équipe filtrée est presque toujours celle qu'on vient remplir.
+   
     setForm({ ...EMPTY_FORM, team: teamFilter || EMPTY_FORM.team });
     setModalOpen(true);
   };
@@ -202,16 +187,16 @@ const Joueurs: React.FC = () => {
       kind: form.kind,
       name: form.name,
       team: form.team,
-      // Un encadrant ne porte ni numéro ni ligne de jeu : on n'envoie pas une
-      // valeur de formulaire qui n'a pas de sens pour lui.
+     
+     
       number: isStaff ? 0 : toNumber(form.number),
       line: isStaff ? 'Milieu' : form.line,
       position: isStaff ? '' : form.position,
       role: isStaff ? form.role : '',
       photo: form.photo,
       status: form.status,
-      // Chaîne vide = date inconnue ; `null` le dit au serveur sans qu'il ait à
-      // convertir une chaîne vide en date.
+     
+     
       birthDate: form.birthDate || null,
       nationality: form.nationality,
       height: toNumber(form.height),
@@ -231,8 +216,8 @@ const Joueurs: React.FC = () => {
       isFeatured: form.isFeatured,
     };
 
-    // Le formulaire reste ouvert si l'enregistrement a échoué : la saisie n'est
-    // pas perdue, et le message d'erreur explique pourquoi.
+   
+   
     const saved = editingId ? await update(editingId, payload) : await create(payload);
     if (saved) setModalOpen(false);
   };

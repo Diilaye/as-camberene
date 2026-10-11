@@ -1,9 +1,4 @@
-/**
- * Calendrier et résultats.
- *
- * `match-service` accepte un filtre `clubId` natif et reste lisible sans
- * compte : les matchs sont l'affiche du club.
- */
+
 
 import { fconnectApi } from '../../lib/api';
 import { CLUB_ID } from '../../config/env';
@@ -14,7 +9,7 @@ export interface MatchFilters {
   type?: FcMatchType;
   dateFrom?: string;
   dateTo?: string;
-  /** Tri Mongo : `date` (croissant) ou `-date` (décroissant). */
+ 
   sort?: 'date' | '-date';
   page?: number;
   limit?: number;
@@ -31,14 +26,14 @@ export const getMatches = async (
   return response.matches;
 };
 
-/** Prochaines rencontres, de la plus proche à la plus lointaine. */
+
 export const getUpcomingMatches = (limit = 5, signal?: AbortSignal): Promise<FcMatch[]> =>
   getMatches(
     { status: 'scheduled', sort: 'date', dateFrom: new Date().toISOString(), limit },
     signal
   );
 
-/** Derniers résultats, du plus récent au plus ancien. */
+
 export const getRecentResults = (limit = 5, signal?: AbortSignal): Promise<FcMatch[]> =>
   getMatches({ status: 'finished', sort: '-date', limit }, signal);
 

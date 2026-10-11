@@ -1,10 +1,3 @@
-/**
- * Contenu du site : lecture publique, écriture par l'administration.
- *
- * Un seul document, remplacé en entier à chaque enregistrement : l'écran
- * d'administration envoie toujours l'ensemble, ce qui évite qu'une moitié de
- * formulaire en écrase une autre.
- */
 
 import { Router } from 'express';
 import SiteSettings from '../models/SiteSettings.model';
@@ -14,8 +7,6 @@ import { siteSettingsSchema } from '../validators/settings';
 
 const router = Router();
 
-// `null` tant que rien n'a été enregistré : le site garde alors ses valeurs
-// d'origine, sans qu'il faille les recopier ici.
 router.get(
   '/',
   handler(async (_req, res) => {

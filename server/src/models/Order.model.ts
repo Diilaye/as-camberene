@@ -1,16 +1,4 @@
-/**
- * Commande passée depuis la boutique du site.
- *
- * Les lignes conservent le nom et le prix unitaire **au moment de la commande**
- * plutôt qu'une simple référence au produit : le catalogue vit, les prix
- * changent, un maillot est retiré de la vitrine — et une commande de l'an
- * dernier doit rester lisible telle qu'elle a été passée. La référence au
- * produit est gardée en plus, pour retrouver la fiche quand elle existe encore.
- *
- * Aucun encaissement en ligne : le club constate le règlement à la remise ou
- * par mobile money. `payment_method` dit ce qui était prévu, `status` ce qui
- * s'est réellement passé.
- */
+
 
 import crypto from 'crypto';
 import mongoose, { Document, Schema } from 'mongoose';
@@ -42,16 +30,11 @@ export interface IOrder extends Document {
   payment_method: (typeof PAYMENT_METHODS)[number];
   status: OrderStatus;
   note?: string;
-  /** Compte supporter à l'origine de la commande, s'il était connecté. */
+ 
   placed_by?: mongoose.Types.ObjectId;
 }
 
-/**
- * Référence lisible à l'oral.
- *
- * Sans I, O, 0 ni 1 : le club lit ces références au téléphone, et confondre un
- * O avec un zéro coûte un appel de plus.
- */
+
 export const generateReference = (): string => {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const suffix = Array.from(crypto.randomBytes(6))

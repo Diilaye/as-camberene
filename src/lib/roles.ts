@@ -1,15 +1,3 @@
-/**
- * Rôles et permissions, côté site.
- *
- * Jumeau de `server/src/lib/roles.ts`. Il ne protège rien : le serveur
- * revérifie chaque écriture, et un compte qui forcerait l'URL d'un écran
- * interdit n'obtiendrait que des 403. Il sert à ne pas montrer une rubrique
- * qu'on ne peut pas utiliser, et à nommer les profils dans l'interface.
- *
- * Les permissions du compte connecté viennent du serveur (`/auth/me`) : la
- * table ci-dessous n'est qu'un repli quand la réponse est plus ancienne que le
- * code, et la source des libellés.
- */
 
 export const ROLES = ['superadmin', 'admin', 'journalist', 'shop-admin', 'subscriber'] as const;
 export type UserRole = (typeof ROLES)[number];
@@ -64,7 +52,6 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   subscriber: 'Supporter',
 };
 
-/** Ce que chaque profil recouvre, dit en une phrase dans les formulaires. */
 export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   superadmin: "Tout le site, plus la gestion des comptes de l'administration.",
   admin: 'Tout le contenu, la boutique et les commandes. Ne gère pas les comptes.',
@@ -77,5 +64,4 @@ export const permissionsOf = (role: UserRole): Permission[] => MATRIX[role] ?? [
 
 export const isStaffRole = (role: UserRole): boolean => role !== 'subscriber';
 
-/** Profils qu'un super administrateur peut attribuer. */
 export const ASSIGNABLE_ROLES: UserRole[] = [...ROLES];

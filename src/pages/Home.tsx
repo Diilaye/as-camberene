@@ -30,7 +30,6 @@ const formatMatchDate = (value: string) =>
   new Date(value).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
 
 const Home: React.FC = () => {
-  // Textes, chiffres et sections affichées : onglet « Contenu du site ».
   const settings = useSiteSettings();
   const show = settings.homeSections;
   const HERO_SOCIALS = socialLinks(settings);
@@ -39,14 +38,8 @@ const Home: React.FC = () => {
   const [playing, setPlaying] = useState(true);
   const [muted, setMuted] = useState(true);
   const [progress, setProgress] = useState({ current: 0, duration: 0 });
-  /** Vidéos que YouTube a refusé de servir : la diapositive repasse en photo. */
   const [unavailable, setUnavailable] = useState<string[]>([]);
 
-  /**
-   * Diapositives préparées une fois : l'identifiant YouTube est extrait ici
-   * pour que le rendu n'ait plus qu'à tester sa présence, et qu'un lien mal
-   * formé retombe silencieusement sur la photo.
-   */
   const { data: heroSlides } = useHeroSlides();
 
   const slides = useMemo(
@@ -58,16 +51,6 @@ const Home: React.FC = () => {
     [heroSlides, unavailable]
   );
 
-  /**
-   * Position affichée, ramenée dans les bornes de la liste.
-   *
-   * Les diapositives viennent du serveur : leur nombre change une fois la
-   * réponse arrivée, et peut être plus petit que la position courante — le
-   * club vient de supprimer la dernière, par exemple. Sans ce garde-fou, la
-   * diapositive active serait `undefined` et l'accueil planterait sur son
-   * titre. Borner à l'affichage plutôt que corriger l'état après coup évite
-   * le rendu intermédiaire, celui qui casse.
-   */
   const activeIndex = slides.length > 0 ? Math.min(slide, slides.length - 1) : 0;
   const active = slides[activeIndex];
   const isVideo = Boolean(active?.videoId);
@@ -80,13 +63,6 @@ const Home: React.FC = () => {
     [slides.length]
   );
 
-  /**
-   * Avance automatique.
-   *
-   * Une photo tient six secondes ; une vidéo garde la main jusqu'à sa fin, que
-   * `HeroVideo` signale. Sans cette distinction, le carrousel couperait la
-   * vidéo au milieu.
-   */
   useEffect(() => {
     if (!playing || isVideo) return undefined;
     const timer = setInterval(() => goTo(activeIndex + 1), 6000);
@@ -98,15 +74,11 @@ const Home: React.FC = () => {
   }, []);
 
   const { data: allArticles } = useArticles({ limit: 30 });
-  // Une actualité sans photo ne défile que dans le bandeau : pas de carte.
   const articles = allArticles.filter((article) => article.image).slice(0, 9);
   const { data: products } = useProducts({ limit: 8 });
   const { data: legends } = useLegends({ limit: 8 });
   const { data: matches } = useMatches();
 
-  // Les 3 prochains matchs (le plus proche d'abord) et les 3 derniers résultats
-  // (le plus récent d'abord), selon la date du jour : la liste se renouvelle
-  // d'elle-même à chaque match joué.
   const upcoming = upcomingMatches(matches, 3);
   const recent = recentResults(matches, 3);
 
@@ -472,7 +444,6 @@ const Home: React.FC = () => {
                 kicker={article.category}
                 title={article.title}
                 date={article.publishedAt}
-                /* Une carte sur trois passe en paysage, comme dans le modèle. */
                 wide={(index + 1) % 3 === 0}
               />
             ))}

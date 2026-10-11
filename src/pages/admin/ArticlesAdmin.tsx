@@ -7,16 +7,6 @@ import ImageField from '../../components/admin/ImageField';
 import ImagePositionField, { DEFAULT_IMAGE_POSITION } from '../../components/admin/ImagePositionField';
 import { ARTICLE_CATEGORIES } from '../../types';
 
-/**
- * Actualités du club.
- *
- * Le contenu vit dans le backend du site : ce qui est enregistré ici est
- * visible de tous les visiteurs, et survit au navigateur qui l'a saisi.
- *
- * Connecté en administrateur, la liste montre aussi les brouillons — les
- * mêmes routes servent le public et l'administration, seul le jeton change ce
- * qu'elles rendent. L'aperçu est donc fidèle à ce qui sera publié.
- */
 const ArticlesAdmin: React.FC = () => {
   const {
     items: articles,
@@ -74,8 +64,6 @@ const ArticlesAdmin: React.FC = () => {
       title: form.title,
       category: form.category as ArticleRecord['category'],
       excerpt: form.excerpt,
-      // Le corps peut rester vide à la création : le résumé fait alors office
-      // d'article court, comme avant.
       content: form.content || form.excerpt,
       image: form.image,
       imagePosition: form.imagePosition,
@@ -84,8 +72,6 @@ const ArticlesAdmin: React.FC = () => {
     };
 
     const saved = editingId ? await update(editingId, payload) : await create(payload);
-    // Le formulaire reste ouvert si l'enregistrement a échoué : la saisie n'est
-    // pas perdue, et le message d'erreur explique pourquoi.
     if (saved) setModalOpen(false);
   };
 

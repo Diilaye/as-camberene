@@ -1,15 +1,4 @@
-/**
- * Actualites du club.
- *
- * Contenu d'amorcage : de quoi remplir la page d'accueil, la liste des
- * actualites et les fiches de detail, avec assez de variete pour que les
- * filtres par rubrique aient un sens. Il est ecrit pour etre remplace — c'est
- * la matiere sur laquelle le club apprend a se servir de son administration.
- *
- * Deux brouillons y figurent volontairement : ils prouvent, une fois en base,
- * qu'un article non publie reste invisible du public et visible de
- * l'administration.
- */
+
 import { SeedArticle } from './types';
 
 const image = (id: string) =>

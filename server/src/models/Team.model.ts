@@ -1,21 +1,4 @@
-/**
- * Équipe du club.
- *
- * Équipe première et catégories de jeunes : ce que la page `/teams` présente,
- * et ce à quoi chaque fiche de l'effectif est rattachée. Les cinq équipes
- * étaient jusqu'ici une liste figée dans le code — en ajouter une, une U13 par
- * exemple, demandait un développeur et un déploiement.
- *
- * `slug` est l'identité durable de l'équipe : il compose son adresse
- * (`/teams/equipe-u19`) et c'est lui que porte chaque joueur. Le renommer
- * détacherait tout l'effectif d'un coup et casserait les liens déjà partagés,
- * d'où sa fixité une fois l'équipe créée — le nom affiché, lui, se change
- * librement.
- *
- * L'effectif n'est pas ici : il vit dans `Player`, qui pointe l'équipe par son
- * slug. Un compteur de joueurs recopié sur l'équipe se démentirait au premier
- * transfert ; les pages comptent l'effectif réel.
- */
+
 
 import mongoose, { Document, Schema } from 'mongoose';
 
@@ -24,11 +7,11 @@ export type TeamCategory = (typeof TEAM_CATEGORIES)[number];
 
 export interface ITeam extends Document {
   _id: mongoose.Types.ObjectId;
-  /** Identifiant d'URL, et clé de rattachement de l'effectif. */
+ 
   slug: string;
   name: string;
   category: TeamCategory;
-  /** Tranche d'âge affichée en pastille : « Seniors », « 17–19 ». */
+ 
   ageRange: string;
   subtitle: string;
   description: string;
@@ -37,7 +20,7 @@ export interface ITeam extends Document {
   stadium: string;
   achievements: string[];
   stats: { wins: number; draws: number; losses: number };
-  /** Année de création, affichée telle quelle. */
+ 
   established: string;
   image: string;
   rank: number;
@@ -53,7 +36,7 @@ const teamSchema = new Schema<ITeam>(
       trim: true,
       lowercase: true,
       maxlength: 80,
-      // Le slug part dans une URL : on le tient à ce qui y voyage sans encodage.
+     
       match: [
         /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
         'Identifiant invalide : minuscules, chiffres et tirets uniquement',
@@ -75,8 +58,8 @@ const teamSchema = new Schema<ITeam>(
     },
     established: { type: String, trim: true, maxlength: 20, default: '' },
     image: { type: String, maxlength: 500, default: '' },
-    // L'équipe première d'abord, puis les catégories par âge décroissant : ce
-    // n'est ni l'ordre alphabétique ni celui de la création.
+   
+   
     rank: { type: Number, default: 0, index: true },
     isVisible: { type: Boolean, default: true, index: true },
   },

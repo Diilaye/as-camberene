@@ -16,17 +16,7 @@ const formatDate = (value: string): string =>
     month: 'long',
   });
 
-/**
- * Précommande de places pour les prochaines rencontres.
- *
- * Le supporter retient ses places et règle au guichet : rien n'est encaissé
- * ici. C'est volontaire — le club n'a pas de passerelle de paiement, et une
- * page qui prendrait l'argent sans savoir le rendre serait pire que pas de
- * billetterie du tout.
- *
- * Ce que le supporter obtient est donc une référence à présenter au stade, et
- * le club voit la liste des places retenues avant d'ouvrir son guichet.
- */
+
 const Billetterie: React.FC = () => {
   const [params] = useSearchParams();
   const { data: matches, loading } = useMatches();
@@ -36,8 +26,8 @@ const Billetterie: React.FC = () => {
     [matches]
   );
 
-  // Le bouton « Billets » d'une carte de match arrive avec sa rencontre déjà
-  // choisie ; sans ce paramètre, on propose la plus proche.
+ 
+ 
   const requested = params.get('match');
   const [selected, setSelected] = useState<string>('');
   const matchId = selected || (requested && upcoming.some((m) => String(m.id) === requested)

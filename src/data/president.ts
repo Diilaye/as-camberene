@@ -1,8 +1,8 @@
-// Mot du président.
-//
-// Texte éditorial signé, sans équivalent côté backend : il change au rythme
-// des mandats, pas à celui d'une actualité, et vit donc ici avec le reste des
-// données de repli du site.
+
+
+
+
+
 
 export interface PresidentAxis {
   id: string;
@@ -13,10 +13,10 @@ export interface PresidentAxis {
 export const president = {
   name: 'Cheikhou THIOME',
   role: "Président de l'A.S.C Cambérène",
-  /** Photo officielle ; à défaut, le visuel de remplacement du site prend le relais. */
+ 
   photo: '/assets/img/president-cheikhou-thiome.jpg',
   electedOn: '30 août 2026',
-  /** Phrase mise en exergue, reprise du corps de la lettre. */
+ 
   pullQuote: "Ce n'est pas l'histoire d'un seul homme, c'est notre histoire.",
   salutation: 'Chères Cambérènoises, chers Cambérènois,',
   addressees:
@@ -32,12 +32,7 @@ export const president = {
   closing: 'Avec tout mon engagement,',
 };
 
-/**
- * Les cinq axes du mandat, extraits du troisième paragraphe.
- *
- * La lettre les énumère au fil du texte ; la grille les rend lisibles d'un
- * coup d'œil pour qui ne lira pas tout.
- */
+
 export const presidentAxes: PresidentAxis[] = [
   {
     id: 'gouvernance',

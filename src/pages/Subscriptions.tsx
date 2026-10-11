@@ -90,12 +90,7 @@ const PAYMENT_METHODS = [
   { value: 'installments', label: 'Paiement en trois fois' },
 ];
 
-/**
- * Souscription en trois temps : choix de la formule, choix de l'emplacement
- * dans le stade, puis coordonnées. Chaque étape n'apparaît qu'une fois la
- * précédente tranchée, pour ne pas présenter un formulaire de dix champs à
- * quelqu'un qui n'a encore rien choisi.
- */
+
 const Subscriptions: React.FC = () => {
   const [planId, setPlanId] = useState<Plan['id'] | ''>('');
   const [seatId, setSeatId] = useState('');

@@ -1,17 +1,7 @@
 import teamHero from '../../assets/img/asc-camberene-equipe-2025.webp';
 import { Team } from '../types';
 
-/**
- * Équipes de repli.
- *
- * Les équipes se créent désormais depuis l'administration (`/admin/equipes`) :
- * elles vivent en base, et le club en ajoute ou en retire sans toucher au code.
- * Ce tableau reste ce que le site affiche quand l'API ne répond pas, et tant
- * qu'aucune équipe n'a été saisie.
- *
- * Le nombre de joueurs n'y figure plus : les pages comptent l'effectif réel
- * rattaché à l'équipe, qui est le seul chiffre qui ne se démente pas.
- */
+
 export type TeamData = Team;
 
 export const teamsData: Team[] = [
