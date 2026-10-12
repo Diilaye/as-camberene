@@ -22,13 +22,13 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      // Le rôle vient du serveur : il décide où l'on atterrit, et le
-      // navigateur n'a plus son mot à dire.
+     
+     
       const user = await login(email, password);
       const from = (location.state as { from?: string } | null)?.from;
 
-      // Tout profil de l'administration atterrit sur le tableau de bord, qui
-      // s'adapte ensuite à ses droits ; un supporter reste sur la vitrine.
+     
+     
       if (isStaffRole(user.role)) {
         navigate(from?.startsWith('/admin') ? from : '/admin/dashboard', { replace: true });
       } else {

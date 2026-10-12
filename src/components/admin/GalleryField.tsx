@@ -4,17 +4,7 @@ import { uploadImage } from '../../services/site/content.service';
 import { siteMediaUrl } from '../../services/site/media';
 import { ApiError } from '../../lib/api';
 
-/**
- * Galerie d'un produit : plusieurs visuels, dont une vignette.
- *
- * La fiche produit du site présente un carrousel ; sans ce champ, l'administration
- * ne pouvait renseigner qu'une seule image et le carrousel n'avait jamais rien à
- * montrer.
- *
- * La première image de la liste fait la vignette — c'est elle qui s'affiche dans
- * la boutique et le panier. On la choisit en la promouvant plutôt qu'en la
- * saisissant deux fois.
- */
+
 const GalleryField: React.FC<{
   value: string[];
   onChange: (value: string[]) => void;
@@ -26,7 +16,7 @@ const GalleryField: React.FC<{
 
   const add = (image: string) => {
     const trimmed = image.trim();
-    // Deux fois la même image dans un carrousel n'apporte rien.
+   
     if (!trimmed || value.includes(trimmed)) return;
     onChange([...value, trimmed]);
   };
@@ -37,7 +27,7 @@ const GalleryField: React.FC<{
     setUploading(true);
     setError('');
     try {
-      // Séquentiel : le serveur accepte un fichier par requête.
+     
       const uploaded: string[] = [];
       for (const file of Array.from(files)) {
         uploaded.push(await uploadImage(file));
@@ -47,7 +37,7 @@ const GalleryField: React.FC<{
       setError(cause instanceof ApiError ? cause.fullMessage : 'Téléversement impossible');
     } finally {
       setUploading(false);
-      // Réinitialisé pour que re-choisir le même fichier déclenche l'événement.
+     
       if (inputRef.current) inputRef.current.value = '';
     }
   };
@@ -67,7 +57,7 @@ const GalleryField: React.FC<{
           value={url}
           onChange={(event) => setUrl(event.target.value)}
           onKeyDown={(event) => {
-            // Entrée ajoute l'adresse sans soumettre le formulaire du produit.
+           
             if (event.key !== 'Enter') return;
             event.preventDefault();
             add(url);

@@ -3,13 +3,7 @@ import { Link } from 'react-router-dom';
 import { useHistoryEvents } from '../hooks/useContent';
 import PageHero from '../components/ui/PageHero';
 
-/**
- * Frise historique du club.
- *
- * Un rail vertical porte les étapes, alternées de part et d'autre au-delà du
- * point de rupture ; chaque étape associe une photo et un bloc de texte au même
- * gabarit que les cartes du site.
- */
+
 const History: React.FC = () => {
   const { data: events } = useHistoryEvents();
   const phases = Array.from(new Set(events.map((event) => event.phase).filter(Boolean)));

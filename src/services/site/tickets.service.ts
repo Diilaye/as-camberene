@@ -1,11 +1,4 @@
-/**
- * Réservations de billets.
- *
- * Elles ne passent pas par la fabrique de ressources : la création est ouverte
- * au public et ne rend pas le document — seulement la référence à présenter au
- * guichet — tandis que la lecture est réservée au club. Deux formes de réponse,
- * donc un client à part.
- */
+
 
 import { siteApi } from '../../lib/api';
 import { ReservationStatus, TicketReservation } from '../../types';
@@ -20,7 +13,7 @@ export interface ReservationRequest {
   message?: string;
 }
 
-/** Ce que le supporter reçoit en retour : de quoi se présenter au stade. */
+
 export interface ReservationConfirmation {
   reference: string;
   seats: number;

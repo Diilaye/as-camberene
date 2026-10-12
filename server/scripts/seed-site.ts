@@ -1,24 +1,4 @@
-/**
- * Amorcage du contenu du site.
- *
- * Verse en base tout ce que l'administration du site gere : carrousel de tete,
- * equipes, calendrier, galerie, actualites, boutique, legendes, frise historique. De quoi ouvrir n'importe quelle page
- * sur du contenu credible, et de quoi apprendre a se servir de l'administration
- * sur de la matiere plutot que sur du vide.
- *
- * Le jeu de donnees vit dans `scripts/dataset/`. Il ne depend plus de
- * `src/data/` du site, qui n'est qu'un repli hors ligne : le contenu de
- * reference, c'est la base.
- *
- * Idempotent — une entree deja presente, reperee par son titre ou son nom,
- * n'est pas dupliquee. Relancer le script est donc sans danger.
- *
- *   npm run seed              # ajoute ce qui manque
- *   npm run seed -- --reset   # vide les huit collections puis reimporte
- *   npm run seed -- --dry-run # annonce ce qui serait ecrit, sans rien ecrire
- *
- * Ne cree aucun compte : `npm run create:admin -- <email>` s'en charge.
- */
+
 import mongoose from 'mongoose';
 
 import { connectDatabase, disconnectDatabase, safeMongoUri } from '../src/config/database';
@@ -49,17 +29,11 @@ interface Report {
   skipped: number;
 }
 
-/**
- * Insere ce qui manque, en reconnaissant l'existant a une cle naturelle.
- *
- * Le titre d'un article ou le nom d'un produit suffit : deux entrees qui les
- * partagent sont la meme chose importee deux fois. C'est ce qui rend le script
- * rejouable sans creer de doublons.
- */
+
 async function importAll<T>(
   label: string,
-  // Le type exact du document importe peu ici : le script ecrit des objets
-  // simples, que le schema Mongoose valide a l'insertion.
+ 
+ 
   model: mongoose.Model<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
   rows: T[],
   identify: (row: T) => Record<string, unknown>,
@@ -70,8 +44,8 @@ async function importAll<T>(
   const report: Report = { created: 0, skipped: 0 };
 
   for (const row of rows) {
-    // Apres un `--reset`, la collection est vide : tout est a creer. En mode
-    // simulation elle ne l'est pas, d'ou la verification conditionnelle.
+   
+   
     const exists = reset && !dryRun ? null : await model.findOne(identify(row));
 
     if (exists) {
@@ -88,7 +62,7 @@ async function importAll<T>(
   return report;
 }
 
-/** Date d'un commentaire : `daysAfter` jours apres la parution de l'article. */
+
 const commentDate = (publishedAt: string, daysAfter: number): Date => {
   const date = new Date(`${publishedAt}T09:00:00.000Z`);
   date.setDate(date.getDate() + daysAfter);
@@ -106,8 +80,8 @@ async function main(): Promise<number> {
   await connectDatabase();
 
   try {
-    // Le titre identifie la diapositive : deux diapositives qui le partagent
-    // sont la même, importée deux fois.
+   
+   
     await importAll(
       'diapositives de tête',
       HeroSlide,
@@ -116,12 +90,12 @@ async function main(): Promise<number> {
       (slide) => ({ ...slide })
     );
 
-    // Le slug identifie l'équipe : c'est lui que portent les fiches de
-    // l'effectif, et deux équipes ne peuvent pas le partager.
+   
+   
     await importAll('équipes', Team, seedTeams, (t) => ({ slug: t.slug }), (team) => ({ ...team }));
 
-    // Adversaire et date font la rencontre : deux matchs qui les partagent
-    // sont le même, importé deux fois.
+   
+   
     await importAll(
       'matchs',
       Match,
@@ -184,8 +158,8 @@ async function main(): Promise<number> {
       return 0;
     }
 
-    // Les prix sont annonces ici parce que c'est la question qui revient : la
-    // boutique est en francs CFA, en entiers, sans sous-unite.
+   
+   
     const cheapest = Math.min(...seedProducts.map((p) => p.price));
     const dearest = Math.max(...seedProducts.map((p) => p.price));
     console.log(

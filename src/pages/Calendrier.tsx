@@ -16,7 +16,6 @@ const monthLabel = (date: string) =>
 const dayLabel = (date: string) =>
   new Date(`${date}T12:00:00`).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
 
-/** Score vu du club, et l'issue qui va avec. */
 const outcomeOf = (match: Match) => {
   if (!match.result) return null;
   const home = match.venue === 'Domicile';
@@ -27,16 +26,7 @@ const outcomeOf = (match: Match) => {
   return { label: 'N', title: 'Match nul', className: 'bg-white/20 text-white' };
 };
 
-/**
- * Calendrier de l'équipe : toutes les rencontres de la saison, dans l'ordre.
- *
- * Le prochain match porte une barre verte. Elle se place d'elle-même : c'est la
- * première rencontre qui n'est pas finie, si bien qu'un match marqué
- * « Terminé » dans l'administration la fait passer au suivant sans autre
- * manipulation.
- */
 const Calendrier: React.FC = () => {
-  // Les vrais matchs seulement : jamais la saison de démonstration.
   const { data: matches, loading } = useMatches({ withDemo: false });
   const [filter, setFilter] = useState<Filter>('Tous');
 
@@ -47,7 +37,6 @@ const Calendrier: React.FC = () => {
     filter === 'Tous' ? true : filter === 'À venir' ? !isOver(match) : isOver(match)
   );
 
-  // Regroupement par mois, dans l'ordre du calendrier.
   const months = useMemo(() => {
     const groups: { label: string; matches: Match[] }[] = [];
     visible.forEach((match) => {
@@ -59,7 +48,6 @@ const Calendrier: React.FC = () => {
     return groups;
   }, [visible]);
 
-  // À l'ouverture, on amène le prochain match à l'écran.
   const nextRef = useRef<HTMLElement>(null);
   const scrolled = useRef(false);
   useEffect(() => {

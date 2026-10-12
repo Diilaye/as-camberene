@@ -15,35 +15,22 @@ import {
 } from '../../types';
 import { handleImageError } from '../../lib/imagePlaceholder';
 
-/** Le jour même, au format que `<input type="date">` attend. */
+
 const today = (): string => new Date().toISOString().slice(0, 10);
 
-/**
- * Une ligne de la feuille des buteurs, en cours de saisie.
- *
- * `minute` est une chaîne et non un nombre : c'est ce que rend un champ de
- * saisie, et le convertir à chaque frappe empêcherait d'effacer la valeur pour
- * la retaper. La conversion attend l'envoi.
- *
- * `uid` n'est jamais enregistré. Il sert de clé React, que l'indice de la ligne
- * ne peut pas tenir : supprimer un buteur du milieu décale tous les suivants,
- * et React recyclerait les champs de saisie sur les mauvaises lignes.
- */
+
 interface ScorerDraft {
   uid: string;
   name: string;
   minute: string;
   side: ScorerSide;
-  /** Passeur décisif, pour un but du club ; vide s'il n'y en a pas. */
+ 
   assist: string;
 }
 
 let scorerUid = 0;
 
-/**
- * Dit si un nom saisi correspond à une fiche de l'effectif — la condition pour
- * que le but ou la passe arrive dans ses statistiques.
- */
+
 const StatLink: React.FC<{ name: string; linked: boolean; long?: boolean }> = ({ name, linked, long }) => {
   if (!name.trim()) return <span />;
   return linked ? (
@@ -90,29 +77,7 @@ const STATUS_STYLES: Record<MatchStatus, string> = {
   Terminé: 'bg-white/10 text-white/60',
 };
 
-/**
- * Calendrier des matchs.
- *
- * Alimente la page d'accueil : les rencontres à venir d'un côté, les derniers
- * résultats de l'autre. C'est le contenu qui vieillit le plus vite du site —
- * il était jusqu'ici figé dans le code, et le club annonçait donc des matchs
- * déjà joués.
- *
- * Le score n'apparaît que sur une rencontre terminée. Repasser un match « À
- * venir » efface le sien : un score sur une rencontre qui n'a pas eu lieu est
- * une faute de saisie, et le formulaire ne la laisse pas s'installer.
- *
- * `Domicile` / `Extérieur` dit où le club joue, mais le score suit l'affiche :
- * à l'extérieur, les buts de Cambérène sont ceux de l'équipe visiteuse. C'est
- * la convention des données d'origine, et le formulaire l'affiche en toutes
- * lettres plutôt que de laisser deviner.
- *
- * Les buteurs accompagnent le score, sans le commander : le club saisit le
- * résultat le soir du match et la feuille quand il l'a. Un total de buts qui
- * ne retombe pas sur le score est donc signalé, jamais refusé — bloquer
- * l'enregistrement ferait perdre la saisie déjà faite pour un renseignement
- * que le club n'a pas encore.
- */
+
 const CalendrierAdmin: React.FC = () => {
   const {
     items: matches,
@@ -126,12 +91,7 @@ const CalendrierAdmin: React.FC = () => {
     remove,
   } = useEditableResource<MatchRecord>(matchesApi, { sort: 'date time' });
 
-  /*
-    Le calendrier est celui de l'équipe première : c'est son effectif que les
-    suggestions proposent. Elles ne ferment rien — le champ reste libre, pour
-    le buteur adverse comme pour le joueur dont la fiche n'est pas encore
-    saisie.
-  */
+ 
   const { data: roster } = useTeamMembers('equipe-a');
 
   const playerNames = useMemo(
@@ -183,8 +143,8 @@ const CalendrierAdmin: React.FC = () => {
       scorers: (match.scorers ?? []).map((scorer) => ({
         uid: `scorer-${(scorerUid += 1)}`,
         name: scorer.name,
-        // 0 code la minute inconnue ; le champ la montre vide, comme elle a
-        // été laissée.
+       
+       
         minute: scorer.minute ? String(scorer.minute) : '',
         side: scorer.side,
         assist: scorer.assistName ?? '',
@@ -205,20 +165,13 @@ const CalendrierAdmin: React.FC = () => {
   const removeScorer = (uid: string) =>
     setForm((f) => ({ ...f, scorers: f.scorers.filter((scorer) => scorer.uid !== uid) }));
 
-  /** Fiche de l'effectif portant ce nom, à la casse et aux espaces près. */
+ 
   const findPlayerId = (name: string): string | null => {
     const needle = name.trim().toLowerCase();
     return roster.find((member) => member.name.trim().toLowerCase() === needle)?.id ?? null;
   };
 
-  /*
-    Le score dit combien de buts chaque camp a marqués, la feuille combien on
-    en a saisi. Les deux se rapprochent ici pour signaler l'écart : c'est le
-    genre d'oubli qu'on ne voit pas en relisant sa propre saisie.
-
-    `venue` fait la traduction : le score suit l'affiche, la feuille suit les
-    équipes. À l'extérieur, les buts du club sont ceux de l'équipe visiteuse.
-  */
+ 
   const scoreCheck = useMemo(() => {
     if (form.status !== 'Terminé' || form.scoreHome === '' || form.scoreAway === '') return null;
 
@@ -242,24 +195,11 @@ const CalendrierAdmin: React.FC = () => {
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    /*
-      Le score n'accompagne que les rencontres jouées. `null` plutôt qu'absent :
-      une mise à jour partielle ignore un champ manquant, et l'ancien score
-      resterait collé au match qu'on vient de remettre « À venir ».
-    */
+   
     const hasScore =
       form.status === 'Terminé' && form.scoreHome !== '' && form.scoreAway !== '';
 
-    /*
-      Les buteurs suivent le score : ils ne valent que pour une rencontre
-      jouée, et une liste vide part explicitement pour effacer celle d'un match
-      qu'on remet « À venir ».
-
-      Une ligne sans nom est abandonnée plutôt que refusée : c'est le « Ajouter
-      un buteur » de trop, pas une saisie à corriger. Les buts partent rangés
-      par minute, celles qu'on n'a pas notées en dernier — la feuille se relit
-      dans l'ordre du match, quel que soit l'ordre de saisie.
-    */
+   
     const scorers: MatchScorer[] =
       form.status === 'Terminé'
         ? form.scorers
@@ -268,11 +208,11 @@ const CalendrierAdmin: React.FC = () => {
               name: scorer.name.trim(),
               minute: Number(scorer.minute) || 0,
               side: scorer.side,
-              // Le lien vers la fiche ne tient qu'au nom : le champ reste
-              // libre, et un buteur adverse n'a pas de fiche.
+             
+             
               player: scorer.side === 'club' ? findPlayerId(scorer.name) : null,
-              // Le passeur n'a de sens que pour un but du club. Relié à sa
-              // fiche, il reçoit la passe dans ses statistiques.
+             
+             
               assistName: scorer.side === 'club' ? scorer.assist.trim() : '',
               assistPlayer: scorer.side === 'club' && scorer.assist.trim() ? findPlayerId(scorer.assist) : null,
             }))
@@ -305,7 +245,7 @@ const CalendrierAdmin: React.FC = () => {
   const field =
     'w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none';
 
-  // Même champ, resserré : une ligne de buteur en tient trois de front.
+ 
   const rowField =
     'w-full min-w-0 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white focus:border-club-yellow outline-none';
 
@@ -651,12 +591,7 @@ const CalendrierAdmin: React.FC = () => {
                             onChange={(event) =>
                               updateScorer(scorer.uid, { name: event.target.value })
                             }
-                            /*
-                              Les suggestions ne valent que pour le club : la
-                              liste de l'adversaire n'existe nulle part, et un
-                              nom de Cambérène proposé en face serait une
-                              erreur offerte d'un clic.
-                            */
+                           
                             list={scorer.side === 'club' ? 'match-scorer-players' : undefined}
                             placeholder="Nom du buteur"
                             aria-label="Nom du buteur"

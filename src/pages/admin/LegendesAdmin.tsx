@@ -6,7 +6,7 @@ import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/Adm
 import ImageField from '../../components/admin/ImageField';
 import { LEGEND_ERAS, LegendEra } from '../../types';
 
-/** Une entrée par ligne : c'est la saisie la plus simple pour une liste courte. */
+
 const toLines = (values: string[] = []): string => values.join('\n');
 const fromLines = (value: string): string[] =>
   value.split('\n').map((line) => line.trim()).filter(Boolean);
@@ -30,19 +30,13 @@ const EMPTY_FORM = {
   rank: '',
 };
 
-/** Les compteurs sont saisis en texte pour laisser le champ vide ; ici on fixe. */
+
 const toNumber = (value: string): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 };
 
-/**
- * Légendes du club.
- *
- * Le contenu vit dans le backend du site et alimente les pages `/legends` et
- * `/legends/:id`. La rubrique est ouverte aux profils éditoriaux — journaliste
- * compris — et le serveur revérifie le droit `legends:write` à chaque écriture.
- */
+
 const LegendesAdmin: React.FC = () => {
   const {
     items: legends,
@@ -133,8 +127,8 @@ const LegendesAdmin: React.FC = () => {
       rank: toNumber(form.rank),
     };
 
-    // Le formulaire reste ouvert si l'enregistrement a échoué : la saisie n'est
-    // pas perdue, et le message d'erreur explique pourquoi.
+   
+   
     const saved = editingId ? await update(editingId, payload) : await create(payload);
     if (saved) setModalOpen(false);
   };

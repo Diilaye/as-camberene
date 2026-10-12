@@ -1,10 +1,4 @@
-/**
- * Données sportives, lues dans fconnect.
- *
- * Profil du club, équipes, effectif, calendrier : le club les saisit dans son
- * tableau de bord fconnect, le site les lit en anonyme. Aucune écriture ne part
- * d'ici — ce qui se modifie depuis le site vit dans `services/site/`.
- */
+
 
 export * as clubService from './club.service';
 export * as matchesService from './matches.service';

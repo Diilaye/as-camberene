@@ -2,33 +2,19 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useArticles } from '../../hooks/useContent';
 
-/** Secondes d'écran par titre : assez lent pour être lu en passant. */
 const SECONDS_PER_TITLE = 6;
-/** Titres par copie au minimum, pour couvrir un grand écran. */
 const MIN_TITLES = 8;
 
-/**
- * Bandeau des titres d'actualité, qui défilent de droite à gauche en boucle.
- *
- * La liste est rendue deux fois à la suite et l'ensemble glisse de la moitié
- * de sa largeur : quand la première copie sort à gauche, la seconde occupe
- * exactement sa place, et la boucle reprend sans saut visible. Le survol met en
- * pause, pour laisser le temps de cliquer sur un titre.
- */
 const NewsTicker: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { data: articles } = useArticles({ limit: 50 });
 
   if (articles.length === 0) return null;
 
-  // Peu d'actualités ne rempliraient pas la largeur de l'écran, et un trou
-  // passerait dans la boucle : on répète la liste jusqu'à MIN_TITLES titres.
   const base = Array.from({ length: Math.ceil(MIN_TITLES / articles.length) }, () => articles).flat();
   const duration = base.length * SECONDS_PER_TITLE;
 
   const renderTitles = (copy: number) =>
     base.map((article, index) => {
-      // Les répétitions n'existent que pour la boucle : hors du parcours clavier
-      // et des lecteurs d'écran, qui liraient sinon chaque titre plusieurs fois.
       const repeat = copy > 0 || index >= articles.length;
       return (
       <Link

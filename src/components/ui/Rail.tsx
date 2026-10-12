@@ -3,18 +3,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface RailProps {
   children: React.ReactNode;
-  /** Marge de fuite à gauche, pour aligner la première carte sur la grille. */
+ 
   className?: string;
 }
 
-/**
- * Rail à défilement latéral.
- *
- * Les rubriques du modèle ne paginent pas : elles alignent leurs cartes sur une
- * bande qui déborde de l'écran et se parcourt au doigt, à la molette ou par
- * deux flèches. Les flèches ne servent qu'au pointeur fin et s'effacent aux
- * extrémités, ce que `atStart` / `atEnd` déterminent à chaque défilement.
- */
+
 const Rail: React.FC<RailProps> = ({ children, className = '' }) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const [atStart, setAtStart] = useState(true);
@@ -33,7 +26,7 @@ const Rail: React.FC<RailProps> = ({ children, className = '' }) => {
     return () => window.removeEventListener('resize', sync);
   }, [sync, children]);
 
-  /** Un cran de défilement vaut une largeur de fenêtre moins une carte visible. */
+ 
   const scrollBy = (direction: 1 | -1) => {
     const track = trackRef.current;
     if (!track) return;

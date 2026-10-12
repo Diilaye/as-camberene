@@ -1,13 +1,13 @@
-// Effectifs des équipes – structure centralisée
-// Chaque roster suit les mêmes clés pour simplifier l'affichage dynamique.
+
+
 
 export interface PlayerEntry {
   name: string;
-  number?: number; // absent pour staff
+  number?: number;
   age?: number;
   nationality?: string;
-  role?: string; // pour staff
-  experience?: string; // staff
+  role?: string;
+  experience?: string;
   photo: string;
   contact?: { email: string; phone: string };
 }
@@ -20,13 +20,7 @@ export interface TeamRosters {
   staff: PlayerEntry[];
 }
 
-/**
- * Portrait de remplacement.
- *
- * Le club ne publie pas encore de photos individuelles : une silhouette aux
- * couleurs de l'ASC Cambérène tient la place, servie en ligne pour éviter une
- * requête réseau par joueur.
- */
+
 const placeholderPhoto =
   "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23202126'/%3E%3Ccircle cx='150' cy='150' r='58' fill='%230D7C27'/%3E%3Cpath d='M150 228c-62 0-112 44-112 98v74h224v-74c0-54-50-98-112-98z' fill='%230D7C27'/%3E%3C/svg%3E";
 
@@ -57,7 +51,7 @@ export const rosters: Record<string, TeamRosters> = {
       { name: 'Youssou Ndour', number: 19, age: 21, nationality: '🇸🇳', photo: placeholderPhoto }
     ],
     staff: [
-      { name: 'Mamadou Diallo', role: 'ENTRAÎNEUR PRINCIPAL', experience: '8 ans', contact: { email: 'm.diallo@asccamberene.sn', phone: '+221 77 123 45 67' }, photo: placeholderPhoto },
+      { name: 'Entraîneur', role: 'ENTRAÎNEUR PRINCIPAL', experience: '8 ans', contact: { email: 'm.diallo@asccamberene.sn', phone: '+221 77 123 45 67' }, photo: placeholderPhoto },
       { name: 'Ibrahima Kane', role: 'ENTRAÎNEUR ADJOINT', experience: '5 ans', contact: { email: 'i.kane@asccamberene.sn', phone: '+221 77 234 56 78' }, photo: placeholderPhoto },
       { name: 'Dr. Fatou Seck', role: 'MÉDECIN DU SPORT', experience: '12 ans', contact: { email: 'f.seck@asccamberene.sn', phone: '+221 77 345 67 89' }, photo: placeholderPhoto },
       { name: 'Omar Thiam', role: 'PRÉPARATEUR PHYSIQUE', experience: '6 ans', contact: { email: 'o.thiam@asccamberene.sn', phone: '+221 77 456 78 90' }, photo: placeholderPhoto }

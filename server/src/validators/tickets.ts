@@ -1,12 +1,4 @@
-/**
- * Saisie des réservations de billets.
- *
- * Le supporter ne fournit que ce qu'il faut pour être rappelé et pour tenir
- * sa place : le club décide du reste. Le statut, la note interne et la
- * référence ne sont donc pas dans le schéma public — un champ accepté du
- * client est un champ qu'il peut choisir, et personne ne réserve une place en
- * se déclarant « retirée au guichet ».
- */
+
 
 import Joi from 'joi';
 import { RESERVATION_STATUSES } from '../models/TicketReservation.model';
@@ -20,12 +12,7 @@ export const createReservationSchema = Joi.object({
     'string.min': 'Indiquer un nom',
     'any.required': 'Nom requis',
   }),
-  /**
-   * Numéro sénégalais ou international, écrit comme on le dicte : espaces,
-   * points et tirets admis. Exiger un format strict ferait échouer des saisies
-   * parfaitement valables, alors que ce numéro sert à rappeler quelqu'un — pas
-   * à composer automatiquement.
-   */
+ 
   phone: Joi.string()
     .trim()
     .pattern(/^\+?[\d\s.-]{7,20}$/)
@@ -42,7 +29,7 @@ export const createReservationSchema = Joi.object({
   message: Joi.string().allow('').max(1000).default(''),
 });
 
-/** Ce que le club modifie ensuite : l'avancement, et ce qu'il note pour lui. */
+
 export const updateReservationSchema = Joi.object({
   status: Joi.string().valid(...RESERVATION_STATUSES),
   note: Joi.string().allow('').max(1000),

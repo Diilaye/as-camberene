@@ -1,6 +1,6 @@
-// Repli hors ligne de la boutique, utilisé quand l'API du site ne répond pas.
-// Le catalogue réel vit en base : `cd server && npm run seed`.
-// Tous les prix sont en francs CFA, entiers — la devise n'a pas de sous-unité.
+
+
+
 import { Product } from '../types';
 
 export const products: Product[] = [

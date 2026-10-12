@@ -1,15 +1,8 @@
-/**
- * Formes renvoyées par la gateway fconnect.
- *
- * Ce fichier décrit le backend tel qu'il répond, sans arrangement : les noms de
- * champs y sont ceux de fconnect (`snake_case` côté auth-service, `camelCase`
- * côté match/marketplace — la divergence est dans le backend, pas ici). La
- * traduction vers les types du site vit dans `src/adapters/`.
- */
 
-// ==========================================================================
-// Enveloppes
-// ==========================================================================
+
+
+
+
 
 export interface FcPagination {
   page: number;
@@ -19,7 +12,7 @@ export interface FcPagination {
   pages?: number;
 }
 
-/** auth-service : `{ success, data }`. */
+
 export interface FcDataResponse<T> {
   success: boolean;
   data: T;
@@ -27,23 +20,23 @@ export interface FcDataResponse<T> {
   message?: string;
 }
 
-/** match-service : `{ success, matches }`. */
+
 export interface FcMatchesResponse {
   success: boolean;
   matches: FcMatch[];
   pagination?: FcPagination;
 }
 
-/** marketplace-service : `{ success, products }`. */
+
 export interface FcProductsResponse {
   success: boolean;
   products: FcProduct[];
   pagination?: FcPagination;
 }
 
-// ==========================================================================
-// Club
-// ==========================================================================
+
+
+
 
 export interface FcClub {
   id: string;
@@ -63,15 +56,15 @@ export interface FcClub {
   members_count: number;
   followers_count: number;
   is_verified: boolean;
-  /** Ancienneté calculée par le backend, `null` si l'année est inconnue. */
+ 
   age: number | null;
   created_at: string;
   updated_at: string;
 }
 
-// ==========================================================================
-// Équipes et membres
-// ==========================================================================
+
+
+
 
 export type FcTeamCategory =
   | 'senior' | 'u23' | 'u19' | 'u17' | 'u15' | 'u13' | 'u11'
@@ -84,13 +77,7 @@ export type FcMemberRole =
 
 export type FcMemberStatus = 'active' | 'inactive' | 'suspended' | 'trial' | 'injured' | 'loaned';
 
-/**
- * Membre tel que peuplé dans une équipe.
- *
- * `GET /api/clubs/:clubId/teams` ne projette que ces champs — c'est la seule
- * vue de l'effectif que fconnect expose sans authentification, et la seule que
- * ce site doit utiliser. Cf. `members.service.ts`.
- */
+
 export interface FcTeamPlayerRef {
   id: string;
   first_name: string;
@@ -98,7 +85,7 @@ export interface FcTeamPlayerRef {
   jersey_number?: number;
   position?: string;
   profile_picture_url?: string;
-  /** Présents sur `GET /api/clubs/teams/:teamId` uniquement. */
+ 
   date_of_birth?: string;
   status?: FcMemberStatus;
 }
@@ -136,7 +123,7 @@ export interface FcTeam {
   goals_for?: number;
   goals_against?: number;
   status: 'active' | 'inactive' | 'disbanded';
-  /** Virtuels calculés par le backend. */
+ 
   playersCount?: number;
   points?: number;
   goalDifference?: number;
@@ -145,9 +132,9 @@ export interface FcTeam {
   updated_at: string;
 }
 
-// ==========================================================================
-// Matchs
-// ==========================================================================
+
+
+
 
 export type FcMatchStatus =
   | 'scheduled' | 'live' | 'halftime' | 'finished' | 'postponed' | 'cancelled';
@@ -162,11 +149,7 @@ export interface FcMatchTeamRef {
 }
 
 export interface FcMatch {
-  /**
-   * match-service ne sérialise pas les virtuels : ses documents sortent avec
-   * `_id` et sans `id`, à la différence du reste de la plateforme. Les
-   * adaptateurs acceptent donc les deux.
-   */
+ 
   id?: string;
   _id: string;
   homeTeam: FcMatchTeamRef;
@@ -183,12 +166,12 @@ export interface FcMatch {
   updatedAt?: string;
 }
 
-// ==========================================================================
-// Boutique
-// ==========================================================================
+
+
+
 
 export interface FcProduct {
-  /** marketplace-service sérialise les virtuels : `id` et `_id` cohabitent. */
+ 
   id?: string;
   _id: string;
   name: string;
@@ -210,9 +193,9 @@ export interface FcProduct {
   createdAt: string;
 }
 
-// ==========================================================================
-// Publications éditoriales (actualités du club)
-// ==========================================================================
+
+
+
 
 export type FcContentStatus = 'idea' | 'draft' | 'scheduled' | 'published' | 'archived';
 
@@ -228,15 +211,15 @@ export interface FcContentPost {
   published_at?: string;
   published_urls: string[];
   asset_ids: string[];
-  /** Peuplé par l'endpoint public à venir ; sinon, ids bruts. */
+ 
   assets?: Array<{ id: string; url?: string; title?: string }>;
   created_at: string;
   updated_at: string;
 }
 
-// ==========================================================================
-// Comptes
-// ==========================================================================
+
+
+
 
 export type FcUserType = 'player' | 'coach' | 'club' | 'amateur' | 'admin' | 'shop_admin';
 

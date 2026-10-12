@@ -1,10 +1,4 @@
-/**
- * Schémas de saisie de l'administration.
- *
- * Un schéma de création par ressource, et sa variante « tous les champs
- * facultatifs » pour la mise à jour partielle, dérivée du premier plutôt que
- * recopiée : les deux ne peuvent pas diverger.
- */
+
 
 import Joi from 'joi';
 import { ARTICLE_CATEGORIES } from '../models/Article.model';
@@ -20,15 +14,7 @@ import {
   STRONG_FEET,
 } from '../models/Player.model';
 
-/**
- * Même schéma, tout devenant facultatif, et au moins un champ exigé.
- *
- * `noDefaults` est indispensable : rendre un champ facultatif ne lui retire pas
- * sa valeur par défaut, et Joi la réapplique pour toute clé absente. Sans cette
- * préférence, `{ inStock: false }` était validé en un objet complet — image
- * vide, description vide, tailles vides — que la mise à jour écrivait ensuite
- * par-dessus le produit. Une modification d'un champ effaçait tous les autres.
- */
+
 const asPatch = (schema: Joi.ObjectSchema): Joi.ObjectSchema =>
   schema
     .fork(Object.keys(schema.describe().keys), (field) => field.optional())
@@ -40,7 +26,7 @@ export const articleSchema = Joi.object({
   content: Joi.string().allow('').max(50000).default(''),
   excerpt: Joi.string().allow('').max(1000).default(''),
   image: Joi.string().allow('').max(500).default(''),
-  // Deux pourcentages, horizontal puis vertical : « 50% 20% » garde le haut.
+ 
   imagePosition: Joi.string().pattern(/^\d{1,3}% \d{1,3}%$/).default('50% 50%'),
   category: Joi.string().valid(...ARTICLE_CATEGORIES).default('Club'),
   publishedAt: Joi.date().default(() => new Date()),
@@ -92,14 +78,7 @@ export const historyEventSchema = Joi.object({
   phase: Joi.string().allow('').max(80),
 });
 
-/**
- * Diapositive de tête.
- *
- * Ni `image` ni `youtube` n'est exigé : une diapositive sans visuel s'affiche
- * sur le fond vert du club, et c'est une mise en avant valable — l'appel à
- * l'abonnement l'a longtemps été. Le lien YouTube n'est pas normalisé ici : le
- * site accepte toutes ses formes et retombe sur la photo s'il n'en tire rien.
- */
+
 export const heroSlideSchema = Joi.object({
   image: Joi.string().allow('').max(500).default(''),
   youtube: Joi.string().allow('').max(500).default(''),
@@ -111,13 +90,7 @@ export const heroSlideSchema = Joi.object({
   isVisible: Joi.boolean().default(true),
 });
 
-/**
- * Rencontre du calendrier.
- *
- * `result` accepte `null` : c'est ainsi que le formulaire efface un score, quand
- * une rencontre repasse « À venir » après une saisie erronée. Sans cela, le
- * score resterait collé au match faute de moyen de le retirer.
- */
+
 export const matchSchema = Joi.object({
   opponent: Joi.string().trim().max(150).required(),
   date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).required().messages({
@@ -135,12 +108,7 @@ export const matchSchema = Joi.object({
     .allow(null)
     .default(null),
   status: Joi.string().valid(...MATCH_STATUSES).default('À venir'),
-  /*
-    Feuille des buteurs. `player` relie le but à une fiche de l'effectif quand
-    il y en a une : `empty('')` traduit le « aucun joueur choisi » du
-    formulaire en `null`, là où une chaîne vide ferait échouer la conversion en
-    identifiant côté Mongoose.
-  */
+ 
   scorers: Joi.array()
     .items(
       Joi.object({
@@ -157,13 +125,7 @@ export const matchSchema = Joi.object({
   image: Joi.string().allow('').max(500).default(''),
 });
 
-/**
- * Équipe du club.
- *
- * `slug` est exigé à la création et absent du patch : il identifie l'équipe
- * pour son adresse comme pour l'effectif qui s'y rattache, et le laisser
- * changer détacherait tous les joueurs sans que rien ne le signale.
- */
+
 export const teamSchema = Joi.object({
   slug: Joi.string()
     .trim()
@@ -194,13 +156,7 @@ export const teamSchema = Joi.object({
   isVisible: Joi.boolean().default(true),
 });
 
-/**
- * Photo de la galerie.
- *
- * `match` accepte `null` autant qu'un identifiant : détacher une photo de sa
- * rencontre est une opération courante — la photo était mal rangée — et un
- * champ qu'on ne peut que renseigner ne se corrige pas.
- */
+
 export const galleryItemSchema = Joi.object({
   image: Joi.string().max(500).required(),
   title: Joi.string().trim().max(200).required(),
@@ -217,8 +173,8 @@ export const galleryItemSchema = Joi.object({
 export const playerSchema = Joi.object({
   kind: Joi.string().valid(...PLAYER_KINDS).default('player'),
   name: Joi.string().trim().max(150).required(),
-  // Le slug d'une équipe : la liste n'est plus fermée depuis que le club crée
-  // ses équipes. Le format reste contraint, pour qu'un slug reste une adresse.
+ 
+ 
   team: Joi.string()
     .trim()
     .max(80)
@@ -231,8 +187,8 @@ export const playerSchema = Joi.object({
   role: Joi.string().allow('').max(100).default(''),
   photo: Joi.string().allow('').max(500).default(''),
   status: Joi.string().valid(...PLAYER_STATUSES).default('actif'),
-  // `null` est une réponse valable : c'est « date inconnue », et le formulaire
-  // envoie cela plutôt qu'une chaîne vide que Mongo refuserait de convertir.
+ 
+ 
   birthDate: Joi.date().allow(null).default(null),
   nationality: Joi.string().allow('').max(100).default(''),
   height: Joi.number().min(0).max(260).default(0),
@@ -266,12 +222,5 @@ export const heroSlidePatchSchema = asPatch(heroSlideSchema);
 export const matchPatchSchema = asPatch(matchSchema);
 export const galleryItemPatchSchema = asPatch(galleryItemSchema);
 
-/**
- * `slug` refusé en modification : il identifie l'équipe, il ne se corrige pas.
- *
- * L'interdiction vient APRÈS `asPatch`, et non avant : `asPatch` repasse tous
- * les champs en `optional()`, ce qui annulait le `forbidden()` posé d'abord.
- * L'identifiant redevenait alors modifiable, et en changer une lettre aurait
- * détaché tout l'effectif de son équipe sans que rien ne le signale.
- */
+
 export const teamPatchSchema = asPatch(teamSchema).fork(['slug'], (f) => f.forbidden());

@@ -5,7 +5,7 @@ import { history as historyApi, HistoryEventRecord } from '../../services/site/c
 import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
 import ImageField from '../../components/admin/ImageField';
 
-/** Une entrée par ligne : c'est la saisie la plus simple pour une liste courte. */
+
 const toLines = (values: string[] = []): string => values.join('\n');
 const fromLines = (value: string): string[] =>
   value.split('\n').map((line) => line.trim()).filter(Boolean);
@@ -20,18 +20,7 @@ const EMPTY_FORM = {
   image: '',
 };
 
-/**
- * Frise historique du club.
- *
- * Alimente la page `/histoire`, où les étapes s'affichent classées par année.
- * L'année est le seul champ contraint : c'est elle qui range la frise, et le
- * backend la refuse hors de l'intervalle 1800 → année en cours + 5.
- *
- * La « phase » regroupe librement les étapes — Fondation, Expansion,
- * Modernisation — et la page en fait des puces au-dessus de la frise. Les
- * valeurs déjà saisies sont proposées, pour éviter que « Fondation » et
- * « fondation » cohabitent.
- */
+
 const HistoireAdmin: React.FC = () => {
   const {
     items: events,
@@ -52,7 +41,7 @@ const HistoireAdmin: React.FC = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  /** Phases déjà employées, pour la liste déroulante et la saisie assistée. */
+ 
   const phases = useMemo(
     () => Array.from(new Set(events.map((event) => event.phase).filter(Boolean))) as string[],
     [events]
@@ -108,8 +97,8 @@ const HistoireAdmin: React.FC = () => {
       image: form.image,
     };
 
-    // Le formulaire reste ouvert si l'enregistrement a échoué : la saisie n'est
-    // pas perdue, et le message d'erreur explique pourquoi.
+   
+   
     const saved = editingId ? await update(editingId, payload) : await create(payload);
     if (saved) setModalOpen(false);
   };

@@ -18,13 +18,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw) as CartItem[];
-    } catch {}
-    return [];
+      return raw ? (JSON.parse(raw) as CartItem[]) : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); } catch { return; }
   }, [cart]);
 
   const addToCart = useCallback((product: Product, size: string, quantity: number = 1) => {

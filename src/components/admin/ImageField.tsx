@@ -4,13 +4,7 @@ import { uploadImage } from '../../services/site/content.service';
 import { siteMediaUrl } from '../../services/site/media';
 import { ApiError } from '../../lib/api';
 
-/**
- * Champ image de l'administration : une adresse, ou un fichier téléversé.
- *
- * Le fichier part vers l'API du site, qui rend un chemin (`/uploads/…`) — c'est
- * ce chemin qui est stocké, jamais l'URL complète : l'API peut ainsi changer de
- * domaine sans casser les images des articles déjà publiés.
- */
+
 const ImageField: React.FC<{
   value: string;
   onChange: (value: string) => void;
@@ -31,7 +25,7 @@ const ImageField: React.FC<{
       setError(cause instanceof ApiError ? cause.fullMessage : 'Téléversement impossible');
     } finally {
       setUploading(false);
-      // Réinitialisé pour que re-choisir le même fichier déclenche l'événement.
+     
       if (inputRef.current) inputRef.current.value = '';
     }
   };

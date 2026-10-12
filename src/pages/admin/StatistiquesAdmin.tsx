@@ -29,14 +29,6 @@ const statsOf = (member: TeamMemberRecord): Stats => ({
 
 const sameStats = (a: Stats, b: Stats) => STAT_COLUMNS.every(({ key }) => a[key] === b[key]);
 
-/**
- * Statistiques individuelles de l'effectif.
- *
- * Aucune liste à tenir à part : chaque joueur saisi dans « Effectif » apparaît
- * ici d'office, et les chiffres s'écrivent sur sa fiche — la même que la page
- * d'équipe lit. On saisit toute une équipe d'un coup après un match, puis un
- * seul enregistrement n'envoie que les lignes modifiées.
- */
 const StatistiquesAdmin: React.FC = () => {
   const { data: teams } = useTeams();
   const { items: members, loading, error, reload } = useEditableResource<TeamMemberRecord>(teamMembersApi, {
@@ -50,7 +42,6 @@ const StatistiquesAdmin: React.FC = () => {
   const [saveError, setSaveError] = useState<ApiError | null>(null);
   const [savedCount, setSavedCount] = useState<number | null>(null);
 
-  // Première équipe qui a des joueurs, sinon la première tout court.
   useEffect(() => {
     if (team || teams.length === 0) return;
     const withPlayers = teams.find((entry) => members.some((member) => member.team === entry.slug));
@@ -89,8 +80,6 @@ const StatistiquesAdmin: React.FC = () => {
     setSaveError(null);
     let done = 0;
     try {
-      // L'une après l'autre : une erreur s'arrête sur la ligne fautive, et les
-      // précédentes restent enregistrées.
       for (const member of changed) {
         await teamMembersApi.update(member.id, { stats: drafts[member.id] });
         done += 1;

@@ -23,18 +23,7 @@ const ROLE_BADGE: Record<UserRole, string> = {
 
 const EMPTY_FORM = { name: '', email: '', role: 'journalist' as UserRole, password: '' };
 
-/**
- * Comptes de l'administration.
- *
- * Écran du super administrateur : il ouvre les accès, change les profils,
- * réinitialise les mots de passe et ferme les comptes. Les garde-fous — ne pas
- * se rétrograder soi-même, ne pas retirer le dernier super administrateur —
- * vivent sur le serveur ; l'interface se contente d'afficher son refus.
- *
- * Un mot de passe n'est jamais relu : le serveur n'en garde que le haché. Il
- * n'est montré qu'une fois, à la création ou à la réinitialisation, et c'est au
- * super administrateur de le transmettre.
- */
+
 const Utilisateurs: React.FC = () => {
   const { user: currentUser } = useAuth();
 
@@ -50,7 +39,7 @@ const Utilisateurs: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
-  /** Mot de passe tout juste généré, montré une seule fois. */
+ 
   const [revealed, setRevealed] = useState<{ email: string; password: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -71,7 +60,7 @@ const Utilisateurs: React.FC = () => {
     [search, roleFilter]
   );
 
-  // La recherche est temporisée : sans cela, chaque frappe partirait au serveur.
+ 
   useEffect(() => {
     const controller = new AbortController();
     const timer = setTimeout(() => void load(controller.signal), 250);
@@ -111,7 +100,7 @@ const Utilisateurs: React.FC = () => {
     }
   };
 
-  /** Changement de profil ou d'état, appliqué depuis la ligne du tableau. */
+ 
   const patch = async (entry: SiteUser, payload: { role?: UserRole; is_active?: boolean }) => {
     setError(null);
     try {
@@ -363,8 +352,8 @@ const Utilisateurs: React.FC = () => {
 
                     <td className="px-5 py-4">
                       {isSelf ? (
-                        // Se rétrograder soi-même enferme dehors : le serveur le
-                        // refuse, autant ne pas proposer le geste.
+                       
+                       
                         <span className={`inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase ${ROLE_BADGE[entry.role]}`}>
                           {ROLE_LABELS[entry.role]}
                         </span>

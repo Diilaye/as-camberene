@@ -10,20 +10,16 @@ export interface PotmNominee {
   position: string;
 }
 
-/** L'élection telle que le public la voit : ni décompte, ni classement. */
 export interface PotmCurrent {
   id: string;
   month: string;
   title: string;
   status: 'open' | 'closed';
   nominees: PotmNominee[];
-  /** Joueur pour qui le compte connecté a voté. */
   myVote: string | null;
-  /** Vainqueur, révélé à la clôture seulement. */
   winner: string | null;
 }
 
-/** L'élection vue par l'administration, dépouillement compris. */
 export interface PotmAdmin {
   id: string;
   month: string;
@@ -57,7 +53,6 @@ export const updatePotm = (id: string, payload: Partial<{ title: string; nominee
 
 export const deletePotm = (id: string) => siteApi.del(`/player-of-month/${id}`, { auth: true });
 
-/** « 2026-09 » → « Septembre 2026 ». */
 export const monthName = (month: string): string => {
   const label = new Date(`${month}-15T12:00:00`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   return label.charAt(0).toUpperCase() + label.slice(1);

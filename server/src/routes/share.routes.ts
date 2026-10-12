@@ -1,20 +1,4 @@
-/**
- * Pages d'aperçu pour le partage sur les réseaux.
- *
- * Le site est une application à page unique : le serveur renvoie toujours le
- * même `index.html`, et c'est le navigateur qui compose la page. Les robots de
- * Facebook, WhatsApp, X ou Telegram, eux, ne lancent pas le JavaScript — ils
- * lisent le HTML reçu, et n'y trouveraient donc que les balises génériques du
- * club, quel que soit l'article ou le match partagé.
- *
- * Ces routes rendent, pour un contenu précis, un HTML minimal qui porte ses
- * vraies balises `og:` — titre, description, image. L'Apache du site y dirige
- * les robots (voir `deploy/httpd-site.conf`) ; une personne qui atterrirait
- * ici est renvoyée vers la page normale.
- *
- * Aucune donnée n'est exposée qui ne le soit déjà : ces pages ne montrent que
- * ce que la vitrine publie.
- */
+
 
 import { Router } from 'express';
 import Article from '../models/Article.model';
@@ -24,7 +8,7 @@ import config from '../config/env';
 
 const router = Router();
 
-/** Une valeur qui part dans un attribut HTML doit être échappée, sans exception. */
+
 const escapeHtml = (value: string): string =>
   value
     .replace(/&/g, '&amp;')
@@ -33,14 +17,7 @@ const escapeHtml = (value: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-/**
- * Adresse absolue d'une image.
- *
- * Les fichiers téléversés sont stockés en chemin relatif (`/uploads/…`) pour
- * que l'API puisse changer de domaine ; les réseaux, eux, exigent une adresse
- * complète. Une image déjà absolue — une photo de banque, par exemple — est
- * laissée telle quelle.
- */
+
 const absoluteImage = (value: string | undefined): string => {
   const trimmed = value?.trim();
   if (!trimmed) return `${config.siteUrl}/assets/img/asc-camberene-equipe-2025.webp`;
@@ -48,7 +25,7 @@ const absoluteImage = (value: string | undefined): string => {
   return `${config.siteUrl}${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
 };
 
-/** Description resserrée : les réseaux coupent au-delà de deux cents caractères. */
+
 const summarize = (value: string, limit = 200): string => {
   const flat = value.replace(/\s+/g, ' ').trim();
   return flat.length <= limit ? flat : `${flat.slice(0, limit - 1)}…`;
@@ -58,7 +35,7 @@ interface Preview {
   title: string;
   description: string;
   image: string;
-  /** Page réelle, vers laquelle une personne est renvoyée. */
+ 
   path: string;
   type: 'article' | 'website';
 }
@@ -101,7 +78,7 @@ const renderPreview = (preview: Preview): string => {
 </html>`;
 };
 
-/** Repli quand le contenu n'existe plus : le lien mène au site, pas à une erreur. */
+
 const fallback = (): Preview => ({
   title: 'ASC Cambérène — Club officiel',
   description: 'Club officiel de football sénégalais, fondé en 1965.',
@@ -111,9 +88,9 @@ const fallback = (): Preview => ({
 });
 
 const send = (res: import('express').Response, preview: Preview): void => {
-  // Les aperçus sont mis en cache par les réseaux de toute façon ; cinq
-  // minutes suffisent à absorber une rafale de partages sans figer une
-  // correction de titre pour la journée.
+ 
+ 
+ 
   res.set('Cache-Control', 'public, max-age=300');
   res.type('html').send(renderPreview(preview));
 };
@@ -159,8 +136,8 @@ router.get(
       month: 'long',
     });
 
-    // Un match joué s'annonce par son score, un match à venir par son
-    // rendez-vous : c'est ce qu'un supporter veut lire dans l'aperçu.
+   
+   
     const description = match.result
       ? `${affiche} · ${match.result.home} — ${match.result.away} · ${match.competition}`
       : `${date} à ${match.time} · ${match.competition} · ${match.venue}`;

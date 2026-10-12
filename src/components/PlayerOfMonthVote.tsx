@@ -7,20 +7,12 @@ import { ApiError } from '../lib/api';
 import { IMAGE_PLACEHOLDER, handleImageError } from '../lib/imagePlaceholder';
 import { getCurrentPotm, monthName, PotmCurrent, votePotm } from '../services/site/playerOfMonth.service';
 
-/**
- * Vote du joueur du mois, sous l'onglet du même nom des actualités.
- *
- * Voter demande un compte : c'est ce qui permet de tenir « un vote par
- * personne ». Le visiteur anonyme voit les nommés et un lien vers la connexion,
- * qui le ramène ici. Aucun décompte n'est montré pendant le vote.
- */
 const PlayerOfMonthVote: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
   const { data: poll, loading, reload } = useApiResource<PotmCurrent | null>(
     (signal) => getCurrentPotm(signal),
     null,
-    // Rechargé à la connexion : `myVote` dépend du compte.
     { deps: [user?.id] }
   );
 

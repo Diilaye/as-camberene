@@ -1,23 +1,11 @@
-/**
- * Comptes du site.
- *
- * Le site est seul dépositaire de ses comptes : administrateurs et supporters
- * vivent dans son backend, pas dans fconnect. C'est ce qui rend son
- * administration autonome — elle se connecte que fconnect réponde ou non.
- *
- * Aucune route publique ne crée de compte d'administration : l'inscription ne
- * produit que des supporters, et le rôle est fixé par le serveur. Les profils
- * s'ouvrent depuis `/admin/utilisateurs`, réservé au super administrateur, et
- * le tout premier depuis le serveur :
- * `cd server && npm run create:superadmin -- <email>`.
- */
+
 
 import { ApiError, siteApi } from '../../lib/api';
 import { AuthTokens } from '../../lib/tokens';
 import { Permission, UserRole, permissionsOf } from '../../lib/roles';
 import { User } from '../../types';
 
-/** Compte tel que le backend le rend. */
+
 export interface SiteUser {
   id: string;
   name: string;
@@ -31,7 +19,7 @@ export interface SiteUser {
 
 interface AuthPayload {
   user: SiteUser;
-  /** Droits du compte ; le serveur en est l'autorité. */
+ 
   permissions?: Permission[];
   tokens: AuthTokens;
 }
@@ -48,12 +36,7 @@ export interface RegisterPayload {
   favorite?: string;
 }
 
-/**
- * Traduction vers le type `User` que connaissent les pages.
- *
- * Les permissions viennent du serveur ; la table locale ne sert que si la
- * réponse ne les porte pas — un backend plus ancien que le site.
- */
+
 export const toUser = (user: SiteUser, permissions?: Permission[]): User => ({
   id: user.id,
   name: user.name,
@@ -78,12 +61,7 @@ export const register = async (payload: RegisterPayload): Promise<User> => {
   return persist(response.data);
 };
 
-/**
- * Profil du visiteur connecté, ou `null`.
- *
- * Appelé au chargement du site pour rétablir la session : c'est le serveur qui
- * dit si le jeton conservé vaut encore, jamais le client.
- */
+
 export const getCurrentUser = async (signal?: AbortSignal): Promise<User | null> => {
   if (!siteApi.tokens.getAccess()) return null;
 
@@ -94,15 +72,7 @@ export const getCurrentUser = async (signal?: AbortSignal): Promise<User | null>
     }>('/auth/me', { auth: true, signal });
     return toUser(response.data.user, response.data.permissions);
   } catch (error) {
-    /*
-     * Seul un refus du serveur condamne le jeton.
-     *
-     * Une requête annulée — le composant s'est démonté, React a rejoué son
-     * effet, le visiteur a changé de page — et un serveur injoignable ne disent
-     * rien de sa validité. Les traiter comme un rejet effaçait la session à la
-     * moindre navigation rapide : le compte restait affiché, mais les appels
-     * suivants partaient sans jeton et se faisaient refuser.
-     */
+   
     if (error instanceof ApiError && error.isUnauthorized) siteApi.tokens.clear();
     return null;
   }

@@ -14,7 +14,6 @@ const CLUB_LOGO = '/assets/img/asc-camberene-logo-officiel.png';
 const dateLabel = (date: string) =>
   new Date(`${date}T12:00:00`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-/** Score vu du club : buts marqués, encaissés, et l'issue. */
 const scoreOf = (match: Match) => {
   if (!match.result) return null;
   const home = match.venue === 'Domicile';
@@ -29,16 +28,8 @@ const scoreOf = (match: Match) => {
   return { scored, conceded, outcome };
 };
 
-/** Les buts dans l'ordre du match ; ceux dont la minute est inconnue en dernier. */
 const byMinute = (a: MatchScorer, b: MatchScorer) => (a.minute || Infinity) - (b.minute || Infinity);
 
-/**
- * Statistiques tirées de la feuille de match.
- *
- * Le club saisit le score, les buteurs, leurs minutes et les passeurs : tout ce
- * qui suit s'en déduit, sans saisie de plus. Une minute inconnue (0) ne compte
- * dans aucune des deux périodes.
- */
 const statsOf = (match: Match, scored: number, conceded: number) => {
   const goals = match.scorers ?? [];
   const club = goals.filter((goal) => goal.side === 'club');
@@ -57,7 +48,6 @@ const statsOf = (match: Match, scored: number, conceded: number) => {
   ];
 };
 
-/** « dans 3 jours », « dans 5 h » — pour une rencontre à venir. */
 const countdown = (match: Match): string | null => {
   const ms = new Date(`${match.date}T${match.time || '00:00'}:00`).getTime() - Date.now();
   if (ms <= 0) return null;
@@ -80,13 +70,6 @@ const TeamBadge: React.FC<{ team: { name: string; logo: string | null } }> = ({ 
   </div>
 );
 
-/**
- * Fiche d'une rencontre : score, feuille de match, statistiques et photos.
- *
- * On y arrive depuis le calendrier. Tout vient de la saisie du club dans
- * l'onglet Calendrier de l'administration, et les photos de la galerie
- * rattachées au match.
- */
 const MatchDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { match, loading } = useMatch(id);
@@ -192,8 +175,6 @@ const MatchDetail: React.FC = () => {
               <ol className="panel divide-y divide-white/5">
                 {goals.map((goal, index) => {
                   const ours = goal.side === 'club';
-                  // Le but s'affiche du côté de l'équipe qui l'a marqué, comme
-                  // sur le tableau de score.
                   const onLeft = ours === home;
                   return (
                     <li key={`${goal.name}-${goal.minute}-${index}`} className={`flex items-center gap-4 p-4 ${onLeft ? '' : 'flex-row-reverse text-right'}`}>

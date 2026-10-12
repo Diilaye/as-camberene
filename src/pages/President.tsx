@@ -5,14 +5,7 @@ import PageHero from '../components/ui/PageHero';
 import { president, presidentAxes } from '../data/president';
 import { handleImageError } from '../lib/imagePlaceholder';
 
-/**
- * Mot du président.
- *
- * Une lettre se lit d'un trait : la colonne de texte reste étroite, le portrait
- * l'accompagne en colonne latérale et se glisse au-dessus du texte sur mobile.
- * Les cinq axes du mandat, noyés dans le troisième paragraphe, sont repris en
- * grille juste après la signature pour qui parcourt la page sans tout lire.
- */
+
 const President: React.FC = () => (
   <div className="bg-graphite">
     <PageHero

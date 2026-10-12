@@ -2,22 +2,16 @@ import React from 'react';
 import { handleImageError } from '../../lib/imagePlaceholder';
 
 interface PageHeroProps {
-  /** Surtitre jaune en capitales, au-dessus du titre. */
+ 
   kicker?: string;
   title: string;
   description?: string;
-  /** Photo de fond ; à défaut, la bande verte du club sert de fond. */
+ 
   image?: string;
   children?: React.ReactNode;
 }
 
-/**
- * Bannière de tête des pages intérieures.
- *
- * Même construction que le carrousel d'accueil, en plus court : photo plein
- * cadre assombrie par un double dégradé, texte calé en bas à gauche, surtitre
- * jaune au-dessus d'un titre capitalisé.
- */
+
 const PageHero: React.FC<PageHeroProps> = ({ kicker, title, description, image, children }) => (
   <section className={`page-hero ${image ? 'page-hero--image bg-graphite' : 'band-green'}`}>
     {image && (

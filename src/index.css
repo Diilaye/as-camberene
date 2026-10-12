@@ -4,15 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/**
- * Tokens de la refonte.
- *
- * L'AS Roma expose sa charte sous forme de variables CSS (`--asr-red`,
- * `--asr-yellow`, `--asr-gray-graphite`) que ses composants consomment sans
- * jamais réécrire une couleur en dur. On reprend cette discipline avec les
- * couleurs de l'ASC Cambérène : le vert tient le rôle de la couleur
- * d'institution, le jaune celui de l'accent.
- */
+
 :root {
   --club-green: #0d7c27;
   --club-green-dark: #0a5e1f;
@@ -36,7 +28,7 @@
     font-family: 'Archivo', Arial, Helvetica, sans-serif;
   }
 
-  /* Les titres du modèle sont capitalisés et très resserrés : -0.03em partout. */
+ 
   h1, h2, h3, h4 {
     letter-spacing: -0.03em;
   }
@@ -48,18 +40,13 @@
 }
 
 @layer components {
-  /* ------------------------------------------------------------------ *
-   * Trame de page
-   * ------------------------------------------------------------------ */
+ 
 
   .site-container {
     @apply mx-auto w-full max-w-site px-4 sm:px-6 lg:px-10;
   }
 
-  /**
-   * Titre de rubrique : 30px capitales, aligné à gauche, avec un lien « tout
-   * voir » poussé à droite. C'est le gabarit `__header` du modèle.
-   */
+ 
   .section-title {
     @apply text-2xl md:text-[30px] font-medium uppercase text-[#eee] leading-none;
   }
@@ -69,13 +56,7 @@
            transition-opacity hover:opacity-70;
   }
 
-  /* ------------------------------------------------------------------ *
-   * Rails horizontaux
-   *
-   * Les rubriques du modèle ne paginent pas : elles défilent latéralement avec
-   * un aimant de défilement sur chaque carte. La barre est masquée, les flèches
-   * ne s'affichent qu'au pointeur fin.
-   * ------------------------------------------------------------------ */
+ 
 
   .rail {
     @apply flex flex-row gap-5 overflow-x-auto py-4;
@@ -98,12 +79,7 @@
            shadow-lg transition-opacity hover:opacity-80 disabled:opacity-0;
   }
 
-  /* ------------------------------------------------------------------ *
-   * Carte éditoriale portrait
-   *
-   * Reprise fidèle du gabarit de l'AS Roma : 252×480, coins à 20px, image
-   * au-dessus et bloc de texte de 150px souligné d'un filet dégradé de 2px.
-   * ------------------------------------------------------------------ */
+ 
 
   .card-portrait {
     @apply relative flex w-[252px] min-w-[252px] flex-col justify-end overflow-hidden
@@ -133,7 +109,7 @@
     @apply relative flex h-[150px] flex-col gap-[5px] p-[10px];
   }
 
-  /* Le filet dégradé qui sépare l'image du texte, signature du modèle. */
+ 
   .card-portrait__body::before {
     content: '';
     @apply absolute right-0 top-0 block h-[2px] w-full;
@@ -189,9 +165,7 @@
     }
   }
 
-  /* ------------------------------------------------------------------ *
-   * Boutons
-   * ------------------------------------------------------------------ */
+ 
 
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 text-sm
@@ -214,12 +188,7 @@
     @apply btn border-2 border-white/60 text-white hover:border-white hover:bg-white hover:text-graphite;
   }
 
-  /* ------------------------------------------------------------------ *
-   * Fonds de rubrique
-   *
-   * Le modèle pose ses rubriques éditoriales sur une texture rouge et le reste
-   * sur du graphite. On garde l'alternance, en vert.
-   * ------------------------------------------------------------------ */
+ 
 
   .band-green {
     background:
@@ -236,9 +205,7 @@
     @apply bg-charcoal;
   }
 
-  /* ------------------------------------------------------------------ *
-   * Bannière de tête des pages intérieures
-   * ------------------------------------------------------------------ */
+ 
 
   .page-hero {
     @apply relative flex items-end overflow-hidden;
@@ -253,7 +220,7 @@
       linear-gradient(rgba(24, 25, 28, 0), rgba(24, 25, 28, 0.95) 99%);
   }
 
-  /* Voile allégé : la photo reste lisible, seul le bas s'assombrit sous le titre. */
+ 
   .page-hero--soft::before {
     background: linear-gradient(rgba(24, 25, 28, 0) 35%, rgba(24, 25, 28, 0.85) 100%);
   }
@@ -266,9 +233,7 @@
     @apply text-lg md:text-2xl font-bold uppercase text-club-yellow;
   }
 
-  /* ------------------------------------------------------------------ *
-   * Surfaces sombres réutilisées par les pages intérieures
-   * ------------------------------------------------------------------ */
+ 
 
   .panel {
     @apply rounded-[20px] border border-white/10 bg-white/[0.04] backdrop-blur-sm;

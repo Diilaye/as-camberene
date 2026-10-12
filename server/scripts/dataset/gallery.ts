@@ -1,20 +1,10 @@
-/**
- * Photos d'amorçage de la galerie.
- *
- * De quoi que les trois onglets — matchs, entraînements, vie du club — aient
- * chacun de la matière, et que le club voie comment ses propres photos s'y
- * rangeront. Aucune n'est rattachée à une rencontre : le rattachement se fait
- * depuis l'administration, où le club choisit le match dans son calendrier.
- *
- * Le quatrième onglet du site, « Nos stars », n'a rien à semer ici : il
- * présente les joueurs cochés « vedette » dans l'effectif.
- */
+
 import { SeedGalleryItem } from './types';
 
 const image = (id: string) =>
   `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop`;
 
-/** `AAAA-MM-JJ` à `offset` jours d'aujourd'hui. */
+
 const day = (offset: number): string => {
   const date = new Date();
   date.setDate(date.getDate() + offset);

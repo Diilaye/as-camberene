@@ -1,21 +1,17 @@
-/**
- * Étape de l'histoire du club.
- *
- * La frise de la page Histoire : une entrée par grande étape, rangée par année.
- */
+
 
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IHistoryEvent extends Document {
   _id: mongoose.Types.ObjectId;
   year: number;
-  /** Précision libre quand l'année ne suffit pas : « Mai 1974 », « 1974-1976 ». */
+ 
   dateLabel?: string;
   title: string;
   description: string;
   tags: string[];
   image?: string;
-  /** Ère à laquelle l'étape appartient : Fondation, Expansion, Modernisation… */
+ 
   phase?: string;
 }
 

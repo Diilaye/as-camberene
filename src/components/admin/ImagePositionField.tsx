@@ -9,15 +9,6 @@ const parse = (value: string): [number, number] => {
   return match ? [Number(match[1]), Number(match[2])] : [50, 50];
 };
 
-/**
- * Point de cadrage d'une image : la zone qui reste visible quand le site la
- * recadre.
- *
- * Une même photo passe dans une carte presque carrée et dans une bannière très
- * large : aucun cadrage fixe ne convient à toutes. On désigne donc le sujet —
- * un visage, le ballon — d'un clic sur la photo entière, et chaque format
- * rogne autour de ce point. Les deux aperçus montrent le résultat tout de suite.
- */
 const ImagePositionField: React.FC<{
   image: string;
   value: string;

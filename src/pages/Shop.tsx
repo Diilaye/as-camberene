@@ -9,10 +9,7 @@ import Notification from '../components/Notification';
 import PageHero from '../components/ui/PageHero';
 
 const Shop: React.FC = () => {
-  /**
-   * La catégorie vit dans l'URL : le méga-menu pointe directement sur
-   * `/shop?categorie=Maillots`, et le lien reste partageable.
-   */
+ 
   const [searchParams, setSearchParams] = useSearchParams();
   const selected = searchParams.get('categorie') ?? 'Tous';
 

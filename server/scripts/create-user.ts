@@ -1,26 +1,4 @@
-/**
- * Ouverture d'un compte depuis le serveur.
- *
- * C'est le chemin d'amorçage : il faut un premier super administrateur pour que
- * `/api/users` devienne utilisable, et cette route est réservée à ce profil.
- * Ensuite, tout se fait depuis l'administration du site — ce script ne sert
- * plus qu'au dépannage, quand plus personne ne peut se connecter.
- *
- * Pour ouvrir d'un coup les deux comptes d'un site neuf — le super
- * administrateur et l'administrateur — voir `bootstrap-admins.ts`.
- *
- *   npm run create:superadmin -- direction@asccamberene.sn
- *   npm run create:admin      -- redaction@asccamberene.sn --name 'Rédaction'
- *   npm run create:user       -- boutique@asccamberene.sn --role shop-admin
- *
- * Sur un compte existant, le script ne touche à rien sauf `--promote`, qui
- * change son profil sans rien demander d'autre.
- *
- *   npm run create:user -- direction@asccamberene.sn --role superadmin --promote
- *
- * `--promote --password '…'` réattribue aussi le mot de passe : c'est le
- * chemin de récupération quand plus personne ne peut entrer.
- */
+
 import { connectDatabase, disconnectDatabase } from '../src/config/database';
 import SiteUser from '../src/models/SiteUser.model';
 import { ASSIGNABLE_ROLES, ROLE_LABELS, UserRole } from '../src/lib/roles';
@@ -88,9 +66,9 @@ async function main(): Promise<number> {
       existing.role = role;
       existing.is_active = true;
 
-      // Avec `--password`, la promotion sert aussi de récupération : c'est le
-      // cas où plus personne ne peut se connecter, et où le mot de passe perdu
-      // est justement le problème.
+     
+     
+     
       if (providedPassword) existing.password_hash = providedPassword;
       await existing.save();
 

@@ -1,17 +1,7 @@
-/**
- * Calendrier d'amorçage.
- *
- * Quelques rencontres passées et à venir : de quoi que la page d'accueil montre
- * ses deux colonnes — les prochains matchs, les derniers résultats — et que le
- * club voie à quoi ressemble une saison saisie avant d'y mettre la sienne.
- *
- * Les dates sont calculées autour du jour de l'import, et non écrites en dur :
- * un calendrier d'amorçage figé serait périmé avant même d'être installé, et
- * l'accueil n'aurait plus aucun match « à venir » à annoncer.
- */
+
 import { SeedMatch } from './types';
 
-/** `AAAA-MM-JJ` à `offset` jours d'aujourd'hui. */
+
 const day = (offset: number): string => {
   const date = new Date();
   date.setDate(date.getDate() + offset);

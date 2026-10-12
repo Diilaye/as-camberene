@@ -20,18 +20,6 @@ const Card: React.FC<{ title: string; value: string | number; sub: string }>=({t
   </div>
 );
 
-/**
- * Tableau de bord de l'administration.
- *
- * Il agrège les deux sources du site sans les confondre : le contenu éditorial
- * vient du backend du site, l'effectif de fconnect. Quand l'une des deux ne
- * répond pas, ses compteurs tombent à zéro et un bandeau le dit — plutôt qu'un
- * chiffre plausible et faux.
- *
- * Les compteurs suivent le profil : un responsable boutique n'a que faire du
- * nombre de brouillons, et le tableau ne va pas chercher ce qu'il ne montrera
- * pas. Chaque bloc est donc conditionné au droit qui l'ouvre.
- */
 const Dashboard: React.FC = () => {
   const { logout, user, can } = useAuth();
 
@@ -75,7 +63,6 @@ const Dashboard: React.FC = () => {
   const lastArticles = useMemo(() => [...articles].sort((a,b)=> new Date(b.publishedAt).getTime()-new Date(a.publishedAt).getTime()).slice(0,5), [articles]);
   const lastProducts = useMemo(() => [...products].slice(-4).reverse(), [products]);
 
-  /** Chiffre et charge de travail de la boutique. */
   const shop = useMemo(() => {
     const active = orders.filter((order) => order.status !== 'annulee');
     return {

@@ -9,7 +9,6 @@ import { AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
 import ImageField from '../../components/admin/ImageField';
 import { ApiError } from '../../lib/api';
 
-/** Rubriques du site qui ont déjà leur propre onglet. */
 const OTHER_CONTENT = [
   { to: '/admin/carrousel', label: 'Carrousel de l’accueil' },
   { to: '/admin/articles', label: 'Actualités' },
@@ -42,14 +41,6 @@ const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, 
   </label>
 );
 
-/**
- * Contenu du site : tout ce qui n'a pas sa propre rubrique.
- *
- * Bandeau du haut, chiffres du club, bannière de l'accueil, partenaires,
- * réseaux sociaux, coordonnées, pied de page — et l'affichage de chaque
- * section de l'accueil. Les rubriques qui ont déjà leur onglet (actualités,
- * boutique…) y renvoient, pour qu'on trouve ici l'entrée de tout le site.
- */
 const ContenuSiteAdmin: React.FC = () => {
   const { data: loaded, loading, error, reload } = useApiResource<SiteSettings | null>(
     (signal) => getSiteSettings(signal),
@@ -62,16 +53,12 @@ const ContenuSiteAdmin: React.FC = () => {
   const [saveError, setSaveError] = useState<ApiError | null>(null);
   const [saved, setSaved] = useState(false);
 
-  // Un rechargement des données n'écrase jamais une saisie en cours.
   const dirtyRef = useRef(false);
   dirtyRef.current = dirty;
   useEffect(() => {
     if (loaded && !dirtyRef.current) setForm(loaded);
   }, [loaded]);
 
-  // 2. Quitter la page avec des modifications non enregistrées demande
-  // confirmation : fermeture ou rechargement de l'onglet, et tout lien cliqué —
-  // menu de gauche et raccourcis « Modifier le contenu » compris.
   useEffect(() => {
     if (!dirty) return undefined;
     const beforeUnload = (event: BeforeUnloadEvent) => {

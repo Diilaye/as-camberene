@@ -1,16 +1,4 @@
-/**
- * Diapositives du carrousel de tête.
- *
- * La première chose qu'un visiteur voit. Le jeu d'amorçage en verse quatre,
- * qui montrent les trois formes possibles : une photo, une vidéo YouTube, et
- * une annonce sans visuel qui s'affiche sur le fond vert du club. Le club les
- * remplace ensuite depuis `/admin/carrousel` — c'est la matière sur laquelle
- * il apprend à s'en servir.
- *
- * Les photos sont celles livrées avec le site (`public/assets/`) plutôt que des
- * images de banque : le carrousel est la vitrine du club, et une photo générique
- * y serait plus visible qu'ailleurs.
- */
+
 import { SeedHeroSlide } from './types';
 
 export const seedHeroSlides: SeedHeroSlide[] = [

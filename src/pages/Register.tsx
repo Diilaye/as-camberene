@@ -8,7 +8,6 @@ const TEAMS = ['Equipe A', 'U19', 'U17', 'U15', 'U12'];
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  // Venu d'une page qui demandait un compte (le vote du joueur du mois) : on l'y ramène.
   const location = useLocation();
   const { register } = useAuth();
 
@@ -27,8 +26,6 @@ const Register: React.FC = () => {
       await register({ name, email, password, favorite });
       navigate((location.state as { from?: string } | null)?.from ?? '/', { replace: true });
     } catch (cause) {
-      // Le serveur dit précisément ce qui cloche — email déjà pris, mot de
-      // passe trop court : autant le montrer plutôt qu'un message générique.
       setError(authErrorMessage(cause));
     } finally {
       setLoading(false);

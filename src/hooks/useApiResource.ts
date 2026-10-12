@@ -1,17 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError } from '../lib/api';
 
-/**
- * Lecture d'une ressource distante, avec repli sur les données statiques.
- *
- * Le site doit rester debout quand un backend manque : le serveur du site
- * éteint, fconnect injoignable, ou le compte club pas encore créé. Dans ces
- * cas, le hook sert la valeur de repli — celle de `src/data/` — et signale
- * l'origine par `source`, pour qu'une page puisse afficher un bandeau.
- *
- * Une erreur n'efface jamais un contenu déjà affiché : on préfère une donnée
- * datée à une page vide.
- */
+
 
 export type ResourceSource = 'api' | 'fallback';
 
@@ -20,20 +10,14 @@ export interface ApiResource<T> {
   loading: boolean;
   error: ApiError | null;
   source: ResourceSource;
-  /** Relance la requête — bouton « réessayer », ou après une écriture. */
+ 
   reload: () => void;
 }
 
 export interface ResourceOptions {
-  /**
-   * Faut-il seulement interroger le backend ?
-   *
-   * `false` sert au cas où la requête n'a pas de sens — les ressources
-   * fconnect sans identifiant de club, par exemple : autant servir le repli
-   * tout de suite qu'appeler une URL qu'on sait incomplète.
-   */
+ 
   enabled?: boolean;
-  /** Dépendances qui, en changeant, relancent la requête. */
+ 
   deps?: readonly unknown[];
 }
 
@@ -48,9 +32,9 @@ export function useApiResource<T>(
   const [source, setSource] = useState<ResourceSource>('fallback');
   const [attempt, setAttempt] = useState(0);
 
-  // Le loader est souvent une lambda recréée à chaque rendu : le garder dans
-  // une référence évite de relancer la requête sans raison. Ce sont `deps` qui
-  // décident quand recharger.
+ 
+ 
+ 
   const loaderRef = useRef(loader);
   loaderRef.current = loader;
 

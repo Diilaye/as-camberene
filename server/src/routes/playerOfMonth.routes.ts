@@ -1,10 +1,3 @@
-/**
- * Joueur du mois : élection publique, dépouillement réservé au club.
- *
- * Le public voit les nommés et, une fois l'élection close, le vainqueur. Les
- * décomptes ne sortent que vers l'administration : afficher le classement en
- * cours ferait voter pour le favori plutôt que pour son joueur.
- */
 
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
@@ -18,12 +11,6 @@ import { createPotmSchema, updatePotmSchema, voteSchema } from '../validators/pl
 const router = Router();
 const requireManage = requirePermission('players:write');
 
-/**
- * Un vote par compte, c'est l'index unique qui le garantit. Cette limite vise
- * l'autre fraude : des comptes créés en série depuis une même machine pour
- * voter plusieurs fois. Une famille qui partage une connexion reste largement
- * en dessous.
- */
 const voteLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 10,
@@ -37,7 +24,6 @@ const voteLimiter = rateLimit({
 
 const NOMINEE_FIELDS = 'name photo number line position team';
 
-/** Votes par joueur, du plus voté au moins voté. */
 const countVotes = async (pollId: mongoose.Types.ObjectId) => {
   const rows = await PlayerOfMonthVote.aggregate<{ _id: mongoose.Types.ObjectId; votes: number }>([
     { $match: { poll: pollId } },
@@ -55,7 +41,6 @@ const shapeNominee = (player: { _id: unknown; name?: string; photo?: string; num
   position: player.position ?? '',
 });
 
-/** Ouvrir une élection ferme les autres : il n'y en a qu'une à la fois. */
 const closeOthers = (keepId: mongoose.Types.ObjectId) =>
   PlayerOfMonth.updateMany({ _id: { $ne: keepId }, status: 'open' }, { status: 'closed' });
 
@@ -64,14 +49,7 @@ const assertNomineesExist = async (ids: string[]) => {
   if (found !== ids.length) throw new HttpError(400, 'Un joueur nommé ne fait pas partie de l’effectif');
 };
 
-// --------------------------------------------------------------------------
-// Public
-// --------------------------------------------------------------------------
 
-/**
- * L'élection à montrer : celle qui est ouverte, sinon la dernière close.
- * `myVote` dit au supporter connecté pour qui il a voté.
- */
 router.get(
   '/current',
   optionalAuth,
@@ -90,7 +68,6 @@ router.get(
       myVote = vote ? String(vote.player) : null;
     }
 
-    // Le vainqueur n'est révélé qu'à la clôture.
     let winner: string | null = null;
     if (poll.status === 'closed') {
       const counts = await countVotes(poll._id);
@@ -123,7 +100,6 @@ router.post(
     try {
       await PlayerOfMonthVote.create({ poll: poll._id, player, user: req.auth!.userId });
     } catch (error) {
-      // Index unique (poll, user) : le second vote d'un même compte.
       if ((error as { code?: number }).code === 11000) throw new HttpError(409, 'Vous avez déjà voté ce mois-ci');
       throw error;
     }
@@ -132,11 +108,7 @@ router.post(
   })
 );
 
-// --------------------------------------------------------------------------
-// Administration
-// --------------------------------------------------------------------------
 
-/** Toutes les élections, avec leur dépouillement. */
 router.get(
   '/',
   authenticate,
@@ -194,8 +166,6 @@ router.put(
     const poll = await PlayerOfMonth.findByIdAndUpdate(req.params.id, value, { new: true, runValidators: true });
     if (!poll) throw notFound('Élection introuvable');
 
-    // Un joueur retiré de la liste emporte ses votes : ils ne désignent plus
-    // personne, et leurs auteurs peuvent revoter.
     if (value.nominees) {
       await PlayerOfMonthVote.deleteMany({ poll: poll._id, player: { $nin: value.nominees } });
     }

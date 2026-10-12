@@ -1,13 +1,4 @@
-/**
- * Legendes du club.
- *
- * Les noms sont fictifs, et c'est deliberé : preter une carriere inventee a un
- * joueur reel — sa periode, ses statistiques, ses citations — reviendrait a
- * publier de fausses informations sur une personne identifiable, sur le site
- * officiel d'un club. Ces fiches sont la pour que la page vive et pour montrer
- * la forme attendue ; le club les remplacera par ses vraies figures, qu'il est
- * seul a connaitre.
- */
+
 import { SeedLegend } from './types';
 
 const portrait = (id: string) =>

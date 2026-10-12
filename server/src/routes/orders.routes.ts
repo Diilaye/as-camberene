@@ -1,14 +1,4 @@
-/**
- * Commandes de la boutique.
- *
- * Deux publics sur les mêmes documents : n'importe quel visiteur peut en créer
- * une — c'est la validation du panier — mais seule la boutique du club les
- * lit et les fait avancer.
- *
- * Le prix n'est jamais celui qu'annonce le client. Chaque ligne est retarifée
- * depuis le catalogue au moment de l'enregistrement, et les frais de port
- * recalculés : c'est la seule façon qu'un total soit opposable.
- */
+
 
 import { Router } from 'express';
 import Order, { generateReference, ORDER_STATUSES } from '../models/Order.model';
@@ -22,16 +12,14 @@ const router = Router();
 
 const requireShop = requirePermission('orders:manage');
 
-/* ------------------------------------------------------------------ *
- * Passer commande — ouvert au public
- * ------------------------------------------------------------------ */
+
 router.post(
   '/',
   optionalAuth,
   handler(async (req, res) => {
     const value = await createOrderSchema.validateAsync(req.body, { stripUnknown: true });
 
-    // Un seul aller-retour en base pour tout le panier.
+   
     const ids = value.items.map((item: { product_id: string }) => item.product_id);
     const products = await Product.find({ _id: { $in: ids } });
     const byId = new Map(products.map((product) => [String(product._id), product]));
@@ -39,8 +27,8 @@ router.post(
     const items = value.items.map((line: { product_id: string; size: string; quantity: number }) => {
       const product = byId.get(line.product_id);
 
-      // Produit supprimé, ou retiré de la vitrine entre la mise au panier et la
-      // validation : on refuse plutôt que d'enregistrer une commande intenable.
+     
+     
       if (!product || product.isVisible === false) {
         throw new HttpError(409, "Un article du panier n'est plus disponible", [
           product ? `${product.name} a été retiré de la boutique` : 'Article introuvable',
@@ -90,9 +78,7 @@ router.post(
   })
 );
 
-/* ------------------------------------------------------------------ *
- * Suivi — réservé à la boutique
- * ------------------------------------------------------------------ */
+
 router.get(
   '/',
   authenticate,
@@ -147,9 +133,9 @@ router.put(
     const order = await Order.findById(req.params.id);
     if (!order) throw notFound('Commande introuvable');
 
-    // Les montants ne se modifient pas : une commande enregistrée est un
-    // engagement. Pour changer ce qui a été commandé, on l'annule et on la
-    // ressaisit — la trace des deux reste.
+   
+   
+   
     if (value.status !== undefined) order.status = value.status;
     if (value.note !== undefined) order.note = value.note;
     await order.save();

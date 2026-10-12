@@ -1,10 +1,3 @@
-/**
- * Contenu du site hors rubriques, tel qu'il était écrit dans le code.
- *
- * Ces valeurs s'affichent tant que l'onglet « Contenu du site » n'a rien
- * enregistré, et complètent un enregistrement partiel : le site ne perd jamais
- * un texte parce qu'un champ manque.
- */
 
 export const HOME_SECTIONS = [
   { key: 'hero', label: 'Carrousel de tête', manage: '/admin/carrousel' },
@@ -74,7 +67,6 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   },
 };
 
-/** Complète un enregistrement partiel avec les valeurs d'origine. */
 export const withDefaults = (stored: Partial<SiteSettings> | null | undefined): SiteSettings => {
   const d = DEFAULT_SITE_SETTINGS;
   if (!stored) return d;

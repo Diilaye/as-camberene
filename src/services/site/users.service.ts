@@ -1,10 +1,4 @@
-/**
- * Comptes de l'administration.
- *
- * Toutes ces routes exigent le droit `users:manage`, c'est-à-dire le profil
- * super administrateur. L'écran qui les appelle est déjà gardé, mais c'est le
- * serveur qui décide : un appel direct depuis la console se solde par un 403.
- */
+
 
 import { siteApi } from '../../lib/api';
 import { Permission, UserRole } from '../../lib/roles';
@@ -22,7 +16,7 @@ export interface CreateUserPayload {
   name: string;
   email: string;
   role: UserRole;
-  /** Laissé vide, le serveur en tire un au sort et le rend une seule fois. */
+ 
   password?: string;
   is_active?: boolean;
 }
@@ -39,12 +33,7 @@ interface ListResponse {
   pagination: { page: number; limit: number; total: number; totalPages: number };
 }
 
-/**
- * Réponse d'une création ou d'une réinitialisation.
- *
- * `generated_password` n'apparaît que si le serveur a tiré le mot de passe :
- * il n'est pas stocké en clair, donc jamais redonné ensuite.
- */
+
 interface MutationResponse {
   success: boolean;
   data: { user: SiteUser; generated_password?: string };

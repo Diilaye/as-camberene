@@ -31,20 +31,7 @@ const formatDate = (value?: string): string =>
       })
     : '—';
 
-/**
- * Réservations de billets.
- *
- * Le supporter réserve depuis le site et règle au guichet : cet écran est la
- * liste que le club a sous les yeux au moment d'ouvrir, et le carnet où il
- * pointe qui est passé prendre ses places.
- *
- * Les réservations sont groupées par rencontre, avec le total des places
- * demandées : c'est le chiffre qui sert à préparer un guichet, là où une liste
- * à plat obligerait à compter à la main.
- *
- * Rien n'a été encaissé en ligne — il n'y a donc aucun remboursement à
- * craindre en annulant, et c'est pourquoi l'annulation se fait d'un clic.
- */
+
 const BilletterieAdmin: React.FC = () => {
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -91,15 +78,15 @@ const BilletterieAdmin: React.FC = () => {
     });
   }, [reservations, query, statusFilter]);
 
-  /** Une entrée par rencontre, la plus proche en tête. */
+ 
   const groups = useMemo(() => {
     const byMatch = new Map<string, { label: string; date: string; rows: TicketReservation[] }>();
 
     filtered.forEach((reservation) => {
       const match = reservation.match;
-      // Une rencontre supprimée depuis laisse ses réservations orphelines :
-      // elles restent visibles, regroupées à part, plutôt que de disparaître
-      // avec les personnes qu'il faut prévenir.
+     
+     
+     
       const key = match?.id ? String(match.id) : 'sans-match';
       const label = match
         ? match.venue === 'Domicile'
@@ -122,12 +109,7 @@ const BilletterieAdmin: React.FC = () => {
     };
   }, [reservations]);
 
-  /**
-   * La note se saisit en ligne et ne part qu'à la sortie du champ.
-   *
-   * Enregistrer à chaque frappe ferait une requête par caractère ; attendre le
-   * `blur` laisse écrire sa phrase, et ne sauvegarde que si elle a changé.
-   */
+ 
   const saveNote = async (reservation: TicketReservation) => {
     if (!noteDraft || noteDraft.id !== reservation.id) return;
     const value = noteDraft.value;

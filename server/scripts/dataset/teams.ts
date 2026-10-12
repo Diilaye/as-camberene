@@ -1,13 +1,4 @@
-/**
- * Équipes d'amorçage.
- *
- * Les cinq équipes livrées avec le site. Leurs identifiants sont exactement
- * ceux que portaient déjà les fiches de l'effectif (`equipe-a`, `equipe-u19`…) :
- * changer ne serait-ce qu'un tiret détacherait les joueurs de leur équipe sans
- * que rien ne le signale.
- *
- * Aucun effectif annoncé : les pages comptent les fiches réellement rattachées.
- */
+
 import { SeedTeam } from './types';
 
 export const seedTeams: SeedTeam[] = [

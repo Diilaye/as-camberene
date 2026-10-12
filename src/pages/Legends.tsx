@@ -15,7 +15,7 @@ const Legends: React.FC = () => {
     [legends, era]
   );
 
-  // La vedette est la première entrée du Hall of Fame, à défaut la première fiche.
+ 
   const featured = useMemo(
     () => legends.find((legend) => legend.isHallOfFame) ?? legends[0],
     [legends]
@@ -31,8 +31,8 @@ const Legends: React.FC = () => {
     [legends]
   );
 
-  // Aucune légende en base : la page s'annonce vide plutôt que de planter sur
-  // la fiche mise en avant, qui n'existe pas.
+ 
+ 
   if (!featured) {
     return (
       <div className="band-green flex min-h-screen items-center justify-center px-6 text-center">

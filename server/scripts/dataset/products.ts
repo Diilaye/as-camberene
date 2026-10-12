@@ -1,13 +1,4 @@
-/**
- * Catalogue de la boutique.
- *
- * Tous les prix sont en francs CFA, en entiers et arrondis au demi-millier :
- * c'est ainsi qu'un prix s'affiche et se paie au Senegal, et la devise n'a pas
- * de sous-unite — un `19.99` n'y voudrait rien dire.
- *
- * L'echelle retenue est celle d'un club de Ligue 1 senegalaise : un maillot
- * replique autour de 25 000, les accessoires entre 4 500 et 25 000.
- */
+
 import { SeedProduct } from './types';
 
 const JERSEY_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -212,7 +203,7 @@ export const seedProducts: SeedProduct[] = [
     sizes: ['L', 'XL'],
     image: SHIRT,
     inStock: true,
-    // Prete mais pas encore annoncee : elle attend l'ouverture de la vente.
+   
     isVisible: false,
   },
 ];

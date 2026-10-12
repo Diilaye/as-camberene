@@ -1,14 +1,4 @@
-/**
- * Contenu du site : actualités, boutique, légendes, histoire, effectif.
- *
- * Ces cinq ressources partagent la même API — c'est la fabrique de routes du
- * backend (`server/src/lib/resource.ts`) qui le garantit. Elles partagent donc
- * ici le même client, et chaque ressource ne déclare que son chemin et son type.
- *
- * Les documents rendus par le backend ont déjà la forme attendue par le site :
- * aucun adaptateur, contrairement aux données venues de fconnect. Seules les
- * images passent par `siteMediaUrl`, et les dates par une normalisation.
- */
+
 
 import { siteApi } from '../../lib/api';
 import {
@@ -25,13 +15,7 @@ import {
 } from '../../types';
 import { siteMediaUrl } from './media';
 
-/**
- * Types du site, avec l'identifiant resserré sur la chaîne.
- *
- * `EntityId` accepte encore le nombre pour les données statiques de repli ; ce
- * qui vient du backend porte toujours un ObjectId. Le distinguer évite un
- * `String(id)` à chaque appel de service.
- */
+
 export type ArticleRecord = Article & { id: string };
 export type ProductRecord = Product & { id: string };
 export type LegendRecord = Legend & { id: string };
@@ -58,23 +42,17 @@ export interface ListParams {
   page?: number;
   limit?: number;
   sort?: string;
-  /** Filtres d'égalité propres à la ressource (category, era, phase…). */
+ 
   [key: string]: string | number | boolean | undefined;
 }
 
-/**
- * Accès à une ressource éditoriale.
- *
- * La lecture est anonyme — le backend ne rend alors que le contenu publié. Les
- * écritures joignent le jeton : elles ne passent que pour un administrateur, et
- * c'est le serveur qui le vérifie, jamais le formulaire.
- */
+
 const resource = <T extends { id: string }>(path: string, normalize: (row: T) => T) => ({
   list: async (params: ListParams = {}, signal?: AbortSignal): Promise<T[]> => {
     const response = await siteApi.get<ListResponse<T>>(path, {
       query: params,
-      // Un administrateur connecté voit aussi ses brouillons : le jeton est
-      // joint quand il existe, et ignoré sinon.
+     
+     
       auth: true,
       signal,
     });
@@ -101,9 +79,9 @@ const resource = <T extends { id: string }>(path: string, normalize: (row: T) =>
   },
 });
 
-// ==========================================================================
-// Normalisations
-// ==========================================================================
+
+
+
 
 const normalizeComment = (comment: Comment): Comment => ({
   ...comment,
@@ -112,10 +90,10 @@ const normalizeComment = (comment: Comment): Comment => ({
 
 const normalizeArticle = (article: ArticleRecord): ArticleRecord => ({
   ...article,
-  // Pas d'image de remplacement : une actualité sans photo ne passe que dans le
-  // bandeau défilant, et les pages doivent pouvoir la reconnaître.
+ 
+ 
   image: siteMediaUrl(article.image),
-  // Le backend rend une date ISO complète ; les pages n'affichent que le jour.
+ 
   publishedAt: String(article.publishedAt),
   comments: (article.comments ?? []).map(normalizeComment),
 });
@@ -136,41 +114,37 @@ const normalizeLegend = (legend: LegendRecord): LegendRecord => ({
 
 const normalizeTeamMember = (member: TeamMemberRecord): TeamMemberRecord => ({
   ...member,
-  // Pas de fichier de repli ici : une fiche sans portrait garde une photo vide,
-  // et c'est `IMAGE_PLACEHOLDER` qui tient la place à l'affichage. Désigner un
-  // fichier absent donnerait l'icône d'image brisée du navigateur.
+ 
+ 
+ 
   photo: siteMediaUrl(member.photo),
 });
 
-/**
- * La photo passe par `siteMediaUrl`, pas le lien YouTube.
- *
- * L'un désigne un fichier téléversé sur l'API du site, l'autre une adresse de
- * YouTube : les faire passer par la même fonction préfixerait le second du
- * domaine de l'API.
- */
+
 const normalizeHeroSlide = (slide: HeroSlideRecord): HeroSlideRecord => ({
   ...slide,
   image: slide.image ? siteMediaUrl(slide.image) : undefined,
 });
 
-/**
- * La photo d'équipe est un fichier téléversé ; `siteMediaUrl` la fait pointer
- * sur l'API quel que soit le domaine de celle-ci. Une équipe sans photo garde
- * une adresse vide, et la page y met celle livrée avec le site.
- */
+
 const normalizeTeam = (team: TeamRecord): TeamRecord => ({
   ...team,
   image: siteMediaUrl(team.image),
 });
 
-/** La photo de la galerie est toujours un fichier téléversé. */
+
 const normalizeGalleryItem = (item: GalleryItemRecord): GalleryItemRecord => ({
   ...item,
   image: siteMediaUrl(item.image),
+ 
+ 
+  createdAt:
+    String((item as unknown as { created_at?: string; createdAt?: string }).created_at ??
+      (item as unknown as { created_at?: string; createdAt?: string }).createdAt ??
+      '') || undefined,
 });
 
-/** Même chose pour l'affiche d'une rencontre, qui reste facultative. */
+
 const normalizeMatch = (match: MatchRecord): MatchRecord => ({
   ...match,
   image: match.image ? siteMediaUrl(match.image) : undefined,
@@ -181,9 +155,9 @@ const normalizeHistoryEvent = (event: HistoryEventRecord): HistoryEventRecord =>
   image: event.image ? siteMediaUrl(event.image) : undefined,
 });
 
-// ==========================================================================
-// Ressources
-// ==========================================================================
+
+
+
 
 export const articles = resource<ArticleRecord>('/articles', normalizeArticle);
 export const products = resource<ProductRecord>('/products', normalizeProduct);
@@ -195,9 +169,9 @@ export const matches = resource<MatchRecord>('/matches', normalizeMatch);
 export const teams = resource<TeamRecord>('/teams', normalizeTeam);
 export const gallery = resource<GalleryItemRecord>('/gallery', normalizeGalleryItem);
 
-// ==========================================================================
-// Commentaires — sous-ressource d'un article
-// ==========================================================================
+
+
+
 
 export const postComment = async (
   articleId: string,
@@ -214,9 +188,9 @@ export const deleteComment = async (articleId: string, commentId: string): Promi
   await siteApi.del(`/articles/${articleId}/comments/${commentId}`, { auth: true });
 };
 
-// ==========================================================================
-// Téléversement d'images
-// ==========================================================================
+
+
+
 
 export const uploadImage = async (file: File): Promise<string> => {
   const response = await siteApi.upload<ItemResponse<{ url: string }>>('/uploads', file);

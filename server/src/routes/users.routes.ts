@@ -1,16 +1,4 @@
-/**
- * Comptes de l'administration.
- *
- * Réservé au super administrateur : c'est lui qui ouvre et ferme les accès, et
- * personne d'autre. Un administrateur tient le contenu, pas la liste de ceux
- * qui y touchent — la séparation est le seul intérêt d'avoir des profils.
- *
- * Trois garde-fous, tous vérifiés côté serveur parce qu'un formulaire ne
- * protège rien : on ne modifie pas son propre rôle, on ne se désactive pas, et
- * on ne retire pas le dernier super administrateur actif. Sans le troisième,
- * une seule fausse manœuvre rendrait l'administration des comptes inaccessible
- * à tout le monde, et il faudrait repasser par la base.
- */
+
 
 import crypto from 'crypto';
 import { Router } from 'express';
@@ -23,15 +11,10 @@ import { createUserSchema, resetPasswordSchema, updateUserSchema } from '../vali
 
 const router = Router();
 
-/** Toutes les routes de ce fichier exigent le même droit. */
+
 router.use(authenticate, requirePermission('users:manage'));
 
-/**
- * Mot de passe initial, lisible à l'oral et sans caractère ambigu.
- *
- * Il n'est montré qu'une fois, à la création : le serveur n'en garde que le
- * haché, et ne peut donc pas le redonner. C'est voulu.
- */
+
 const generatePassword = (): string => {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
   const pick = (length: number) =>
@@ -41,7 +24,7 @@ const generatePassword = (): string => {
   return `${pick(4)}-${pick(4)}-${pick(4)}!`;
 };
 
-/** Nombre de super administrateurs actifs, en excluant éventuellement un compte. */
+
 const activeSuperadmins = (exceptId?: string): Promise<number> =>
   SiteUser.countDocuments({
     role: 'superadmin',
@@ -49,7 +32,7 @@ const activeSuperadmins = (exceptId?: string): Promise<number> =>
     ...(exceptId ? { _id: { $ne: exceptId } } : {}),
   });
 
-/** Refuse l'opération si elle laisserait le site sans super administrateur. */
+
 const guardLastSuperadmin = async (target: { id: string; role: UserRole }): Promise<void> => {
   if (target.role !== 'superadmin') return;
   const remaining = await activeSuperadmins(target.id);
@@ -61,7 +44,7 @@ const guardLastSuperadmin = async (target: { id: string; role: UserRole }): Prom
   }
 };
 
-/** Le référentiel des profils, pour que l'interface n'ait pas à le recopier. */
+
 router.get('/roles', (_req, res) => {
   res.json({
     success: true,
@@ -131,7 +114,7 @@ router.post(
       success: true,
       data: {
         user,
-        // Rendu une seule fois : le serveur n'en garde que le haché.
+       
         ...(value.password ? {} : { generated_password: password }),
       },
     });
@@ -148,7 +131,7 @@ router.put(
 
     const isSelf = user.id === req.auth!.userId;
 
-    // Se rétrograder ou se désactiver soi-même enferme dehors sans recours.
+   
     if (isSelf && value.role !== undefined && value.role !== user.role) {
       throw new HttpError(409, 'Vous ne pouvez pas changer votre propre profil');
     }
@@ -169,12 +152,7 @@ router.put(
   })
 );
 
-/**
- * Réinitialisation du mot de passe.
- *
- * Le super administrateur ne consulte pas le mot de passe existant — il n'est
- * pas stocké en clair — il en impose un nouveau, qu'il transmet lui-même.
- */
+
 router.post(
   '/:id/password',
   handler(async (req, res) => {
@@ -184,7 +162,7 @@ router.post(
     if (!user) throw notFound('Compte introuvable');
 
     const password: string = value.password ?? generatePassword();
-    user.password_hash = password; // haché par le hook du modèle
+    user.password_hash = password;
     await user.save();
 
     res.json({

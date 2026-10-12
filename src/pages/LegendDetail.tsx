@@ -9,8 +9,8 @@ const LegendDetail: React.FC = () => {
   const { legend, loading } = useLegend(id);
   const { data: legends } = useLegends();
 
-  // Sans cette distinction, la fiche annoncerait « non trouvée » le temps de la
-  // requête, avant de s'afficher : le visiteur croit à une erreur.
+ 
+ 
   if (loading && !legend) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-graphite">

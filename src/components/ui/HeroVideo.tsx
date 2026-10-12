@@ -3,33 +3,19 @@ import { YouTubePlayer, loadYouTubeApi } from '../../lib/youtube';
 
 interface HeroVideoProps {
   videoId: string;
-  /** Seule la diapositive visible joue : les autres restent en pause. */
+ 
   active: boolean;
   playing: boolean;
   muted: boolean;
-  /** Position de lecture, remontée pour la barre de progression du carrousel. */
+ 
   onTime?: (current: number, duration: number) => void;
-  /** Fin de la vidéo : le carrousel enchaîne sur la diapositive suivante. */
+ 
   onEnded?: () => void;
-  /**
-   * Vidéo injouable : supprimée, privée, ou dont le propriétaire interdit
-   * l'intégration. Le carrousel retombe alors sur la photo de la diapositive.
-   */
+ 
   onUnavailable?: () => void;
 }
 
-/**
- * Vidéo YouTube en fond de diapositive.
- *
- * Le lecteur natif est masqué (`controls: 0`) : les commandes sont celles du
- * carrousel, pour que l'habillage reste celui du site. La vidéo démarre coupée
- * — les navigateurs refusent toute lecture automatique avec le son — et le
- * visiteur le rétablit d'un clic.
- *
- * Le cadrage suit la règle du modèle : la vidéo garde son ratio 16/9 et déborde
- * du cadre plutôt que de laisser des bandes noires, comme le ferait
- * `object-fit: cover` sur une image.
- */
+
 const HeroVideo: React.FC<HeroVideoProps> = ({
   videoId,
   active,
@@ -43,8 +29,8 @@ const HeroVideo: React.FC<HeroVideoProps> = ({
   const playerRef = useRef<YouTubePlayer | null>(null);
   const [ready, setReady] = useState(false);
 
-  // Les rappels changent à chaque rendu du parent ; les garder dans une
-  // référence évite de reconstruire le lecteur à chaque fois.
+ 
+ 
   const onTimeRef = useRef(onTime);
   const onEndedRef = useRef(onEnded);
   const onUnavailableRef = useRef(onUnavailable);
@@ -73,27 +59,27 @@ const HeroVideo: React.FC<HeroVideoProps> = ({
           modestbranding: 1,
           playsinline: 1,
           rel: 0,
-          // `loop` exige que la vidéo soit aussi sa propre liste de lecture.
+         
           loop: 1,
           playlist: videoId,
         },
         events: {
           onReady: (event: { target: YouTubePlayer }) => {
-            // La lecture automatique n'est tolérée que muette : on coupe le son
-            // avant de lancer, quitte à le rétablir juste après si l'appelant
-            // le demande — le navigateur mettra alors sa propre pause.
+           
+           
+           
             event.target.mute();
             if (stateRef.current.active && stateRef.current.playing) event.target.playVideo();
             setReady(true);
           },
-          // 2 = identifiant invalide, 5 = lecture HTML5 impossible,
-          // 100 = vidéo introuvable, 101/150 = intégration refusée.
+         
+         
           onError: () => {
             onUnavailableRef.current?.();
           },
           onStateChange: (event: { data: number }) => {
-            // 0 = terminée. Avec `loop`, YouTube relance seul ; le rappel sert
-            // aux carrousels qui préfèrent enchaîner sur la diapositive suivante.
+           
+           
             if (event.data === 0) onEndedRef.current?.();
           },
         },
@@ -108,7 +94,7 @@ const HeroVideo: React.FC<HeroVideoProps> = ({
     };
   }, [videoId]);
 
-  /** Lecture, pause et son suivent l'état tenu par le carrousel. */
+ 
   useEffect(() => {
     const player = playerRef.current;
     if (!player || !ready) return;
@@ -120,10 +106,7 @@ const HeroVideo: React.FC<HeroVideoProps> = ({
     else player.pauseVideo();
   }, [ready, active, playing, muted]);
 
-  /**
-   * YouTube ne notifie pas la progression : on l'interroge quatre fois par
-   * seconde, et seulement pour la diapositive à l'écran.
-   */
+ 
   useEffect(() => {
     if (!active || !onTime) return undefined;
 

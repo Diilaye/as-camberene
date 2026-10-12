@@ -24,13 +24,7 @@ const Teams: React.FC = () => {
   const { data: teams } = useTeams();
   const { data: members } = useTeamMembers();
 
-  /**
-   * Effectif réel de chaque équipe.
-   *
-   * Compté sur les fiches rattachées plutôt que recopié sur l'équipe : un
-   * nombre saisi à la main se démentirait au premier départ, et c'est le genre
-   * de détail que personne ne pense à corriger.
-   */
+ 
   const countByTeam = useMemo(() => {
     const counts = new Map<string, number>();
     members.forEach((member) => {

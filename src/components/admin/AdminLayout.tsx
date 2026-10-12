@@ -4,13 +4,6 @@ import { BarChart3, Users, ShoppingBag, Newspaper, Settings, Menu, Shield, LogOu
 import { useAuth } from '../../hooks/useAuth';
 import { Permission, ROLE_LABELS } from '../../lib/roles';
 
-/**
- * Rubriques de l'administration.
- *
- * `permission` dit qui la voit ; sans elle, la rubrique s'affiche pour tout
- * compte de l'administration. Le menu se réduit donc au profil : un journaliste
- * n'a pas à voir un onglet Produits qui ne lui rendrait qu'un refus.
- */
 const navItems: { to: string; label: string; icon: React.ReactNode; permission?: Permission }[] = [
   { to: '/admin/dashboard', label: 'Tableau de bord', icon: <BarChart3 size={18} /> },
   { to: '/admin/contenu', label: 'Contenu du site', icon: <LayoutTemplate size={18} />, permission: 'settings:write' },
