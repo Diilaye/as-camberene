@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useAuth, AuthProvider } from './hooks/useAuth';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
+import LaunchScreen, { isLaunched } from './components/LaunchScreen';
 import Home from './pages/Home';
 import News from './pages/News';
 import Calendrier from './pages/Calendrier';
@@ -57,11 +58,18 @@ import NotFound from './pages/NotFound';
 import { CartProvider } from './hooks/useCart';
 
 const InnerApp: React.FC = () => {
-  const { loading } = useAuth();
+  const { loading, isStaff } = useAuth();
   const location = useLocation();
+  const [launched, setLaunched] = useState(() => isLaunched());
+  const handleLaunch = useCallback(() => setLaunched(true), []);
   const isAdminRoute = location.pathname.startsWith('/admin');
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center bg-graphite"><LoadingSpinner /></div>;
+  }
+  // Avant l'ouverture, le public ne voit que l'écran de lancement ; l'équipe
+  // du club garde l'accès à la connexion et à l'administration pour préparer.
+  if (!launched && !isStaff && !isAdminRoute && location.pathname !== '/login') {
+    return <CartProvider><LaunchScreen onLaunch={handleLaunch} /></CartProvider>;
   }
   return (
     <CartProvider>
