@@ -61,7 +61,7 @@ export const config = {
     .filter(Boolean),
   upload: {
     dir: path.resolve(__dirname, '../..', process.env.UPLOAD_DIR ?? 'uploads'),
-    maxBytes: Number(process.env.UPLOAD_MAX_BYTES ?? 5 * 1024 * 1024),
+    maxBytes: Number(process.env.UPLOAD_MAX_BYTES ?? 150 * 1024 * 1024),
   },
   /**
    * Passerelle PayTech, pour les dons.

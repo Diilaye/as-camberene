@@ -37,6 +37,8 @@ services:
       SITE_URL: ${SITE_URL:-https://ascamberene.sn}
       CORS_ORIGINS: ${SITE_URL:-https://ascamberene.sn}
       UPLOAD_DIR: uploads
+      # 150 Mo : les photos brutes des appareils doivent passer telles quelles.
+      UPLOAD_MAX_BYTES: 157286400
       # Deux proxys devant l'API : l'Apache de l'hôte, puis celui du conteneur.
       # Sans ce nombre, la limite de débit compterait tout le trafic comme
       # venant d'un seul visiteur.

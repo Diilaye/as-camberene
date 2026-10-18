@@ -7,7 +7,11 @@ import Header from './Header';
  */
 export const LAUNCH_DATE = new Date('2026-10-18T15:00:00Z');
 
-export const isLaunched = (now = Date.now()) => now >= LAUNCH_DATE.getTime();
+// Passer à true pour réafficher l'écran de lancement jusqu'à LAUNCH_DATE.
+export const LAUNCH_SCREEN_ENABLED = false;
+
+export const isLaunched = (now = Date.now()) =>
+  !LAUNCH_SCREEN_ENABLED || now >= LAUNCH_DATE.getTime();
 
 const remainingParts = (ms: number) => {
   const total = Math.max(0, Math.floor(ms / 1000));

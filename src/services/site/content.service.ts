@@ -1,6 +1,7 @@
 
 
 import { siteApi } from '../../lib/api';
+import { compressImage } from '../../lib/compressImage';
 import {
   Article,
   Comment,
@@ -193,6 +194,9 @@ export const deleteComment = async (articleId: string, commentId: string): Promi
 
 
 export const uploadImage = async (file: File): Promise<string> => {
-  const response = await siteApi.upload<ItemResponse<{ url: string }>>('/uploads', file);
+  const response = await siteApi.upload<ItemResponse<{ url: string }>>(
+    '/uploads',
+    await compressImage(file)
+  );
   return response.data.url;
 };

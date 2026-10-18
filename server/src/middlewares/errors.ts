@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Joi from 'joi';
+import multer from 'multer';
 import { HttpError } from '../lib/http';
 import config from '../config/env';
 
@@ -27,6 +28,19 @@ export const errorHandler = (
 
  
  
+  // Fichier refusé par multer (trop lourd, trop de fichiers…) : faute du client.
+  if (error instanceof multer.MulterError) {
+    const maxMb = Math.round(config.upload.maxBytes / (1024 * 1024));
+    res.status(error.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({
+      success: false,
+      message:
+        error.code === 'LIMIT_FILE_SIZE'
+          ? `Fichier trop lourd : ${maxMb} Mo maximum`
+          : 'Envoi de fichier invalide',
+    });
+    return;
+  }
+
   if (Joi.isError(error)) {
     res.status(400).json({
       success: false,
