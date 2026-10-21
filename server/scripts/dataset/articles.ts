@@ -1,4 +1,3 @@
-
 import { SeedArticle } from './types';
 
 const image = (id: string) =>

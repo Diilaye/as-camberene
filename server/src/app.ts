@@ -10,24 +10,15 @@ import { errorHandler, routeNotFound } from './middlewares/errors';
 export const createApp = (): Application => {
   const app = express();
 
- 
- 
- 
   if (config.trustProxy > 0) app.set('trust proxy', config.trustProxy);
 
- 
- 
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
- 
- 
- 
   const localhostOrigin = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
   app.use(
     cors({
       origin: (origin, done) => {
-       
         if (!origin) return done(null, true);
 
         const allowed =

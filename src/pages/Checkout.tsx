@@ -10,7 +10,6 @@ import { Fulfilment, Order, PaymentMethod } from '../types';
 import { FULFILMENT_LABELS, PAYMENT_LABELS, placeOrder } from '../services/site/orders.service';
 import PageHero from '../components/ui/PageHero';
 
-
 const Checkout: React.FC = () => {
   const { cart, getCartTotal, clearCart } = useCart();
   const { user } = useAuth();
@@ -55,8 +54,6 @@ const Checkout: React.FC = () => {
         note: note || undefined,
       });
 
-     
-     
       clearCart();
       setPlaced(order);
     } catch (cause) {
@@ -66,7 +63,6 @@ const Checkout: React.FC = () => {
     }
   };
 
- 
   if (placed) {
     return (
       <div className="band-green flex min-h-screen items-center justify-center px-4 py-32">
@@ -114,7 +110,6 @@ const Checkout: React.FC = () => {
     );
   }
 
- 
   if (cart.length === 0) {
     return (
       <div className="band-green flex min-h-screen items-center justify-center px-6 py-32 text-center">
@@ -138,7 +133,6 @@ const Checkout: React.FC = () => {
       />
 
       <div className="site-container grid gap-8 py-12 lg:grid-cols-[1fr_360px]">
-        {/* Coordonnées et remise */}
         <form onSubmit={submit} className="space-y-6">
           <section className="panel p-6">
             <h2 className="mb-5 text-lg font-extrabold uppercase text-white">Vos coordonnées</h2>
@@ -167,7 +161,7 @@ const Checkout: React.FC = () => {
                   type="tel"
                   minLength={6}
                   autoComplete="tel"
-                  placeholder="77 123 45 67"
+                  placeholder="7X XX XX XX"
                   value={customer.phone}
                   onChange={(event) => setCustomer({ ...customer, phone: event.target.value })}
                   className="field"
@@ -288,7 +282,6 @@ const Checkout: React.FC = () => {
           </div>
         </form>
 
-        {/* Récapitulatif */}
         <aside className="panel sticky top-28 h-fit space-y-5 p-6">
           <h2 className="text-lg font-extrabold uppercase text-white">Votre panier</h2>
 

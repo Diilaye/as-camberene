@@ -1,4 +1,3 @@
-
 export const IMAGE_PLACEHOLDER =
   "data:image/svg+xml;charset=utf-8," +
   encodeURIComponent(
@@ -11,7 +10,6 @@ export const IMAGE_PLACEHOLDER =
             font-weight="bold" letter-spacing="2" text-anchor="middle">VISUEL À VENIR</text>
     </svg>`
   );
-
 
 export const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
   const image = event.currentTarget;

@@ -1,5 +1,3 @@
-
-
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 
 export class HttpError extends Error {
@@ -21,7 +19,6 @@ export const unauthorized = (message = 'Non authentifié'): HttpError =>
   new HttpError(401, message);
 
 export const forbidden = (message = 'Accès refusé'): HttpError => new HttpError(403, message);
-
 
 export const handler =
   (fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>): RequestHandler =>

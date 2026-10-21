@@ -5,6 +5,7 @@ import { useArticle, useArticles } from '../hooks/useContent';
 import { postComment } from '../services/site/content.service';
 import { useAuth } from '../hooks/useAuth';
 import { ApiError } from '../lib/api';
+import { formatDate, formatFullDate } from '../lib/dates';
 import { Comment } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ArticleCard from '../components/ui/ArticleCard';
@@ -77,12 +78,11 @@ const NewsDetail: React.FC = () => {
   };
 
   const related = allArticles
-    .filter((item) => item.image && String(item.id) !== String(article.id))
+    .filter((item) => String(item.id) !== String(article.id))
     .slice(0, 6);
 
   return (
     <div className="bg-graphite">
-      {/* Bannière de l'article */}
       <section className={`page-hero min-h-[420px] bg-graphite ${article.image ? 'page-hero--image page-hero--soft' : ''}`}>
         {article.image && <img src={article.image} alt="" className="absolute inset-0 h-full w-full object-cover" style={article.imagePosition ? { objectPosition: article.imagePosition } : undefined} />}
         <div className="site-container relative z-20 pb-12 pt-32">
@@ -98,11 +98,7 @@ const NewsDetail: React.FC = () => {
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/70">
             <span className="flex items-center gap-2">
               <Calendar size={15} className="text-club-yellow" />
-              {new Date(article.publishedAt).toLocaleDateString('fr-FR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
+              {formatFullDate(article.publishedAt)}
             </span>
             <span className="flex items-center gap-2">
               <User size={15} className="text-club-yellow" />
@@ -112,13 +108,8 @@ const NewsDetail: React.FC = () => {
         </div>
       </section>
 
-      {/* Corps de l'article */}
       <article className="band-charcoal py-14">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
-          {/*
-            La bannière recadre la photo pour le titre ; ici elle est montrée
-            entière, sans rien couper ni assombrir. Un clic l'agrandit.
-          */}
           {article.image && (
             <button
               type="button"
@@ -143,17 +134,12 @@ const NewsDetail: React.FC = () => {
             ))}
           </div>
 
-          {/*
-            Le partage se place en fin d'article : on partage ce qu'on vient de
-            lire, pas ce qu'on s'apprête à lire.
-          */}
           <div className="mt-10 border-t border-white/10 pt-6">
             <ShareButtons title={article.title} label="Partager cet article" />
           </div>
         </div>
       </article>
 
-      {/* Commentaires */}
       <section className="band-graphite py-14">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
           <h2 className="mb-8 flex items-center gap-3 text-2xl font-extrabold uppercase text-white">
@@ -190,7 +176,7 @@ const NewsDetail: React.FC = () => {
                   <div className="mb-2 flex items-center justify-between">
                     <span className="font-bold uppercase text-club-yellow">{comment.author}</span>
                     <span className="text-xs text-white/40">
-                      {new Date(comment.timestamp).toLocaleDateString('fr-FR')}
+                      {formatDate(comment.timestamp)}
                     </span>
                   </div>
                   <p className="text-sm leading-relaxed text-white/75">{comment.content}</p>
@@ -205,7 +191,6 @@ const NewsDetail: React.FC = () => {
         </div>
       </section>
 
-      {/* À lire aussi */}
       {related.length > 0 && (
         <section className="band-green py-8">
           <div className="site-container">
@@ -227,7 +212,6 @@ const NewsDetail: React.FC = () => {
         </section>
       )}
 
-      {/* Photo en plein écran : un clic ou Échap referme. */}
       {zoomed && (
         <div
           role="dialog"

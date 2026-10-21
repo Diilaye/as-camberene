@@ -1,5 +1,3 @@
-
-
 import mongoose, { Document, Schema } from 'mongoose';
 
 export const TEAM_CATEGORIES = ['senior', 'youth'] as const;
@@ -7,11 +5,9 @@ export type TeamCategory = (typeof TEAM_CATEGORIES)[number];
 
 export interface ITeam extends Document {
   _id: mongoose.Types.ObjectId;
- 
   slug: string;
   name: string;
   category: TeamCategory;
- 
   ageRange: string;
   subtitle: string;
   description: string;
@@ -20,7 +16,6 @@ export interface ITeam extends Document {
   stadium: string;
   achievements: string[];
   stats: { wins: number; draws: number; losses: number };
- 
   established: string;
   image: string;
   rank: number;
@@ -36,7 +31,6 @@ const teamSchema = new Schema<ITeam>(
       trim: true,
       lowercase: true,
       maxlength: 80,
-     
       match: [
         /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
         'Identifiant invalide : minuscules, chiffres et tirets uniquement',
@@ -58,8 +52,6 @@ const teamSchema = new Schema<ITeam>(
     },
     established: { type: String, trim: true, maxlength: 20, default: '' },
     image: { type: String, maxlength: 500, default: '' },
-   
-   
     rank: { type: Number, default: 0, index: true },
     isVisible: { type: Boolean, default: true, index: true },
   },

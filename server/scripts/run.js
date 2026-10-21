@@ -1,4 +1,3 @@
-
 const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -23,7 +22,6 @@ if (!fs.existsSync(source) && !fs.existsSync(compiled)) {
   process.exit(1);
 }
 
-
 const [command, commandArgs] =
   tsx && fs.existsSync(source)
     ? [tsx, [source, ...args]]
@@ -47,7 +45,5 @@ if (result.error) {
   console.error('Échec du lancement :', result.error.message);
   process.exit(1);
 }
-
-
 
 process.exit(result.status === null ? 1 : result.status);

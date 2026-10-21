@@ -175,9 +175,6 @@ const Header: React.FC = () => {
 
   return (
     <header ref={headerRef} className="sticky top-0 z-50 w-full">
-      {/* ---------------------------------------------------------------- *
-       * Bandeau partenaires : filet jaune, contenu aligné à droite en noir
-       * ---------------------------------------------------------------- */}
       <div
         className={`overflow-hidden bg-club-yellow transition-all duration-200 ${
           hideStrip ? 'h-0 opacity-0' : 'h-5 opacity-100'
@@ -225,18 +222,11 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* ---------------------------------------------------------------- *
-       * Barre principale
-       * ---------------------------------------------------------------- */}
       <div
         className={`relative w-full transition-colors duration-150 ${
           expanded ? 'bg-graphite' : 'bg-club-green'
         }`}
       >
-        {/*
-          Le blason déborde de la barre vers le bas, comme sur le modèle : il
-          mesure 110px pour une barre de 61px et se superpose au contenu.
-        */}
         <Link
           to="/"
           aria-label="Accueil ASC Cambérène"
@@ -250,7 +240,6 @@ const Header: React.FC = () => {
         </Link>
 
         <div className="mx-auto flex h-[61px] max-w-site items-center px-4 lg:px-10">
-          {/* Zone gauche : bouton de menu, blason réduit sur mobile, navigation */}
           <div className="flex items-center lg:ml-[125px]">
             <button
               type="button"
@@ -301,7 +290,6 @@ const Header: React.FC = () => {
             </nav>
           </div>
 
-          {/* Zone droite : langue, recherche, appels à l'action, compte */}
           <div className="ml-auto flex items-center gap-3 lg:gap-5">
             <div className="relative hidden lg:block">
               <button
@@ -331,7 +319,6 @@ const Header: React.FC = () => {
               <Search size={16} />
             </button>
 
-            {/* Appels à l'action, en pastilles */}
             <Link
               to="/billetterie"
               className="hidden h-10 items-center justify-center gap-3 rounded-full bg-club-yellow px-7 text-sm font-semibold uppercase text-club-green-dark transition-opacity hover:opacity-70 lg:flex"
@@ -352,7 +339,6 @@ const Header: React.FC = () => {
               )}
             </Link>
 
-            {/* Pastilles compactes sur mobile */}
             <Link
               to="/billetterie"
               aria-label="Billetterie"
@@ -375,7 +361,6 @@ const Header: React.FC = () => {
 
             {user ? (
               <>
-                {/* Raccourci vers l'administration, pour les profils concernés. */}
                 {isStaff && (
                   <Link
                     to="/admin"
@@ -406,9 +391,6 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* -------------------------------------------------------------- *
-         * Panneau de rubrique, déroulé sous la barre
-         * -------------------------------------------------------------- */}
         {openMenu && (
           <div
             onMouseLeave={() => setOpenMenu(null)}
@@ -437,9 +419,6 @@ const Header: React.FC = () => {
         )}
       </div>
 
-      {/* ---------------------------------------------------------------- *
-       * Menu plein écran, ouvert par le bouton de menu — sur tous les formats
-       * ---------------------------------------------------------------- */}
       {fullscreenOpen && (
         <div className="fixed inset-0 z-[60] overflow-y-auto bg-graphite">
           <div className="mx-auto flex h-[61px] max-w-site items-center px-4 lg:px-10">
@@ -555,7 +534,6 @@ const Header: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation de déconnexion */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70" onClick={() => setShowLogoutConfirm(false)} />

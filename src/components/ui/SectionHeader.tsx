@@ -4,12 +4,10 @@ import { ArrowRight } from 'lucide-react';
 
 interface SectionHeaderProps {
   title: string;
- 
   linkLabel?: string;
   linkTo?: string;
   className?: string;
 }
-
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({ title, linkLabel, linkTo, className = '' }) => (
   <header className={`flex items-center justify-between gap-4 ${className}`}>

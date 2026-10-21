@@ -9,8 +9,6 @@ const LegendDetail: React.FC = () => {
   const { legend, loading } = useLegend(id);
   const { data: legends } = useLegends();
 
- 
- 
   if (loading && !legend) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-graphite">
@@ -41,7 +39,6 @@ const LegendDetail: React.FC = () => {
 
   return (
     <div className="bg-graphite">
-      {/* Bannière */}
       <section className="page-hero page-hero--image min-h-[520px] bg-graphite">
         <img src={legend.photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="site-container relative z-20 pb-12 pt-32">
@@ -74,7 +71,6 @@ const LegendDetail: React.FC = () => {
         </div>
       </section>
 
-      {/* Statistiques */}
       <section className="band-charcoal py-12">
         <div className="site-container grid grid-cols-2 gap-5 lg:grid-cols-4">
           {stats.map(({ icon: Icon, label, value }) => (
@@ -87,7 +83,6 @@ const LegendDetail: React.FC = () => {
         </div>
       </section>
 
-      {/* Citation, biographie, palmarès */}
       <section className="band-graphite py-12">
         <div className="site-container grid gap-10 lg:grid-cols-[1fr_minmax(0,360px)]">
           <div>
@@ -114,7 +109,6 @@ const LegendDetail: React.FC = () => {
         </div>
       </section>
 
-      {/* Autres légendes */}
       {others.length > 0 && (
         <section className="band-green py-12">
           <div className="site-container">

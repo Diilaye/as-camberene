@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useArticles } from '../../hooks/useContent';
+import { ArticleCategory } from '../../types';
 
 const SECONDS_PER_TITLE = 6;
 const MIN_TITLES = 8;
 
-const NewsTicker: React.FC<{ className?: string }> = ({ className = '' }) => {
-  const { data: articles } = useArticles({ limit: 50 });
+const NewsTicker: React.FC<{ className?: string; category?: ArticleCategory }> = ({ className = '', category }) => {
+  const { data: allArticles } = useArticles({ limit: 50 });
+  const articles = category ? allArticles.filter((article) => article.category === category) : allArticles;
 
   if (articles.length === 0) return null;
 

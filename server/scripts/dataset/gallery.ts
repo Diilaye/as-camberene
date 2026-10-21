@@ -1,9 +1,7 @@
-
 import { SeedGalleryItem } from './types';
 
 const image = (id: string) =>
   `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop`;
-
 
 const day = (offset: number): string => {
   const date = new Date();

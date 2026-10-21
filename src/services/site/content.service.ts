@@ -1,9 +1,8 @@
-
-
 import { siteApi } from '../../lib/api';
 import {
   Article,
   Comment,
+  Album,
   GalleryItem,
   HeroSlide,
   HistoryEvent,
@@ -15,7 +14,6 @@ import {
 } from '../../types';
 import { siteMediaUrl } from './media';
 
-
 export type ArticleRecord = Article & { id: string };
 export type ProductRecord = Product & { id: string };
 export type LegendRecord = Legend & { id: string };
@@ -24,6 +22,7 @@ export type HeroSlideRecord = HeroSlide & { id: string };
 export type MatchRecord = Match & { id: string };
 export type TeamRecord = Team & { id: string };
 export type GalleryItemRecord = GalleryItem & { id: string };
+export type AlbumRecord = Album & { id: string };
 export type TeamMemberRecord = TeamMember;
 
 export interface ListResponse<T> {
@@ -42,17 +41,14 @@ export interface ListParams {
   page?: number;
   limit?: number;
   sort?: string;
- 
+
   [key: string]: string | number | boolean | undefined;
 }
-
 
 const resource = <T extends { id: string }>(path: string, normalize: (row: T) => T) => ({
   list: async (params: ListParams = {}, signal?: AbortSignal): Promise<T[]> => {
     const response = await siteApi.get<ListResponse<T>>(path, {
       query: params,
-     
-     
       auth: true,
       signal,
     });
@@ -79,10 +75,6 @@ const resource = <T extends { id: string }>(path: string, normalize: (row: T) =>
   },
 });
 
-
-
-
-
 const normalizeComment = (comment: Comment): Comment => ({
   ...comment,
   timestamp: String(comment.timestamp),
@@ -90,10 +82,8 @@ const normalizeComment = (comment: Comment): Comment => ({
 
 const normalizeArticle = (article: ArticleRecord): ArticleRecord => ({
   ...article,
- 
- 
+
   image: siteMediaUrl(article.image),
- 
   publishedAt: String(article.publishedAt),
   comments: (article.comments ?? []).map(normalizeComment),
 });
@@ -114,36 +104,27 @@ const normalizeLegend = (legend: LegendRecord): LegendRecord => ({
 
 const normalizeTeamMember = (member: TeamMemberRecord): TeamMemberRecord => ({
   ...member,
- 
- 
- 
+
   photo: siteMediaUrl(member.photo),
 });
-
 
 const normalizeHeroSlide = (slide: HeroSlideRecord): HeroSlideRecord => ({
   ...slide,
   image: slide.image ? siteMediaUrl(slide.image) : undefined,
 });
 
-
 const normalizeTeam = (team: TeamRecord): TeamRecord => ({
   ...team,
   image: siteMediaUrl(team.image),
 });
 
-
-const normalizeGalleryItem = (item: GalleryItemRecord): GalleryItemRecord => ({
+const normalizeGalleryItem = <T extends GalleryItem>(item: T): T => ({
   ...item,
   image: siteMediaUrl(item.image),
- 
- 
   createdAt:
-    String((item as unknown as { created_at?: string; createdAt?: string }).created_at ??
-      (item as unknown as { created_at?: string; createdAt?: string }).createdAt ??
-      '') || undefined,
+    String((item as unknown as { created_at?: string }).created_at ?? item.createdAt ?? '') ||
+    undefined,
 });
-
 
 const normalizeMatch = (match: MatchRecord): MatchRecord => ({
   ...match,
@@ -155,9 +136,11 @@ const normalizeHistoryEvent = (event: HistoryEventRecord): HistoryEventRecord =>
   image: event.image ? siteMediaUrl(event.image) : undefined,
 });
 
-
-
-
+const normalizeAlbum = (album: AlbumRecord): AlbumRecord => ({
+  ...album,
+  cover: siteMediaUrl(album.cover),
+  photos: album.photos?.map(normalizeGalleryItem),
+});
 
 export const articles = resource<ArticleRecord>('/articles', normalizeArticle);
 export const products = resource<ProductRecord>('/products', normalizeProduct);
@@ -168,10 +151,7 @@ export const heroSlides = resource<HeroSlideRecord>('/hero', normalizeHeroSlide)
 export const matches = resource<MatchRecord>('/matches', normalizeMatch);
 export const teams = resource<TeamRecord>('/teams', normalizeTeam);
 export const gallery = resource<GalleryItemRecord>('/gallery', normalizeGalleryItem);
-
-
-
-
+export const albums = resource<AlbumRecord>('/albums', normalizeAlbum);
 
 export const postComment = async (
   articleId: string,
@@ -183,14 +163,6 @@ export const postComment = async (
   );
   return normalizeComment(response.data);
 };
-
-export const deleteComment = async (articleId: string, commentId: string): Promise<void> => {
-  await siteApi.del(`/articles/${articleId}/comments/${commentId}`, { auth: true });
-};
-
-
-
-
 
 export const uploadImage = async (file: File): Promise<string> => {
   const response = await siteApi.upload<ItemResponse<{ url: string }>>('/uploads', file);

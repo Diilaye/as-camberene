@@ -10,7 +10,6 @@ interface NotificationProps {
   duration?: number;
 }
 
-
 const VARIANTS = {
   success: { icon: Check, accent: 'text-club-yellow', bar: 'bg-club-yellow' },
   error: { icon: AlertCircle, accent: 'text-red-400', bar: 'bg-red-500' },

@@ -1,5 +1,3 @@
-
-
 import jwt from 'jsonwebtoken';
 import config from '../config/env';
 import { unauthorized } from './http';

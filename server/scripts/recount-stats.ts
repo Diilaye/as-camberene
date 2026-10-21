@@ -29,7 +29,7 @@ async function main(): Promise<number> {
       );
       const changed = before.goals !== after.goals || before.assists !== after.assists;
       console.log(
-        `${changed ? '✓' : '○'} ${player.name.padEnd(28)} buts ${before.goals} → ${after.goals}   passes ${before.assists} → ${after.assists}`
+        `${changed ? '[+]' : '[=]'} ${player.name.padEnd(28)} buts ${before.goals} → ${after.goals}   passes ${before.assists} → ${after.assists}`
       );
     }
 

@@ -1,4 +1,3 @@
-
 import readline from 'readline';
 
 import { connectDatabase, disconnectDatabase, safeMongoUri } from '../src/config/database';
@@ -21,7 +20,6 @@ function readOption(name: string): string | undefined {
 
 const hasFlag = (name: string): boolean => process.argv.includes(`--${name}`);
 
-
 async function ask(question: string, fallback: string): Promise<string> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   try {
@@ -33,7 +31,6 @@ async function ask(question: string, fallback: string): Promise<string> {
     rl.close();
   }
 }
-
 
 interface Target {
   role: UserRole;
@@ -66,8 +63,6 @@ async function collectTargets(): Promise<Target[] | null> {
     { role: 'superadmin', email: superadmin, password: readOption('superadmin-password') },
   ];
 
- 
- 
   if (admin) {
     targets.push({ role: 'admin', email: admin, password: readOption('admin-password') });
   }
@@ -78,8 +73,6 @@ async function collectTargets(): Promise<Target[] | null> {
     return null;
   }
 
- 
- 
   const emails = targets.map((target) => target.email.trim().toLowerCase());
   if (new Set(emails).size !== emails.length) {
     console.error(
@@ -105,12 +98,12 @@ function report(result: EnsureAccountResult): void {
   const label = ROLE_LABELS[result.role];
 
   if (result.outcome === 'unchanged') {
-    console.log(`○ ${result.email} — ${label}, déjà en place. Mot de passe inchangé.`);
+    console.log(`[=] ${result.email} — ${label}, déjà en place. Mot de passe inchangé.`);
     return;
   }
 
   const verb = result.outcome === 'created' ? 'Compte créé' : 'Compte mis à jour';
-  console.log(`✓ ${result.email} — ${label}. ${verb}.`);
+  console.log(`[+] ${result.email} — ${label}. ${verb}.`);
   console.log(`    nom          : ${result.name}`);
   if (result.changes.length > 0) {
     console.log(`    changements  : ${result.changes.join(', ')}`);

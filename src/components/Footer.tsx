@@ -56,7 +56,6 @@ const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
- 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!email) return;
@@ -66,7 +65,6 @@ const Footer: React.FC = () => {
 
   return (
     <footer>
-      {/* Bandeau d'inscription à la lettre d'information */}
       <section className="band-graphite border-t border-white/5">
         <div className="site-container flex flex-col items-center gap-6 py-14 text-center lg:flex-row lg:justify-between lg:text-left">
           <div>
@@ -96,7 +94,6 @@ const Footer: React.FC = () => {
         </div>
       </section>
 
-      {/* Bloc principal, sur la couleur du club */}
       <section className="band-green">
         <div className="site-container py-12">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
@@ -116,7 +113,6 @@ const Footer: React.FC = () => {
             ))}
           </div>
 
-          {/* Coordonnées du club */}
           <div className="mt-12 grid gap-6 border-t border-white/15 pt-8 text-sm text-white/80 sm:grid-cols-3">
             {contact.address && (
               <p className="flex items-start gap-3 whitespace-pre-line">
@@ -138,13 +134,6 @@ const Footer: React.FC = () => {
             )}
           </div>
 
-          {/*
-            Faire connaître le site.
-
-            Distinct des icônes ci-dessous, qui mènent aux comptes du club :
-            ici on transmet l'adresse du site à quelqu'un, là on va voir ce que
-            le club publie ailleurs.
-          */}
           <div className="mt-8 flex justify-center border-t border-white/10 pt-6">
             <ShareButtons
               title="ASC Cambérène — Club officiel"
@@ -153,7 +142,6 @@ const Footer: React.FC = () => {
             />
           </div>
 
-          {/* Logo et réseaux, aux deux extrémités */}
           <div className="mt-8 flex flex-col items-center gap-5 md:flex-row md:justify-between">
             <Link to="/" className="transition-opacity hover:opacity-70">
               <img
@@ -180,7 +168,6 @@ const Footer: React.FC = () => {
         </div>
       </section>
 
-      {/* Barre basse : mentions légales */}
       <section className="bg-graphite">
         <div className="site-container flex flex-col gap-4 py-5 md:flex-row md:items-center">
           <p className="text-xs leading-none text-[#808084] md:w-1/2 md:pr-5">

@@ -1,4 +1,3 @@
-
 import { SeedHeroSlide } from './types';
 
 export const seedHeroSlides: SeedHeroSlide[] = [

@@ -22,13 +22,9 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-     
-     
       const user = await login(email, password);
       const from = (location.state as { from?: string } | null)?.from;
 
-     
-     
       if (isStaffRole(user.role)) {
         navigate(from?.startsWith('/admin') ? from : '/admin/dashboard', { replace: true });
       } else {

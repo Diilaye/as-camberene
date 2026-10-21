@@ -1,10 +1,7 @@
-
-
 import { ApiError, siteApi } from '../../lib/api';
 import { AuthTokens } from '../../lib/tokens';
 import { Permission, UserRole, permissionsOf } from '../../lib/roles';
 import { User } from '../../types';
-
 
 export interface SiteUser {
   id: string;
@@ -19,7 +16,6 @@ export interface SiteUser {
 
 interface AuthPayload {
   user: SiteUser;
- 
   permissions?: Permission[];
   tokens: AuthTokens;
 }
@@ -35,7 +31,6 @@ export interface RegisterPayload {
   password: string;
   favorite?: string;
 }
-
 
 export const toUser = (user: SiteUser, permissions?: Permission[]): User => ({
   id: user.id,
@@ -61,7 +56,6 @@ export const register = async (payload: RegisterPayload): Promise<User> => {
   return persist(response.data);
 };
 
-
 export const getCurrentUser = async (signal?: AbortSignal): Promise<User | null> => {
   if (!siteApi.tokens.getAccess()) return null;
 
@@ -72,18 +66,12 @@ export const getCurrentUser = async (signal?: AbortSignal): Promise<User | null>
     }>('/auth/me', { auth: true, signal });
     return toUser(response.data.user, response.data.permissions);
   } catch (error) {
-   
     if (error instanceof ApiError && error.isUnauthorized) siteApi.tokens.clear();
     return null;
   }
 };
 
 export const logout = async (): Promise<void> => {
-  try {
-    await siteApi.post('/auth/logout');
-  } catch {
-    // Le serveur n'a pas de liste noire à mettre à jour : la déconnexion est
-    // locale, et ne doit pas dépendre du réseau.
-  }
+  await siteApi.post('/auth/logout').catch(() => undefined);
   siteApi.tokens.clear();
 };

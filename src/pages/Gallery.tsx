@@ -1,66 +1,71 @@
 import React, { useMemo, useState } from 'react';
-import { MapPin, X } from 'lucide-react';
-import { useGallery } from '../hooks/useContent';
-import { GALLERY_CATEGORIES, GALLERY_CATEGORY_LABELS, GalleryItem } from '../types';
+import { Link } from 'react-router-dom';
+import { Images } from 'lucide-react';
+import { useAlbums } from '../hooks/useContent';
+import { GALLERY_CATEGORIES, GALLERY_CATEGORY_LABELS, GalleryCategory } from '../types';
 import { handleImageError } from '../lib/imagePlaceholder';
+import { formatFullDate } from '../lib/dates';
 import PageHero from '../components/ui/PageHero';
 import galleryHero from '../../assets/img/asc-camberene-equipe-2025.webp';
 
-type Tab = (typeof GALLERY_CATEGORIES)[number];
+type Tab = GalleryCategory;
 
 const TABS: { id: Tab; label: string }[] = GALLERY_CATEGORIES.map((category) => ({
   id: category as Tab,
   label: GALLERY_CATEGORY_LABELS[category],
 }));
 
-const formatDate = (value?: string): string =>
-  value
-    ? new Date(`${value}T12:00:00`).toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : '';
-
-
 const Gallery: React.FC = () => {
   const [tab, setTab] = useState<Tab>('match');
-  const [zoomed, setZoomed] = useState<GalleryItem | null>(null);
 
-  const { data: photos, loading } = useGallery();
+  const { data: albums, loading } = useAlbums();
 
   const visible = useMemo(
-    () => photos.filter((photo) => photo.category === tab),
-    [photos, tab]
+    () => albums.filter((album) => album.category === tab),
+    [albums, tab]
   );
 
-  const photoCard = (photo: GalleryItem) => (
-    <button
-      key={String(photo.id)}
-      type="button"
-      onClick={() => setZoomed(photo)}
-      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] text-left transition hover:border-club-yellow/40"
-    >
-      <img
-        src={photo.image}
-        alt={photo.title}
-        onError={handleImageError}
-        loading="lazy"
-        className="aspect-square w-full object-cover transition duration-500 group-hover:scale-105"
-      />
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-graphite/95 to-transparent p-4">
-        <p className="font-extrabold uppercase text-white">{photo.title}</p>
-        {photo.date && <p className="text-[11px] text-white/60">{formatDate(photo.date)}</p>}
-      </div>
-    </button>
-  );
+  const albumCard = (album: (typeof albums)[number]) => {
+    const count = album.photoCount ?? album.photos?.length ?? 0;
+    return (
+      <Link
+        key={String(album.id)}
+        to={`/galerie/${album.id}`}
+        className="group relative block overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition hover:border-club-yellow/40"
+      >
+        {album.cover ? (
+          <img
+            src={album.cover}
+            alt={album.title}
+            onError={handleImageError}
+            loading="lazy"
+            className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex aspect-[4/3] w-full items-center justify-center bg-white/5 text-white/30">
+            <Images size={40} />
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-graphite/95 to-transparent p-4">
+          <p className="font-extrabold uppercase text-white">{album.title}</p>
+          <p className="text-[11px] text-white/60">
+            {count} photo{count > 1 ? 's' : ''}
+            {album.date ? ` · ${formatFullDate(album.date)}` : ''}
+          </p>
+        </div>
+        <span className="absolute right-3 top-3 rounded-full bg-graphite/80 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur">
+          {count}
+        </span>
+      </Link>
+    );
+  };
 
   return (
     <div className="bg-graphite">
       <PageHero
         kicker="En images"
         title="Galerie"
-        description="Les matchs, les entraînements et les visages du club."
+        description="Les matchs, les entraînements et les visages du club, réunis en albums."
         image={galleryHero}
       />
 
@@ -84,52 +89,15 @@ const Gallery: React.FC = () => {
         </div>
 
         {loading ? (
-          <p className="panel p-8 text-center text-sm text-white/60">Chargement des photos…</p>
+          <p className="panel p-8 text-center text-sm text-white/60">Chargement des albums…</p>
         ) : visible.length === 0 ? (
           <p className="panel p-8 text-center text-sm text-white/60">
-            Aucune photo dans cette rubrique pour le moment.
+            Aucun album dans cette rubrique pour le moment.
           </p>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{visible.map(photoCard)}</div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{visible.map(albumCard)}</div>
         )}
       </section>
-
-      {/* Photo en grand */}
-      {zoomed && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-graphite/95 p-4"
-          onClick={() => setZoomed(null)}
-        >
-          <button
-            type="button"
-            onClick={() => setZoomed(null)}
-            aria-label="Fermer"
-            className="absolute right-6 top-6 text-white/70 hover:text-white"
-          >
-            <X size={24} />
-          </button>
-          <figure className="max-h-full max-w-4xl" onClick={(event) => event.stopPropagation()}>
-            <img
-              src={zoomed.image}
-              alt={zoomed.title}
-              onError={handleImageError}
-              className="max-h-[75vh] w-full rounded-2xl object-contain"
-            />
-            <figcaption className="mt-4 text-center">
-              <p className="text-lg font-extrabold uppercase text-white">{zoomed.title}</p>
-              {zoomed.description && (
-                <p className="mt-1 text-sm text-white/70">{zoomed.description}</p>
-              )}
-              {zoomed.date && (
-                <p className="mt-1 flex items-center justify-center gap-1.5 text-xs text-club-yellow">
-                  <MapPin size={12} />
-                  {formatDate(zoomed.date)}
-                </p>
-              )}
-            </figcaption>
-          </figure>
-        </div>
-      )}
     </div>
   );
 };

@@ -8,10 +8,8 @@ interface PlayerCardProps {
   name: string;
   position?: string;
   number?: number;
- 
   meta?: string;
 }
-
 
 const PlayerCard: React.FC<PlayerCardProps> = ({ to, photo, name, position, number, meta }) => {
   const content = (

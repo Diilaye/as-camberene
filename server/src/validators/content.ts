@@ -1,5 +1,3 @@
-
-
 import Joi from 'joi';
 import { ARTICLE_CATEGORIES } from '../models/Article.model';
 import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../models/Product.model';
@@ -7,13 +5,13 @@ import { LEGEND_ERAS } from '../models/Legend.model';
 import { MATCH_STATUSES, MATCH_VENUES, SCORER_SIDES } from '../models/Match.model';
 import { TEAM_CATEGORIES } from '../models/Team.model';
 import { GALLERY_CATEGORIES } from '../models/GalleryItem.model';
+import { ALBUM_CATEGORIES } from '../models/Album.model';
 import {
   PLAYER_KINDS,
   PLAYER_LINES,
   PLAYER_STATUSES,
   STRONG_FEET,
 } from '../models/Player.model';
-
 
 const asPatch = (schema: Joi.ObjectSchema): Joi.ObjectSchema =>
   schema
@@ -26,7 +24,6 @@ export const articleSchema = Joi.object({
   content: Joi.string().allow('').max(50000).default(''),
   excerpt: Joi.string().allow('').max(1000).default(''),
   image: Joi.string().allow('').max(500).default(''),
- 
   imagePosition: Joi.string().pattern(/^\d{1,3}% \d{1,3}%$/).default('50% 50%'),
   category: Joi.string().valid(...ARTICLE_CATEGORIES).default('Club'),
   publishedAt: Joi.date().default(() => new Date()),
@@ -78,7 +75,6 @@ export const historyEventSchema = Joi.object({
   phase: Joi.string().allow('').max(80),
 });
 
-
 export const heroSlideSchema = Joi.object({
   image: Joi.string().allow('').max(500).default(''),
   youtube: Joi.string().allow('').max(500).default(''),
@@ -89,7 +85,6 @@ export const heroSlideSchema = Joi.object({
   rank: Joi.number().default(0),
   isVisible: Joi.boolean().default(true),
 });
-
 
 export const matchSchema = Joi.object({
   opponent: Joi.string().trim().max(150).required(),
@@ -108,7 +103,6 @@ export const matchSchema = Joi.object({
     .allow(null)
     .default(null),
   status: Joi.string().valid(...MATCH_STATUSES).default('À venir'),
- 
   scorers: Joi.array()
     .items(
       Joi.object({
@@ -124,7 +118,6 @@ export const matchSchema = Joi.object({
     .default([]),
   image: Joi.string().allow('').max(500).default(''),
 });
-
 
 export const teamSchema = Joi.object({
   slug: Joi.string()
@@ -156,12 +149,25 @@ export const teamSchema = Joi.object({
   isVisible: Joi.boolean().default(true),
 });
 
-
 export const galleryItemSchema = Joi.object({
   image: Joi.string().max(500).required(),
   title: Joi.string().trim().max(200).required(),
   description: Joi.string().allow('').max(2000).default(''),
   category: Joi.string().valid(...GALLERY_CATEGORIES).default('club'),
+  match: Joi.string().hex().length(24).allow(null, '').default(null),
+  album: Joi.string().hex().length(24).allow(null, '').default(null),
+  date: Joi.string().allow('').pattern(/^(\d{4}-\d{2}-\d{2})?$/).default('').messages({
+    'string.pattern.base': 'La date doit être au format AAAA-MM-JJ',
+  }),
+  rank: Joi.number().default(0),
+  isVisible: Joi.boolean().default(true),
+});
+
+export const albumSchema = Joi.object({
+  title: Joi.string().trim().max(200).required(),
+  description: Joi.string().allow('').max(2000).default(''),
+  cover: Joi.string().allow('').max(500).default(''),
+  category: Joi.string().valid(...ALBUM_CATEGORIES).default('club'),
   match: Joi.string().hex().length(24).allow(null, '').default(null),
   date: Joi.string().allow('').pattern(/^(\d{4}-\d{2}-\d{2})?$/).default('').messages({
     'string.pattern.base': 'La date doit être au format AAAA-MM-JJ',
@@ -173,8 +179,6 @@ export const galleryItemSchema = Joi.object({
 export const playerSchema = Joi.object({
   kind: Joi.string().valid(...PLAYER_KINDS).default('player'),
   name: Joi.string().trim().max(150).required(),
- 
- 
   team: Joi.string()
     .trim()
     .max(80)
@@ -187,8 +191,6 @@ export const playerSchema = Joi.object({
   role: Joi.string().allow('').max(100).default(''),
   photo: Joi.string().allow('').max(500).default(''),
   status: Joi.string().valid(...PLAYER_STATUSES).default('actif'),
- 
- 
   birthDate: Joi.date().allow(null).default(null),
   nationality: Joi.string().allow('').max(100).default(''),
   height: Joi.number().min(0).max(260).default(0),
@@ -221,6 +223,6 @@ export const playerPatchSchema = asPatch(playerSchema);
 export const heroSlidePatchSchema = asPatch(heroSlideSchema);
 export const matchPatchSchema = asPatch(matchSchema);
 export const galleryItemPatchSchema = asPatch(galleryItemSchema);
-
+export const albumPatchSchema = asPatch(albumSchema);
 
 export const teamPatchSchema = asPatch(teamSchema).fork(['slug'], (f) => f.forbidden());

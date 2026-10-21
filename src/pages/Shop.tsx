@@ -9,7 +9,6 @@ import Notification from '../components/Notification';
 import PageHero from '../components/ui/PageHero';
 
 const Shop: React.FC = () => {
- 
   const [searchParams, setSearchParams] = useSearchParams();
   const selected = searchParams.get('categorie') ?? 'Tous';
 
@@ -55,7 +54,6 @@ const Shop: React.FC = () => {
         description="Maillots, accessoires et collections officielles de l'ASC Cambérène."
       />
 
-      {/* Filtres de catégorie */}
       <section className="border-b border-white/10 bg-charcoal">
         <div className="site-container flex flex-wrap items-center gap-2 py-5">
           {categories.map((category) => (
@@ -79,7 +77,6 @@ const Shop: React.FC = () => {
         </div>
       </section>
 
-      {/* Grille de produits */}
       <section className="band-green py-12">
         <div className="site-container">
           {filtered.length > 0 ? (

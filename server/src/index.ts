@@ -1,5 +1,3 @@
-
-
 import config from './config/env';
 import { connectDatabase, disconnectDatabase } from './config/database';
 import createApp from './app';

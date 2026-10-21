@@ -5,7 +5,7 @@ import { legends as legendsApi, LegendRecord } from '../../services/site/content
 import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
 import ImageField from '../../components/admin/ImageField';
 import { LEGEND_ERAS, LegendEra } from '../../types';
-
+import AdminConfirmDelete from '../../components/admin/AdminConfirmDelete';
 
 const toLines = (values: string[] = []): string => values.join('\n');
 const fromLines = (value: string): string[] =>
@@ -30,12 +30,10 @@ const EMPTY_FORM = {
   rank: '',
 };
 
-
 const toNumber = (value: string): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 };
-
 
 const LegendesAdmin: React.FC = () => {
   const {
@@ -127,8 +125,6 @@ const LegendesAdmin: React.FC = () => {
       rank: toNumber(form.rank),
     };
 
-   
-   
     const saved = editingId ? await update(editingId, payload) : await create(payload);
     if (saved) setModalOpen(false);
   };
@@ -267,7 +263,6 @@ const LegendesAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* Formulaire */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
@@ -425,34 +420,15 @@ const LegendesAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation de suppression */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={() => setConfirmDelete(null)} />
-          <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.05] p-6">
-            <h4 className="mb-2 text-sm font-semibold text-white">Supprimer la légende</h4>
-            <p className="mb-4 text-xs text-white/60">
-              Confirmez-vous la suppression ? Cette action est définitive.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(null)}
-                className="rounded-full bg-white/5 px-4 py-1.5 text-xs text-white/70 hover:bg-white/10"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={confirmRemoval}
-                disabled={saving}
-                className="rounded-full bg-red-500/30 px-4 py-1.5 text-xs text-red-200 hover:bg-red-500/40 disabled:opacity-60"
-              >
-                {saving ? 'Suppression…' : 'Supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminConfirmDelete
+          title="Supprimer la légende"
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={confirmRemoval}
+          saving={saving}
+        >
+          Confirmez-vous la suppression ? Cette action est définitive.
+        </AdminConfirmDelete>
       )}
     </div>
   );

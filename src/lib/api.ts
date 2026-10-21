@@ -1,5 +1,3 @@
-
-
 import { FCONNECT_API_URL, REQUEST_TIMEOUT_MS, SITE_API_URL } from '../config/env';
 import { AuthTokens, TokenStore, fconnectTokens, siteTokens } from './tokens';
 
@@ -7,16 +5,12 @@ export type QueryValue = string | number | boolean | undefined | null;
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
- 
   query?: Record<string, QueryValue>;
   body?: unknown;
- 
   formData?: FormData;
- 
   auth?: boolean;
   signal?: AbortSignal;
 }
-
 
 export class ApiError extends Error {
   readonly status: number;
@@ -29,7 +23,6 @@ export class ApiError extends Error {
     this.details = details;
   }
 
- 
   get isNetworkError(): boolean {
     return this.status === 0;
   }
@@ -42,7 +35,6 @@ export class ApiError extends Error {
     return this.status === 401;
   }
 
- 
   get fullMessage(): string {
     return this.details.length > 0 ? `${this.message} : ${this.details.join(', ')}` : this.message;
   }
@@ -59,10 +51,8 @@ export interface ApiClient {
 }
 
 interface ClientOptions {
- 
   baseUrl: string;
   tokens: TokenStore;
- 
   refreshPath: string;
 }
 
@@ -78,7 +68,6 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
     return url.toString();
   };
 
- 
   let refreshInFlight: Promise<string | null> | null = null;
 
   const refreshAccessToken = async (): Promise<string | null> => {
@@ -116,7 +105,6 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
     return refreshInFlight;
   };
 
- 
   const readError = async (response: Response): Promise<ApiError> => {
     let message = `Erreur ${response.status}`;
     let details: string[] = [];
@@ -125,7 +113,7 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
       if (payload.message) message = payload.message;
       if (Array.isArray(payload.errors)) details = payload.errors;
     } catch {
-      /* corps non JSON : on garde le message par défaut */
+      message = `Erreur ${response.status}`;
     }
     return new ApiError(response.status, message, details);
   };
@@ -136,13 +124,10 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
     token: string | null
   ): Promise<Response> => {
     const headers: Record<string, string> = {};
-   
-   
+
     if (options.body !== undefined) headers['Content-Type'] = 'application/json';
     if (token) headers.Authorization = `Bearer ${token}`;
 
-   
-   
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     const relayAbort = () => controller.abort();
@@ -161,7 +146,6 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
     }
   };
 
- 
   const request = async <T>(path: string, options: RequestOptions = {}): Promise<T> => {
     const useAuth = options.auth ?? false;
     let token = useAuth ? tokens.getAccess() : null;
@@ -210,13 +194,11 @@ const createApiClient = ({ baseUrl, tokens, refreshPath }: ClientOptions): ApiCl
   };
 };
 
-
 export const siteApi = createApiClient({
   baseUrl: SITE_API_URL,
   tokens: siteTokens,
   refreshPath: '/auth/refresh',
 });
-
 
 export const fconnectApi = createApiClient({
   baseUrl: FCONNECT_API_URL,

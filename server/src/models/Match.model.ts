@@ -1,7 +1,4 @@
-
-
 import mongoose, { Document, Schema } from 'mongoose';
-
 
 export const MATCH_VENUES = ['Domicile', 'Extérieur'] as const;
 export type MatchVenue = (typeof MATCH_VENUES)[number];
@@ -9,18 +6,14 @@ export type MatchVenue = (typeof MATCH_VENUES)[number];
 export const MATCH_STATUSES = ['À venir', 'En cours', 'Terminé'] as const;
 export type MatchStatus = (typeof MATCH_STATUSES)[number];
 
-
 export const SCORER_SIDES = ['club', 'opponent'] as const;
 export type ScorerSide = (typeof SCORER_SIDES)[number];
-
 
 export interface IMatchScorer {
   player: mongoose.Types.ObjectId | null;
   name: string;
- 
   minute: number;
   side: ScorerSide;
- 
   assistName: string;
   assistPlayer: mongoose.Types.ObjectId | null;
 }
@@ -28,21 +21,16 @@ export interface IMatchScorer {
 export interface IMatch extends Document {
   _id: mongoose.Types.ObjectId;
   opponent: string;
- 
   date: string;
- 
   time: string;
   venue: MatchVenue;
   competition: string;
- 
   result?: { home: number; away: number };
   status: MatchStatus;
- 
   scorers: IMatchScorer[];
- 
+  liveTime: string;
   image: string;
 }
-
 
 const scorerSchema = new Schema<IMatchScorer>(
   {
@@ -63,8 +51,6 @@ const matchSchema = new Schema<IMatch>(
       type: String,
       required: true,
       trim: true,
-     
-     
       match: [/^\d{4}-\d{2}-\d{2}$/, 'La date doit être au format AAAA-MM-JJ'],
       index: true,
     },
@@ -81,8 +67,7 @@ const matchSchema = new Schema<IMatch>(
         home: { type: Number, min: 0, max: 99, required: true },
         away: { type: Number, min: 0, max: 99, required: true },
       },
-     
-     
+
       default: undefined,
       _id: false,
     },
@@ -90,10 +75,9 @@ const matchSchema = new Schema<IMatch>(
     scorers: {
       type: [scorerSchema],
       default: [],
-     
-     
       validate: [(value: IMatchScorer[]) => value.length <= 30, 'Trop de buteurs saisis'],
     },
+    liveTime: { type: String, trim: true, maxlength: 20, default: '' },
     image: { type: String, maxlength: 500, default: '' },
   },
   {

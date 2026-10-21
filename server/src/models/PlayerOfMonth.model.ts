@@ -1,4 +1,3 @@
-
 import mongoose, { Document, Schema } from 'mongoose';
 
 export const POTM_STATUSES = ['open', 'closed'] as const;

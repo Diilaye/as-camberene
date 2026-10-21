@@ -1,5 +1,3 @@
-
-
 import { fconnectApi } from '../../lib/api';
 import { CLUB_ID } from '../../config/env';
 import { FcClub, FcDataResponse } from '../../types/fconnect';

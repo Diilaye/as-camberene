@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { CalendarDays, Plus, Search, Trash2, X } from 'lucide-react';
+import { AlertTriangle, CalendarDays, Check, Plus, Search, Trash2, X } from 'lucide-react';
 import useEditableResource from '../../hooks/useEditableResource';
 import { useTeamMembers } from '../../hooks/useContent';
 import { matches as matchesApi, MatchRecord } from '../../services/site/content.service';
@@ -14,30 +14,35 @@ import {
   ScorerSide,
 } from '../../types';
 import { handleImageError } from '../../lib/imagePlaceholder';
-
+import { formatDayMonthYear } from '../../lib/dates';
+import AdminConfirmDelete from '../../components/admin/AdminConfirmDelete';
 
 const today = (): string => new Date().toISOString().slice(0, 10);
-
 
 interface ScorerDraft {
   uid: string;
   name: string;
   minute: string;
   side: ScorerSide;
- 
   assist: string;
 }
 
 let scorerUid = 0;
 
-
 const StatLink: React.FC<{ name: string; linked: boolean; long?: boolean }> = ({ name, linked, long }) => {
   if (!name.trim()) return <span />;
   return linked ? (
-    <span className="text-[10px] text-green-300/80">✓ {long ? 'Compté dans les statistiques du joueur' : 'Compté'}</span>
+    <span className="flex items-center gap-1 text-[10px] text-green-300/80">
+      <Check size={11} aria-hidden="true" />
+      {long ? 'Compté dans les statistiques du joueur' : 'Compté'}
+    </span>
   ) : (
-    <span className="text-[10px] text-club-yellow/80" title="Choisissez un nom dans la liste de l'effectif pour qu'il soit compté.">
-      ⚠ {long ? 'Pas dans l’effectif : non compté dans les statistiques' : 'Hors effectif'}
+    <span
+      className="flex items-center gap-1 text-[10px] text-club-yellow/80"
+      title="Choisissez un nom dans la liste de l'effectif pour qu'il soit compté."
+    >
+      <AlertTriangle size={11} aria-hidden="true" />
+      {long ? 'Pas dans l’effectif : non compté dans les statistiques' : 'Hors effectif'}
     </span>
   );
 };
@@ -61,22 +66,14 @@ const EMPTY_FORM = {
   scoreHome: '',
   scoreAway: '',
   scorers: [] as ScorerDraft[],
+  liveTime: '',
 };
-
-const formatDate = (value: string): string =>
-  new Date(`${value}T12:00:00`).toLocaleDateString('fr-FR', {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
 
 const STATUS_STYLES: Record<MatchStatus, string> = {
   'À venir': 'bg-club-yellow/20 text-club-yellow',
   'En cours': 'bg-green-500/20 text-green-300',
   Terminé: 'bg-white/10 text-white/60',
 };
-
 
 const CalendrierAdmin: React.FC = () => {
   const {
@@ -91,7 +88,6 @@ const CalendrierAdmin: React.FC = () => {
     remove,
   } = useEditableResource<MatchRecord>(matchesApi, { sort: 'date time' });
 
- 
   const { data: roster } = useTeamMembers('equipe-a');
 
   const playerNames = useMemo(
@@ -143,12 +139,11 @@ const CalendrierAdmin: React.FC = () => {
       scorers: (match.scorers ?? []).map((scorer) => ({
         uid: `scorer-${(scorerUid += 1)}`,
         name: scorer.name,
-       
-       
         minute: scorer.minute ? String(scorer.minute) : '',
         side: scorer.side,
         assist: scorer.assistName ?? '',
       })),
+      liveTime: match.liveTime ?? '',
     });
     setModalOpen(true);
   };
@@ -165,15 +160,13 @@ const CalendrierAdmin: React.FC = () => {
   const removeScorer = (uid: string) =>
     setForm((f) => ({ ...f, scorers: f.scorers.filter((scorer) => scorer.uid !== uid) }));
 
- 
   const findPlayerId = (name: string): string | null => {
     const needle = name.trim().toLowerCase();
     return roster.find((member) => member.name.trim().toLowerCase() === needle)?.id ?? null;
   };
 
- 
   const scoreCheck = useMemo(() => {
-    if (form.status !== 'Terminé' || form.scoreHome === '' || form.scoreAway === '') return null;
+    if ((form.status !== 'Terminé' && form.status !== 'En cours') || form.scoreHome === '' || form.scoreAway === '') return null;
 
     const home = Number(form.scoreHome);
     const away = Number(form.scoreAway);
@@ -195,24 +188,20 @@ const CalendrierAdmin: React.FC = () => {
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-   
     const hasScore =
-      form.status === 'Terminé' && form.scoreHome !== '' && form.scoreAway !== '';
+      (form.status === 'Terminé' || form.status === 'En cours') &&
+      form.scoreHome !== '' &&
+      form.scoreAway !== '';
 
-   
     const scorers: MatchScorer[] =
-      form.status === 'Terminé'
+      form.status === 'Terminé' || form.status === 'En cours'
         ? form.scorers
             .filter((scorer) => scorer.name.trim() !== '')
             .map((scorer) => ({
               name: scorer.name.trim(),
               minute: Number(scorer.minute) || 0,
               side: scorer.side,
-             
-             
               player: scorer.side === 'club' ? findPlayerId(scorer.name) : null,
-             
-             
               assistName: scorer.side === 'club' ? scorer.assist.trim() : '',
               assistPlayer: scorer.side === 'club' && scorer.assist.trim() ? findPlayerId(scorer.assist) : null,
             }))
@@ -245,7 +234,6 @@ const CalendrierAdmin: React.FC = () => {
   const field =
     'w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none';
 
- 
   const rowField =
     'w-full min-w-0 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white focus:border-club-yellow outline-none';
 
@@ -328,7 +316,7 @@ const CalendrierAdmin: React.FC = () => {
                     )}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">
-                    <p className="font-medium text-white">{formatDate(match.date)}</p>
+                    <p className="font-medium text-white">{formatDayMonthYear(match.date)}</p>
                     <p className="text-[11px] text-white/40">{match.time}</p>
                   </td>
                   <td className="px-4 py-3 font-medium text-white">{match.opponent}</td>
@@ -342,8 +330,6 @@ const CalendrierAdmin: React.FC = () => {
                     ) : (
                       <span className="text-white/30">—</span>
                     )}
-                    {/* Les buteurs du club sous le score : ce qu'il reste à
-                        compléter se voit sans ouvrir chaque rencontre. */}
                     {(match.scorers ?? []).some((scorer) => scorer.side === 'club') && (
                       <p className="mt-1 max-w-[12rem] truncate text-[11px] text-white/40">
                         {(match.scorers ?? [])
@@ -384,7 +370,7 @@ const CalendrierAdmin: React.FC = () => {
                     <AdminEmpty
                       label={
                         matches.length === 0
-                          ? 'Aucun match en base — l’accueil affiche le calendrier d’origine'
+                          ? 'Aucun match enregistré pour le moment.'
                           : 'Aucun match ne correspond à la recherche'
                       }
                     />
@@ -396,7 +382,6 @@ const CalendrierAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* Formulaire */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -504,8 +489,7 @@ const CalendrierAdmin: React.FC = () => {
                 label="Affiche du match"
               />
 
-              {/* Le score n'a de sens qu'une fois la rencontre jouée. */}
-              {form.status === 'Terminé' && (
+              {(form.status === 'Terminé' || form.status === 'En cours') && (
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <p className="mb-3 text-white/60">
                     Score —{' '}
@@ -546,13 +530,12 @@ const CalendrierAdmin: React.FC = () => {
                     </div>
                   </div>
                   <p className="mt-2 text-[11px] text-white/40">
-                    Laisser vide tant que le score n’est pas connu.
+                    Mettre à jour en temps réel pour un match « En cours ».
                   </p>
                 </div>
               )}
 
-              {/* Feuille des buteurs — elle n'a de sens qu'avec un score. */}
-              {form.status === 'Terminé' && (
+              {(form.status === 'Terminé' || form.status === 'En cours') && (
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <p className="text-white/60">Buteurs et passeurs</p>
@@ -591,7 +574,7 @@ const CalendrierAdmin: React.FC = () => {
                             onChange={(event) =>
                               updateScorer(scorer.uid, { name: event.target.value })
                             }
-                           
+
                             list={scorer.side === 'club' ? 'match-scorer-players' : undefined}
                             placeholder="Nom du buteur"
                             aria-label="Nom du buteur"
@@ -643,11 +626,6 @@ const CalendrierAdmin: React.FC = () => {
                     </div>
                   )}
 
-                  {/*
-                    Une seule liste pour toutes les lignes : les suggestions
-                    sont les mêmes, et la répéter par buteur multiplierait le
-                    même effectif dans la page.
-                  */}
                   <datalist id="match-scorer-players">
                     {playerNames.map((name) => (
                       <option key={name} value={name} />
@@ -691,37 +669,15 @@ const CalendrierAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation de suppression */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-graphite/90 backdrop-blur-sm"
-            onClick={() => setConfirmDelete(null)}
-          />
-          <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.05] p-6">
-            <h4 className="mb-2 text-sm font-semibold text-white">Supprimer le match</h4>
-            <p className="mb-4 text-xs text-white/60">
-              Confirmez-vous la suppression ? Cette action est définitive.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(null)}
-                className="rounded-full bg-white/5 px-4 py-1.5 text-xs text-white/70 hover:bg-white/10"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={confirmRemoval}
-                disabled={saving}
-                className="rounded-full bg-red-500/30 px-4 py-1.5 text-xs text-red-200 hover:bg-red-500/40 disabled:opacity-60"
-              >
-                {saving ? 'Suppression…' : 'Supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminConfirmDelete
+          title="Supprimer le match"
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={confirmRemoval}
+          saving={saving}
+        >
+          Confirmez-vous la suppression ? Cette action est définitive.
+        </AdminConfirmDelete>
       )}
     </div>
   );

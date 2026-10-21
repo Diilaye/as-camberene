@@ -1,4 +1,3 @@
-
 import { SeedProduct } from './types';
 
 const JERSEY_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -203,7 +202,6 @@ export const seedProducts: SeedProduct[] = [
     sizes: ['L', 'XL'],
     image: SHIRT,
     inStock: true,
-   
     isVisible: false,
   },
 ];

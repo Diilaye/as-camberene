@@ -4,8 +4,10 @@ import useEditableResource from '../../hooks/useEditableResource';
 import { articles as articlesApi, ArticleRecord } from '../../services/site/content.service';
 import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
 import ImageField from '../../components/admin/ImageField';
-import ImagePositionField, { DEFAULT_IMAGE_POSITION } from '../../components/admin/ImagePositionField';
+import { DEFAULT_IMAGE_POSITION } from '../../components/admin/ImagePositionField';
 import { ARTICLE_CATEGORIES } from '../../types';
+import AdminConfirmDelete from '../../components/admin/AdminConfirmDelete';
+import { formatDate } from '../../lib/dates';
 
 const ArticlesAdmin: React.FC = () => {
   const {
@@ -123,7 +125,7 @@ const ArticlesAdmin: React.FC = () => {
                   <p className="text-xs text-white/40 line-clamp-1">{a.excerpt}</p>
                 </td>
                 <td className="py-3 px-4"><span className="px-2 py-1 rounded-full bg-club-yellow/20 text-club-yellow text-[10px] font-semibold">{a.category}</span></td>
-                <td className="py-3 px-4 text-xs">{new Date(a.publishedAt).toLocaleDateString('fr-FR')}</td>
+                <td className="py-3 px-4 text-xs">{formatDate(a.publishedAt)}</td>
                 <td className="py-3 px-4 text-xs">
                   {a.status === 'draft' ? (
                     <span className="px-2 py-1 rounded-full bg-white/10 text-white/70 text-[10px] font-semibold">Brouillon</span>
@@ -145,7 +147,6 @@ const ArticlesAdmin: React.FC = () => {
       </div>
       )}
 
-      {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={()=>setModalOpen(false)} />
@@ -158,7 +159,6 @@ const ArticlesAdmin: React.FC = () => {
                 {ARTICLE_CATEGORIES.map(c => <option key={c} value={c} className="bg-black">{c}</option>)}
               </select>
               <ImageField value={form.image} onChange={value=>setForm(f=>({...f,image:value}))} label="Visuel de l'article" />
-              <ImagePositionField image={form.image} value={form.imagePosition} onChange={value=>setForm(f=>({...f,imagePosition:value}))} />
               <input value={form.author} onChange={e=>setForm(f=>({...f,author:e.target.value}))} placeholder="Auteur" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none" />
               <textarea value={form.excerpt} onChange={e=>setForm(f=>({...f,excerpt:e.target.value}))} placeholder="Résumé (affiché dans la liste des actualités)" rows={2} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none resize-none" />
               <textarea value={form.content} onChange={e=>setForm(f=>({...f,content:e.target.value}))} placeholder="Article complet" rows={6} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none resize-none" />
@@ -181,19 +181,15 @@ const ArticlesAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation suppression */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={()=>setConfirmDelete(null)} />
-            <div className="relative w-full max-w-sm bg-white/[0.05] border border-white/10 rounded-2xl p-6">
-              <h4 className="text-sm font-semibold text-white mb-2">Supprimer article</h4>
-              <p className="text-xs text-white/60 mb-4">Confirmez-vous la suppression ? Cette action est définitive.</p>
-              <div className="flex justify-end gap-3">
-                <button onClick={()=>setConfirmDelete(null)} className="px-4 py-1.5 rounded-full text-xs bg-white/5 text-white/70 hover:bg-white/10">Annuler</button>
-                <button onClick={confirmRemoval} disabled={saving} className="px-4 py-1.5 rounded-full text-xs bg-red-500/30 text-red-200 hover:bg-red-500/40 disabled:opacity-60">{saving ? 'Suppression…' : 'Supprimer'}</button>
-              </div>
-            </div>
-        </div>
+        <AdminConfirmDelete
+          title="Supprimer article"
+          onCancel={()=>setConfirmDelete(null)}
+          onConfirm={confirmRemoval}
+          saving={saving}
+        >
+          Confirmez-vous la suppression ? Cette action est définitive.
+        </AdminConfirmDelete>
       )}
     </div>
   );

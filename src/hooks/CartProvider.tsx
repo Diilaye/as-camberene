@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { CartItem, EntityId, Product } from '../types';
 
-interface CartContextValue {
+export interface CartContextValue {
   cart: CartItem[];
   addToCart: (product: Product, size: string, quantity?: number) => void;
   removeFromCart: (productId: EntityId, size: string) => void;
@@ -11,7 +11,8 @@ interface CartContextValue {
   getCartItemsCount: () => number;
 }
 
-const CartContext = createContext<CartContextValue | undefined>(undefined);
+export const CartContext = createContext<CartContextValue | undefined>(undefined);
+
 const STORAGE_KEY = 'asc_camberene_cart_v1';
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -53,10 +54,4 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value: CartContextValue = { cart, addToCart, removeFromCart, updateQuantity, clearCart, getCartTotal, getCartItemsCount };
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
-};
-
-export const useCart = (): CartContextValue => {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error('useCart doit être utilisé à l’intérieur de <CartProvider>.');
-  return ctx;
 };

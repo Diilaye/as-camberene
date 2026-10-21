@@ -1,9 +1,3 @@
-
-
-
-
-
-
 export interface FcPagination {
   page: number;
   limit: number;
@@ -12,7 +6,6 @@ export interface FcPagination {
   pages?: number;
 }
 
-
 export interface FcDataResponse<T> {
   success: boolean;
   data: T;
@@ -20,23 +13,11 @@ export interface FcDataResponse<T> {
   message?: string;
 }
 
-
 export interface FcMatchesResponse {
   success: boolean;
   matches: FcMatch[];
   pagination?: FcPagination;
 }
-
-
-export interface FcProductsResponse {
-  success: boolean;
-  products: FcProduct[];
-  pagination?: FcPagination;
-}
-
-
-
-
 
 export interface FcClub {
   id: string;
@@ -56,15 +37,10 @@ export interface FcClub {
   members_count: number;
   followers_count: number;
   is_verified: boolean;
- 
   age: number | null;
   created_at: string;
   updated_at: string;
 }
-
-
-
-
 
 export type FcTeamCategory =
   | 'senior' | 'u23' | 'u19' | 'u17' | 'u15' | 'u13' | 'u11'
@@ -77,7 +53,6 @@ export type FcMemberRole =
 
 export type FcMemberStatus = 'active' | 'inactive' | 'suspended' | 'trial' | 'injured' | 'loaned';
 
-
 export interface FcTeamPlayerRef {
   id: string;
   first_name: string;
@@ -85,7 +60,6 @@ export interface FcTeamPlayerRef {
   jersey_number?: number;
   position?: string;
   profile_picture_url?: string;
- 
   date_of_birth?: string;
   status?: FcMemberStatus;
 }
@@ -123,7 +97,6 @@ export interface FcTeam {
   goals_for?: number;
   goals_against?: number;
   status: 'active' | 'inactive' | 'disbanded';
- 
   playersCount?: number;
   points?: number;
   goalDifference?: number;
@@ -131,10 +104,6 @@ export interface FcTeam {
   created_at: string;
   updated_at: string;
 }
-
-
-
-
 
 export type FcMatchStatus =
   | 'scheduled' | 'live' | 'halftime' | 'finished' | 'postponed' | 'cancelled';
@@ -149,7 +118,6 @@ export interface FcMatchTeamRef {
 }
 
 export interface FcMatch {
- 
   id?: string;
   _id: string;
   homeTeam: FcMatchTeamRef;
@@ -164,73 +132,4 @@ export interface FcMatch {
   attendance?: number;
   createdAt?: string;
   updatedAt?: string;
-}
-
-
-
-
-
-export interface FcProduct {
- 
-  id?: string;
-  _id: string;
-  name: string;
-  description: string;
-  category: 'equipment' | 'clothing' | 'footwear' | 'accessories' | 'training' | 'other';
-  subcategory?: string;
-  price: number;
-  currency: string;
-  stock: number;
-  images: string[];
-  seller: { id: string; name: string; type: 'user' | 'club' | 'store' };
-  specifications: { brand?: string; size?: string; color?: string; [key: string]: unknown };
-  condition: 'new' | 'like_new' | 'good' | 'fair' | 'used';
-  rating: { average: number; count: number };
-  tags: string[];
-  featured: boolean;
-  isActive: boolean;
-  soldCount: number;
-  createdAt: string;
-}
-
-
-
-
-
-export type FcContentStatus = 'idea' | 'draft' | 'scheduled' | 'published' | 'archived';
-
-export interface FcContentPost {
-  id: string;
-  club_id: string;
-  title: string;
-  body?: string;
-  hashtags: string[];
-  channels: string[];
-  status: FcContentStatus;
-  scheduled_for?: string;
-  published_at?: string;
-  published_urls: string[];
-  asset_ids: string[];
- 
-  assets?: Array<{ id: string; url?: string; title?: string }>;
-  created_at: string;
-  updated_at: string;
-}
-
-
-
-
-
-export type FcUserType = 'player' | 'coach' | 'club' | 'amateur' | 'admin' | 'shop_admin';
-
-export interface FcUser {
-  id: string;
-  email?: string;
-  phone?: string;
-  first_name?: string;
-  last_name?: string;
-  name?: string;
-  user_type: FcUserType;
-  avatar_url?: string;
-  is_verified: boolean;
 }

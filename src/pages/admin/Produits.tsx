@@ -6,7 +6,7 @@ import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/Adm
 import GalleryField from '../../components/admin/GalleryField';
 import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../../types';
 import { formatCFA } from '../../lib/currency';
-
+import AdminConfirmDelete from '../../components/admin/AdminConfirmDelete';
 
 const Produits: React.FC = () => {
   const {
@@ -53,11 +53,8 @@ const Produits: React.FC = () => {
       category: product.category,
       type: product.type,
       price: String(product.price),
-     
       images: product.images?.length ? product.images : [product.image].filter(Boolean),
       description: product.description,
-     
-     
       sizes: (product.sizes ?? []).join(', '),
       inStock: product.inStock,
       isVisible: product.isVisible !== false,
@@ -73,8 +70,6 @@ const Produits: React.FC = () => {
       category: form.category as ProductRecord['category'],
       type: form.type as ProductRecord['type'],
       price: Number(form.price) || 0,
-     
-     
       image: form.images[0] ?? '',
       images: form.images,
       description: form.description,
@@ -124,11 +119,6 @@ const Produits: React.FC = () => {
               <h3 className="text-sm font-semibold text-white mb-1 line-clamp-1">{pr.name}</h3>
               <p className="text-xs text-white/60 mb-3">{pr.category} · {pr.type}</p>
 
-              {/*
-                Stock et visibilité se basculent depuis la liste : ce sont les
-                deux gestes du quotidien de la boutique, et ouvrir le formulaire
-                complet pour cocher une case coûtait cinq clics.
-              */}
               <div className="flex flex-wrap gap-2 mb-3">
                 <button
                   type="button"
@@ -166,7 +156,6 @@ const Produits: React.FC = () => {
       </div>
       )}
 
-      {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={()=>setModalOpen(false)} />
@@ -206,19 +195,15 @@ const Produits: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation suppression */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={()=>setConfirmDelete(null)} />
-            <div className="relative w-full max-w-sm bg-white/[0.05] border border-white/10 rounded-2xl p-6">
-              <h4 className="text-sm font-semibold text-white mb-2">Supprimer produit</h4>
-              <p className="text-xs text-white/60 mb-4">Confirmez-vous la suppression ? Cette action est définitive.</p>
-              <div className="flex justify-end gap-3">
-                <button onClick={()=>setConfirmDelete(null)} className="px-4 py-1.5 rounded-full text-xs bg-white/5 text-white/70 hover:bg-white/10">Annuler</button>
-                <button onClick={confirmRemoval} disabled={saving} className="px-4 py-1.5 rounded-full text-xs bg-red-500/30 text-red-200 hover:bg-red-500/40 disabled:opacity-60">{saving ? 'Suppression…' : 'Supprimer'}</button>
-              </div>
-            </div>
-        </div>
+        <AdminConfirmDelete
+          title="Supprimer produit"
+          onCancel={()=>setConfirmDelete(null)}
+          onConfirm={confirmRemoval}
+          saving={saving}
+        >
+          Confirmez-vous la suppression ? Cette action est définitive.
+        </AdminConfirmDelete>
       )}
     </div>
   );

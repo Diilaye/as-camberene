@@ -1,5 +1,3 @@
-
-
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import TicketReservation, {
@@ -12,11 +10,7 @@ import { createReservationSchema, updateReservationSchema } from '../validators/
 
 const router = Router();
 
-
-
-
 const requireDesk = requirePermission('orders:manage');
-
 
 const reservationLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -29,7 +23,6 @@ const reservationLimiter = rateLimit({
   },
 });
 
-
 router.post(
   '/',
   reservationLimiter,
@@ -39,8 +32,6 @@ router.post(
     const match = await Match.findById(value.match);
     if (!match) throw new HttpError(404, 'Rencontre introuvable');
 
-   
-   
     if (match.status === 'Terminé') {
       throw new HttpError(409, 'Cette rencontre a déjà eu lieu');
     }
@@ -62,7 +53,6 @@ router.post(
   })
 );
 
-
 router.get(
   '/',
   authenticate,
@@ -72,8 +62,6 @@ router.get(
     if (typeof req.query.status === 'string' && req.query.status) query.status = req.query.status;
     if (typeof req.query.match === 'string' && req.query.match) query.match = req.query.match;
 
-   
-   
     const reservations = await TicketReservation.find(query)
       .sort('-created_at')
       .limit(500)

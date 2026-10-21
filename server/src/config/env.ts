@@ -1,9 +1,6 @@
-
-
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-
 
 const envPath = path.resolve(process.cwd(), '.env');
 const envFileFound = fs.existsSync(envPath);
@@ -31,7 +28,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const secret = (name: string): string => {
   const value = required(name);
- 
+
   if (isProduction && value.startsWith('changez')) {
     throw new Error(`${name} a gardé sa valeur d'exemple : la changer avant de déployer.`);
   }
@@ -41,7 +38,7 @@ const secret = (name: string): string => {
 export const config = {
   port: Number(process.env.PORT ?? 4100),
   isProduction,
- 
+
   trustProxy: Number(process.env.TRUST_PROXY ?? 0),
   mongoUri: required('MONGODB_URI'),
   jwt: {
@@ -50,7 +47,7 @@ export const config = {
     accessTtl: process.env.JWT_ACCESS_TTL ?? '2h',
     refreshTtl: process.env.JWT_REFRESH_TTL ?? '30d',
   },
- 
+
   siteUrl: (process.env.SITE_URL ?? process.env.CORS_ORIGINS ?? 'http://localhost:5173')
     .split(',')[0]
     .trim()
@@ -61,7 +58,7 @@ export const config = {
     .filter(Boolean),
   upload: {
     dir: path.resolve(__dirname, '../..', process.env.UPLOAD_DIR ?? 'uploads'),
-    maxBytes: Number(process.env.UPLOAD_MAX_BYTES ?? 5 * 1024 * 1024),
+    maxBytes: Number(process.env.UPLOAD_MAX_BYTES ?? 100 * 1024 * 1024),
   },
 };
 

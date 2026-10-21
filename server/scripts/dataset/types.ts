@@ -1,9 +1,6 @@
-
-
 export interface SeedComment {
   author: string;
   content: string;
- 
   daysAfter: number;
 }
 
@@ -13,7 +10,6 @@ export interface SeedArticle {
   content: string;
   category: 'Matchs' | 'Transferts' | 'Équipe' | 'Club';
   author: string;
- 
   publishedAt: string;
   status: 'draft' | 'published';
   image: string;
@@ -22,7 +18,6 @@ export interface SeedArticle {
 
 export interface SeedProduct {
   name: string;
- 
   price: number;
   category: 'Maillots' | 'Accessoires';
   type: 'Domicile' | 'Extérieur' | 'Third' | 'Autre';
@@ -59,27 +54,21 @@ export interface SeedHistoryEvent {
 }
 
 export interface SeedHeroSlide {
- 
   image?: string;
- 
   youtube?: string;
   kicker: string;
   title: string;
   link: string;
   linkLabel: string;
- 
   rank: number;
 }
 
 export interface SeedMatch {
   opponent: string;
- 
   date: string;
- 
   time: string;
   venue: 'Domicile' | 'Extérieur';
   competition: string;
- 
   result?: { home: number; away: number };
   status: 'À venir' | 'En cours' | 'Terminé';
 }
@@ -89,12 +78,10 @@ export interface SeedGalleryItem {
   title: string;
   description: string;
   category: 'match' | 'entrainement' | 'club';
- 
   date: string;
 }
 
 export interface SeedTeam {
- 
   slug: string;
   name: string;
   category: 'senior' | 'youth';

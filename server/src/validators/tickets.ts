@@ -1,5 +1,3 @@
-
-
 import Joi from 'joi';
 import { RESERVATION_STATUSES } from '../models/TicketReservation.model';
 
@@ -12,7 +10,7 @@ export const createReservationSchema = Joi.object({
     'string.min': 'Indiquer un nom',
     'any.required': 'Nom requis',
   }),
- 
+
   phone: Joi.string()
     .trim()
     .pattern(/^\+?[\d\s.-]{7,20}$/)
@@ -28,7 +26,6 @@ export const createReservationSchema = Joi.object({
   }),
   message: Joi.string().allow('').max(1000).default(''),
 });
-
 
 export const updateReservationSchema = Joi.object({
   status: Joi.string().valid(...RESERVATION_STATUSES),

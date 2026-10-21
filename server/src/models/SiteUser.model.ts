@@ -1,5 +1,3 @@
-
-
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { ROLES, UserRole } from '../lib/roles';
@@ -13,7 +11,6 @@ export interface ISiteUser extends Document {
   favorite_team?: string;
   is_active: boolean;
   last_login_at?: Date;
- 
   created_by?: mongoose.Types.ObjectId;
   validatePassword(candidate: string): Promise<boolean>;
 }
@@ -29,8 +26,7 @@ const siteUserSchema = new Schema<ISiteUser>(
       trim: true,
       maxlength: 255,
     },
-   
-   
+
     password_hash: { type: String, required: true, select: false },
     role: { type: String, enum: ROLES, default: 'subscriber', index: true },
     favorite_team: { type: String, trim: true, maxlength: 120 },
@@ -52,8 +48,6 @@ const siteUserSchema = new Schema<ISiteUser>(
     },
   }
 );
-
-
 
 siteUserSchema.pre('save', async function hashPassword(next) {
   if (!this.isModified('password_hash')) return next();

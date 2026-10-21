@@ -6,15 +6,10 @@ import { Match } from '../types';
 import PageHero from '../components/ui/PageHero';
 import { handleImageError } from '../lib/imagePlaceholder';
 import { isOver, kickoff } from '../lib/matches';
+import { formatDayMonth, formatMonthYear } from '../lib/dates';
 
 const FILTERS = ['Tous', 'À venir', 'Résultats'] as const;
 type Filter = (typeof FILTERS)[number];
-
-const monthLabel = (date: string) =>
-  new Date(`${date}T12:00:00`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-
-const dayLabel = (date: string) =>
-  new Date(`${date}T12:00:00`).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
 
 const outcomeOf = (match: Match) => {
   if (!match.result) return null;
@@ -27,7 +22,7 @@ const outcomeOf = (match: Match) => {
 };
 
 const Calendrier: React.FC = () => {
-  const { data: matches, loading } = useMatches({ withDemo: false });
+  const { data: matches, loading } = useMatches();
   const [filter, setFilter] = useState<Filter>('Tous');
 
   const ordered = useMemo(() => [...matches].sort((a, b) => kickoff(a) - kickoff(b)), [matches]);
@@ -40,7 +35,7 @@ const Calendrier: React.FC = () => {
   const months = useMemo(() => {
     const groups: { label: string; matches: Match[] }[] = [];
     visible.forEach((match) => {
-      const label = monthLabel(match.date);
+      const label = formatMonthYear(match.date);
       const last = groups[groups.length - 1];
       if (last && last.label === label) last.matches.push(match);
       else groups.push({ label, matches: [match] });
@@ -120,11 +115,10 @@ const Calendrier: React.FC = () => {
                               : 'border-white/10 bg-white/[0.04]'
                           } ${over ? 'opacity-80' : ''}`}
                         >
-                          {/* La barre verte du prochain match */}
                           {isNext && <span className="absolute inset-y-0 left-0 w-2 bg-green-400" aria-hidden />}
 
                           <div className="w-20 shrink-0 text-center">
-                            <p className="text-xs uppercase text-white/60">{dayLabel(match.date)}</p>
+                            <p className="text-xs uppercase text-white/60">{formatDayMonth(match.date)}</p>
                             {over && match.result ? (
                               <p className="text-2xl font-extrabold text-white">
                                 {match.result.home}
@@ -162,11 +156,6 @@ const Calendrier: React.FC = () => {
                               </span>
                             </div>
                             <h3 className="truncate text-base font-extrabold uppercase text-white sm:text-lg">
-                              {/*
-                                Le lien couvre toute la carte (pseudo-élément étiré) :
-                                un clic n'importe où ouvre le détail du match, sans
-                                imbriquer de lien autour du bouton « Billets ».
-                              */}
                               <Link
                                 to={`/calendrier/${match.id}`}
                                 className="after:absolute after:inset-0 after:content-[''] group-hover:text-club-yellow"

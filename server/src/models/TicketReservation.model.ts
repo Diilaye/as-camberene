@@ -1,11 +1,8 @@
-
-
 import crypto from 'crypto';
 import mongoose, { Document, Schema } from 'mongoose';
 
 export const RESERVATION_STATUSES = ['nouvelle', 'confirmee', 'honoree', 'annulee'] as const;
 export type ReservationStatus = (typeof RESERVATION_STATUSES)[number];
-
 
 export const RESERVATION_STATUS_LABELS: Record<ReservationStatus, string> = {
   nouvelle: 'À traiter',
@@ -15,8 +12,6 @@ export const RESERVATION_STATUS_LABELS: Record<ReservationStatus, string> = {
 };
 
 export const generateReservationReference = (): string => {
- 
- 
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const suffix = Array.from(crypto.randomBytes(6))
     .map((byte) => alphabet[byte % alphabet.length])
@@ -33,9 +28,7 @@ export interface ITicketReservation extends Document {
   email?: string;
   seats: number;
   status: ReservationStatus;
- 
   message: string;
- 
   note: string;
 }
 
@@ -46,8 +39,6 @@ const ticketReservationSchema = new Schema<ITicketReservation>(
     name: { type: String, required: true, trim: true, maxlength: 120 },
     phone: { type: String, required: true, trim: true, maxlength: 40 },
     email: { type: String, lowercase: true, trim: true, maxlength: 255 },
-   
-   
     seats: { type: Number, required: true, min: 1, max: 20, default: 1 },
     status: { type: String, enum: RESERVATION_STATUSES, default: 'nouvelle', index: true },
     message: { type: String, default: '', maxlength: 1000 },

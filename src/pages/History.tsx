@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useHistoryEvents } from '../hooks/useContent';
 import PageHero from '../components/ui/PageHero';
 
-
 const History: React.FC = () => {
   const { data: events } = useHistoryEvents();
   const phases = Array.from(new Set(events.map((event) => event.phase).filter(Boolean)));
@@ -34,7 +33,6 @@ const History: React.FC = () => {
             </p>
           ) : (
             <div className="relative">
-              {/* Rail vertical : centré au-delà de md, collé à gauche en dessous. */}
               <div className="pointer-events-none absolute bottom-0 left-[7px] top-0 w-px bg-white/15 md:left-1/2 md:-translate-x-1/2" />
 
               <ol className="space-y-14 md:space-y-20">

@@ -2,8 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Mail, MapPin, Phone, Users } from 'lucide-react';
 import teamHero from '../../assets/img/asc-camberene-equipe-2025.webp';
-import { teamsData } from '../data/teams';
-import { PlayerEntry, getRosterForTeam } from '../data/teamRosters';
 import { useTeamMembers, useTeams } from '../hooks/useContent';
 import { TeamMember } from '../types';
 import PageHero from './ui/PageHero';
@@ -14,14 +12,16 @@ interface TeamRosterViewProps {
   teamId: string;
 }
 
-const sectionsOf = (roster: ReturnType<typeof getRosterForTeam>) => ({
-  Gardiens: roster?.goalkeepers ?? [],
-  Défenseurs: roster?.defenders ?? [],
-  Milieux: roster?.midfielders ?? [],
-  Attaquants: roster?.forwards ?? [],
-  Staff: roster?.staff ?? [],
-});
-
+interface PlayerEntry {
+  name: string;
+  number?: number;
+  age?: number;
+  nationality?: string;
+  role?: string;
+  experience?: string;
+  photo: string;
+  contact?: { email: string; phone: string };
+}
 
 const SECTION_OF_LINE: Record<string, string> = {
   Gardien: 'Gardiens',
@@ -29,7 +29,6 @@ const SECTION_OF_LINE: Record<string, string> = {
   Milieu: 'Milieux',
   Attaquant: 'Attaquants',
 };
-
 
 const toEntry = (member: TeamMember): PlayerEntry => ({
   name: member.name,
@@ -39,7 +38,6 @@ const toEntry = (member: TeamMember): PlayerEntry => ({
   role: member.role || undefined,
   photo: member.photo,
 });
-
 
 const sectionsOfMembers = (members: TeamMember[]) => {
   const sections: Record<string, PlayerEntry[]> = {
@@ -58,19 +56,15 @@ const sectionsOfMembers = (members: TeamMember[]) => {
   return sections;
 };
 
-
 const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
   const { data: teams } = useTeams();
   const { data: members } = useTeamMembers(teamId);
 
   const team = useMemo(
-    () => teams.find((entry) => entry.slug === teamId) ?? teamsData.find((entry) => entry.slug === teamId),
+    () => teams.find((entry) => entry.slug === teamId),
     [teams, teamId]
   );
 
-  const roster = useMemo(() => getRosterForTeam(teamId), [teamId]);
-
- 
   const coach = useMemo(() => {
     const head = members.find(
       (member) => member.kind === 'staff' && /entra[iî]neur\s+principal/i.test(member.role ?? '')
@@ -78,18 +72,11 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
     return head?.name ?? team?.coach;
   }, [members, team]);
 
- 
-  const sections = useMemo(
-    () => (members.length > 0 ? sectionsOfMembers(members) : sectionsOf(roster)),
-    [members, roster]
-  );
+  const sections = useMemo(() => sectionsOfMembers(members), [members]);
 
- 
-  const headcount = members.length > 0
-    ? members.length
-    : Object.values(sectionsOf(roster)).reduce((total, list) => total + list.length, 0);
+  const headcount = members.length;
   const [activeSection, setActiveSection] = useState<string>('Attaquants');
- 
+
   const players = useMemo(() => members.filter((member) => member.kind === 'player'), [members]);
 
   if (!team) {
@@ -132,7 +119,6 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
         </Link>
       </PageHero>
 
-      {/* Identité de l'équipe */}
       <section className="border-b border-white/10 bg-charcoal">
         <div className="site-container grid gap-6 py-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -162,7 +148,6 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
         </div>
       </section>
 
-      {/* Effectif, par ligne */}
       <section className="band-green py-12">
         <div className="site-container">
           <div className="mb-8 flex flex-wrap gap-2">
@@ -221,7 +206,6 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
         </div>
       </section>
 
-      {/* Bilan de la saison */}
       <section className="band-charcoal py-12">
         <div className="site-container">
           <h2 className="section-title mb-8">Bilan de la saison</h2>
@@ -249,7 +233,6 @@ const TeamRosterView: React.FC<TeamRosterViewProps> = ({ teamId }) => {
         </div>
       </section>
 
-      {/* Statistiques des joueurs, saisies dans l'administration */}
       {players.length > 0 && (
         <section className="band-graphite py-12">
           <div className="site-container">

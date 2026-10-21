@@ -1,4 +1,3 @@
-
 import mongoose from 'mongoose';
 
 import { connectDatabase, disconnectDatabase, safeMongoUri } from '../src/config/database';
@@ -29,11 +28,8 @@ interface Report {
   skipped: number;
 }
 
-
 async function importAll<T>(
   label: string,
- 
- 
   model: mongoose.Model<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
   rows: T[],
   identify: (row: T) => Record<string, unknown>,
@@ -44,8 +40,6 @@ async function importAll<T>(
   const report: Report = { created: 0, skipped: 0 };
 
   for (const row of rows) {
-   
-   
     const exists = reset && !dryRun ? null : await model.findOne(identify(row));
 
     if (exists) {
@@ -61,7 +55,6 @@ async function importAll<T>(
   console.log(`  ${label.padEnd(22)} ${report.created} ${verb}, ${report.skipped} déjà présent(s)`);
   return report;
 }
-
 
 const commentDate = (publishedAt: string, daysAfter: number): Date => {
   const date = new Date(`${publishedAt}T09:00:00.000Z`);
@@ -80,8 +73,6 @@ async function main(): Promise<number> {
   await connectDatabase();
 
   try {
-   
-   
     await importAll(
       'diapositives de tête',
       HeroSlide,
@@ -90,12 +81,8 @@ async function main(): Promise<number> {
       (slide) => ({ ...slide })
     );
 
-   
-   
     await importAll('équipes', Team, seedTeams, (t) => ({ slug: t.slug }), (team) => ({ ...team }));
 
-   
-   
     await importAll(
       'matchs',
       Match,
@@ -158,8 +145,6 @@ async function main(): Promise<number> {
       return 0;
     }
 
-   
-   
     const cheapest = Math.min(...seedProducts.map((p) => p.price));
     const dearest = Math.max(...seedProducts.map((p) => p.price));
     console.log(

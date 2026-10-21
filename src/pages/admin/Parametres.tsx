@@ -7,8 +7,6 @@ import { FcClub } from '../../types/fconnect';
 import { AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
 import { useAuth } from '../../hooks/useAuth';
 
-
-
 const Field: React.FC<{ label: string; value?: string | number | null }> = ({ label, value }) => (
   <div>
     <p className="mb-2 text-xs uppercase tracking-wide text-white/60">{label}</p>

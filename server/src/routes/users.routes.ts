@@ -1,5 +1,3 @@
-
-
 import crypto from 'crypto';
 import { Router } from 'express';
 import SiteUser from '../models/SiteUser.model';
@@ -11,9 +9,7 @@ import { createUserSchema, resetPasswordSchema, updateUserSchema } from '../vali
 
 const router = Router();
 
-
 router.use(authenticate, requirePermission('users:manage'));
-
 
 const generatePassword = (): string => {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
@@ -24,14 +20,12 @@ const generatePassword = (): string => {
   return `${pick(4)}-${pick(4)}-${pick(4)}!`;
 };
 
-
 const activeSuperadmins = (exceptId?: string): Promise<number> =>
   SiteUser.countDocuments({
     role: 'superadmin',
     is_active: true,
     ...(exceptId ? { _id: { $ne: exceptId } } : {}),
   });
-
 
 const guardLastSuperadmin = async (target: { id: string; role: UserRole }): Promise<void> => {
   if (target.role !== 'superadmin') return;
@@ -43,7 +37,6 @@ const guardLastSuperadmin = async (target: { id: string; role: UserRole }): Prom
     );
   }
 };
-
 
 router.get('/roles', (_req, res) => {
   res.json({
@@ -114,7 +107,7 @@ router.post(
       success: true,
       data: {
         user,
-       
+
         ...(value.password ? {} : { generated_password: password }),
       },
     });
@@ -131,7 +124,6 @@ router.put(
 
     const isSelf = user.id === req.auth!.userId;
 
-   
     if (isSelf && value.role !== undefined && value.role !== user.role) {
       throw new HttpError(409, 'Vous ne pouvez pas changer votre propre profil');
     }
@@ -151,7 +143,6 @@ router.put(
     res.json({ success: true, data: user });
   })
 );
-
 
 router.post(
   '/:id/password',

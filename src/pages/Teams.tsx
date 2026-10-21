@@ -24,7 +24,6 @@ const Teams: React.FC = () => {
   const { data: teams } = useTeams();
   const { data: members } = useTeamMembers();
 
- 
   const countByTeam = useMemo(() => {
     const counts = new Map<string, number>();
     members.forEach((member) => {
@@ -44,7 +43,6 @@ const Teams: React.FC = () => {
         image={teamHero}
       />
 
-      {/* Chiffres du club */}
       <section className="border-b border-white/10 bg-charcoal">
         <div className="site-container grid grid-cols-2 gap-6 py-8 md:grid-cols-4">
           {CLUB_STATS.map((stat) => (
@@ -56,7 +54,6 @@ const Teams: React.FC = () => {
         </div>
       </section>
 
-      {/* Onglets de catégorie */}
       <section className="border-b border-white/10 bg-charcoal">
         <div className="site-container flex flex-wrap gap-2 py-5">
           {CATEGORIES.map((item) => (
@@ -77,7 +74,6 @@ const Teams: React.FC = () => {
         </div>
       </section>
 
-      {/* Grille des équipes */}
       <section className="band-green py-12">
         <div className="site-container grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((team) => (

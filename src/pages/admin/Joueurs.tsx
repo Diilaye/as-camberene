@@ -18,13 +18,12 @@ import {
   STRONG_FEET,
   StrongFoot,
 } from '../../types';
-
+import AdminConfirmDelete from '../../components/admin/AdminConfirmDelete';
 
 const toNumber = (value: string): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 };
-
 
 const toDateInput = (value: string | null): string => (value ? String(value).slice(0, 10) : '');
 
@@ -68,7 +67,6 @@ const KIND_LABELS: Record<PlayerKind, string> = {
   staff: 'Encadrement',
 };
 
-
 const Joueurs: React.FC = () => {
   const {
     items: members,
@@ -84,7 +82,6 @@ const Joueurs: React.FC = () => {
 
   const { data: teams } = useTeams();
 
- 
   const teamOrder = useCallback(
     (slug: string) => {
       const index = teams.findIndex((team) => team.slug === slug);
@@ -93,7 +90,6 @@ const Joueurs: React.FC = () => {
     [teams]
   );
 
- 
   const teamLabel = useCallback(
     (slug: string) => teams.find((team) => team.slug === slug)?.name ?? PLAYER_TEAM_LABELS[slug] ?? slug,
     [teams]
@@ -124,8 +120,6 @@ const Joueurs: React.FC = () => {
         return matchesQuery && matchesTeam && matchesKind;
       })
       .sort((a, b) => {
-       
-       
         if (a.team !== b.team) return teamOrder(a.team) - teamOrder(b.team);
         if (a.kind !== b.kind) return a.kind === 'player' ? -1 : 1;
         if (a.kind === 'player' && a.line !== b.line) {
@@ -135,7 +129,6 @@ const Joueurs: React.FC = () => {
       });
   }, [members, query, teamFilter, kindFilter, teamOrder]);
 
- 
   const countByTeam = useMemo(() => {
     const counts = new Map<PlayerTeam, number>();
     for (const member of members) counts.set(member.team, (counts.get(member.team) ?? 0) + 1);
@@ -144,7 +137,7 @@ const Joueurs: React.FC = () => {
 
   const openCreate = () => {
     setEditingId(null);
-   
+
     setForm({ ...EMPTY_FORM, team: teamFilter || EMPTY_FORM.team });
     setModalOpen(true);
   };
@@ -187,16 +180,12 @@ const Joueurs: React.FC = () => {
       kind: form.kind,
       name: form.name,
       team: form.team,
-     
-     
       number: isStaff ? 0 : toNumber(form.number),
       line: isStaff ? 'Milieu' : form.line,
       position: isStaff ? '' : form.position,
       role: isStaff ? form.role : '',
       photo: form.photo,
       status: form.status,
-     
-     
       birthDate: form.birthDate || null,
       nationality: form.nationality,
       height: toNumber(form.height),
@@ -216,8 +205,6 @@ const Joueurs: React.FC = () => {
       isFeatured: form.isFeatured,
     };
 
-   
-   
     const saved = editingId ? await update(editingId, payload) : await create(payload);
     if (saved) setModalOpen(false);
   };
@@ -275,7 +262,6 @@ const Joueurs: React.FC = () => {
         </div>
       </div>
 
-      {/* Onglets d'équipe : c'est l'entrée naturelle dans un effectif. */}
       <div className="mb-6 flex flex-wrap gap-2">
         <button
           type="button"
@@ -396,7 +382,6 @@ const Joueurs: React.FC = () => {
         </div>
       )}
 
-      {/* Formulaire */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
@@ -414,7 +399,6 @@ const Joueurs: React.FC = () => {
             </h3>
 
             <form onSubmit={submit} className="space-y-4 text-xs">
-              {/* Joueur ou encadrant : ce choix commande la suite du formulaire. */}
               <div className="flex gap-2">
                 {PLAYER_KINDS.map((kind) => (
                   <button
@@ -653,7 +637,6 @@ const Joueurs: React.FC = () => {
                   />
                   <span>Visible sur le site</span>
                 </label>
-                {/* Alimente l'onglet « Nos stars » de la galerie. */}
                 <label className="flex cursor-pointer select-none items-center gap-2">
                   <input
                     type="checkbox"
@@ -688,35 +671,15 @@ const Joueurs: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation de suppression */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={() => setConfirmDelete(null)} />
-          <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.05] p-6">
-            <h4 className="mb-2 text-sm font-semibold text-white">Supprimer la fiche</h4>
-            <p className="mb-4 text-xs text-white/60">
-              Confirmez-vous la suppression ? Elle est définitive. Pour retirer un membre du site
-              sans perdre sa fiche, décochez plutôt « Visible sur le site ».
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(null)}
-                className="rounded-full bg-white/5 px-4 py-1.5 text-xs text-white/70 hover:bg-white/10"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={confirmRemoval}
-                disabled={saving}
-                className="rounded-full bg-red-500/30 px-4 py-1.5 text-xs text-red-200 hover:bg-red-500/40 disabled:opacity-60"
-              >
-                {saving ? 'Suppression…' : 'Supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminConfirmDelete
+          title="Supprimer la fiche"
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={confirmRemoval}
+          saving={saving}
+        >
+          Confirmez-vous la suppression ? Elle est définitive. Pour retirer un membre du site sans perdre sa fiche, décochez plutôt « Visible sur le site ».
+        </AdminConfirmDelete>
       )}
     </div>
   );

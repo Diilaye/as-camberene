@@ -58,7 +58,6 @@ const ProductDetail: React.FC = () => {
     );
   }
 
- 
   const gallery = product.images?.length ? product.images : [product.image];
 
   const handleAddToCart = () => {
@@ -77,7 +76,6 @@ const ProductDetail: React.FC = () => {
         onClose={() => setNotification((current) => ({ ...current, isVisible: false }))}
       />
 
-      {/* Fil d'Ariane */}
       <div className="border-b border-white/10 bg-charcoal pt-24">
         <div className="site-container py-5">
           <Link
@@ -99,10 +97,8 @@ const ProductDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Fiche produit */}
       <section className="band-charcoal py-12">
         <div className="site-container grid gap-10 lg:grid-cols-2">
-          {/* Galerie */}
           <div>
             <div className="overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.04]">
               <img
@@ -131,7 +127,6 @@ const ProductDetail: React.FC = () => {
             )}
           </div>
 
-          {/* Achat */}
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-club-yellow">
               {product.category} · {product.type}
@@ -147,7 +142,6 @@ const ProductDetail: React.FC = () => {
               )}
             </p>
 
-            {/* Tailles */}
             <div className="mt-8">
               <p className="mb-3 text-xs font-bold uppercase tracking-wide text-white/50">Taille</p>
               <div className="flex flex-wrap gap-2">
@@ -169,7 +163,6 @@ const ProductDetail: React.FC = () => {
               </div>
             </div>
 
-            {/* Quantité et ajout au panier */}
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <div className="flex items-center rounded-full border border-white/15 bg-white/[0.06]">
                 <button
@@ -217,7 +210,6 @@ const ProductDetail: React.FC = () => {
               </button>
             </div>
 
-            {/* Garanties */}
             <ul className="mt-8 grid gap-3 sm:grid-cols-3">
               {[
                 { icon: Truck, label: `Livraison offerte dès ${formatCFA(FREE_SHIPPING_THRESHOLD)}` },
@@ -234,7 +226,6 @@ const ProductDetail: React.FC = () => {
         </div>
       </section>
 
-      {/* Onglets d'information */}
       <section className="band-graphite py-12">
         <div className="site-container">
           <div className="flex flex-wrap gap-2 border-b border-white/10 pb-4">
@@ -290,7 +281,6 @@ const ProductDetail: React.FC = () => {
         </div>
       </section>
 
-      {/* Produits associés */}
       {related.length > 0 && (
         <section className="band-green py-8">
           <div className="site-container">

@@ -1,4 +1,3 @@
-
 import { connectDatabase, disconnectDatabase } from '../src/config/database';
 import SiteUser from '../src/models/SiteUser.model';
 import { ASSIGNABLE_ROLES, ROLE_LABELS, UserRole } from '../src/lib/roles';
@@ -66,9 +65,6 @@ async function main(): Promise<number> {
       existing.role = role;
       existing.is_active = true;
 
-     
-     
-     
       if (providedPassword) existing.password_hash = providedPassword;
       await existing.save();
 

@@ -3,8 +3,6 @@ import { ApiError } from '../lib/api';
 import { ListParams } from '../services/site/content.service';
 import { useApiResource } from './useApiResource';
 
-
-
 export interface ResourceApi<T> {
   list: (params?: ListParams, signal?: AbortSignal) => Promise<T[]>;
   create: (payload: Partial<T>) => Promise<T>;
@@ -15,9 +13,7 @@ export interface ResourceApi<T> {
 export interface EditableResource<T> {
   items: T[];
   loading: boolean;
- 
   error: ApiError | null;
- 
   actionError: ApiError | null;
   saving: boolean;
   reload: () => void;
@@ -34,9 +30,6 @@ export function useEditableResource<T extends { id: string }>(
   api: ResourceApi<T>,
   params: ListParams = {}
 ): EditableResource<T> {
- 
- 
- 
   const { data, loading, error, reload } = useApiResource<T[]>(
     (signal) => api.list(params, signal),
     [],
