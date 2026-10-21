@@ -1,5 +1,3 @@
-
-
 import { Router } from 'express';
 import { FilterQuery, Model } from 'mongoose';
 import Joi from 'joi';
@@ -9,21 +7,13 @@ import { authenticate, canPreviewDrafts, optionalAuth, requirePermission } from 
 
 export interface ResourceOptions<T> {
   model: Model<T>;
- 
   permission: Permission;
- 
   createSchema: Joi.ObjectSchema;
- 
   updateSchema: Joi.ObjectSchema;
- 
   defaultSort: string;
- 
   publicFilter?: FilterQuery<T>;
- 
   searchable?: string[];
- 
   filters?: string[];
- 
   afterWrite?: (before: T | null, after: T | null) => Promise<void>;
 }
 
@@ -107,11 +97,8 @@ export const buildResourceRouter = <T>(options: ResourceOptions<T>): Router => {
     handler(async (req, res) => {
       const value = await options.updateSchema.validateAsync(req.body, { stripUnknown: true });
 
-     
       const before = options.afterWrite ? await model.findById(req.params.id).lean() : null;
 
-     
-     
       const updated = await model.findByIdAndUpdate(req.params.id, value, {
         new: true,
         runValidators: true,

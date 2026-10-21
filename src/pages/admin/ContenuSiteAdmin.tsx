@@ -146,7 +146,6 @@ const ContenuSiteAdmin: React.FC = () => {
 
       <AdminError error={error} onRetry={reload} />
 
-      {/* Sections de l'accueil */}
       <Card
         title="Sections de l’accueil"
         hint="Masquer une section la retire de l’accueil sans rien effacer : elle revient dès qu’on la réaffiche."
@@ -185,12 +184,10 @@ const ContenuSiteAdmin: React.FC = () => {
         </ul>
       </Card>
 
-      {/* Bandeau du haut */}
       <Card title="Bandeau du haut" hint="La ligne jaune tout en haut de chaque page (remplacée par les partenaires s’il y en a).">
         <input value={form.topBar} onChange={(e) => update({ topBar: e.target.value })} className={input} maxLength={200} />
       </Card>
 
-      {/* Chiffres du club */}
       <Card id="facts" title="Chiffres du club" hint="Les grands chiffres de l’accueil. Jusqu’à 8.">
         <div className="space-y-2">
           {facts.map((fact, index) => (
@@ -222,7 +219,6 @@ const ContenuSiteAdmin: React.FC = () => {
         </div>
       </Card>
 
-      {/* Bannière */}
       <Card id="banner" title="Bannière « Effectif »" hint="La grande photo de l’accueil, avec son surtitre et son titre.">
         <div className="space-y-3">
           <ImageField value={banner.image} onChange={(image) => update({ banner: { ...banner, image } })} label="Photo de la bannière" />
@@ -235,7 +231,6 @@ const ContenuSiteAdmin: React.FC = () => {
         </div>
       </Card>
 
-      {/* Partenaires */}
       <Card title="Partenaires" hint="Logos affichés en haut de chaque page et sous le carrousel. Sans partenaire, le bandeau du haut affiche son texte.">
         <div className="space-y-3">
           {partners.map((partner, index) => {
@@ -262,7 +257,6 @@ const ContenuSiteAdmin: React.FC = () => {
         </div>
       </Card>
 
-      {/* Réseaux sociaux */}
       <Card title="Réseaux sociaux" hint="Liens de l’en-tête, de l’accueil et du pied de page. Laissez vide pour masquer une icône.">
         <div className="grid gap-3 sm:grid-cols-2">
           {(['facebook', 'instagram', 'x', 'youtube'] as const).map((network) => (
@@ -273,7 +267,6 @@ const ContenuSiteAdmin: React.FC = () => {
         </div>
       </Card>
 
-      {/* Lettre d'information */}
       <Card title="Bloc « Restez informé »" hint="L’appel à l’inscription en bas de chaque page.">
         <div className="space-y-3">
           <Field label="Titre">
@@ -285,7 +278,6 @@ const ContenuSiteAdmin: React.FC = () => {
         </div>
       </Card>
 
-      {/* Coordonnées */}
       <Card title="Coordonnées" hint="Affichées dans le pied de page. Un champ vide est masqué.">
         <div className="space-y-3">
           <Field label="Adresse">
@@ -302,12 +294,10 @@ const ContenuSiteAdmin: React.FC = () => {
         </div>
       </Card>
 
-      {/* Pied de page */}
       <Card title="Mention du pied de page" hint="Le texte après « © 1965-année », tout en bas de chaque page.">
         <textarea value={form.footerNote} maxLength={500} rows={2} onChange={(e) => update({ footerNote: e.target.value })} className={`${input} resize-none`} />
       </Card>
 
-      {/* Autres rubriques */}
       <Card title="Autres contenus du site" hint="Ces rubriques ont leur propre onglet, où l’on ajoute, modifie et supprime chaque élément.">
         <div className="grid gap-2 sm:grid-cols-2">
           {OTHER_CONTENT.map((item) => (
@@ -319,7 +309,6 @@ const ContenuSiteAdmin: React.FC = () => {
         </div>
       </Card>
 
-      {/* Barre d'enregistrement */}
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/10 bg-graphite/95 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-end gap-3 px-6 py-3">
           <span className="mr-auto text-xs text-white/50">{status}</span>

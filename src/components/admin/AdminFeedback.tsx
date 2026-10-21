@@ -2,8 +2,6 @@ import React from 'react';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { ApiError } from '../../lib/api';
 
-
-
 export const AdminError: React.FC<{ error: ApiError | null; onRetry?: () => void }> = ({
   error,
   onRetry,

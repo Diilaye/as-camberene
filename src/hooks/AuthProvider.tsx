@@ -1,33 +1,25 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { Permission } from '../lib/roles';
 import { isStaffRole } from '../lib/roles';
 import { User } from '../types';
-import { ApiError } from '../lib/api';
 import * as authService from '../services/site/auth.service';
 
-
-
-interface AuthContextValue {
+export interface AuthContextValue {
   user: User | null;
- 
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
   register: (data: authService.RegisterPayload) => Promise<User>;
   logout: () => Promise<void>;
- 
   can: (permission: Permission) => boolean;
- 
   isStaff: boolean;
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
- 
- 
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
@@ -84,17 +76,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-export const useAuth = (): AuthContextValue => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth doit être utilisé à l’intérieur de <AuthProvider>.');
-  return ctx;
-};
-
-
-export const authErrorMessage = (error: unknown): string => {
-  if (error instanceof ApiError) return error.fullMessage;
-  return 'Erreur de connexion. Veuillez réessayer.';
-};
-
-export default useAuth;

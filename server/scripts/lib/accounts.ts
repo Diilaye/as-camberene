@@ -1,12 +1,9 @@
-
 import crypto from 'crypto';
 
 import SiteUser from '../../src/models/SiteUser.model';
 import { ROLE_LABELS, UserRole } from '../../src/lib/roles';
 
-
 export const MIN_PASSWORD_LENGTH = 10;
-
 
 export function generatePassword(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
@@ -17,7 +14,6 @@ export function generatePassword(): string {
   return `${pick(4)}-${pick(4)}-${pick(4)}!`;
 }
 
-
 export const looksLikeEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
 
 export type AccountOutcome = 'created' | 'updated' | 'unchanged';
@@ -26,9 +22,7 @@ export interface EnsureAccountInput {
   email: string;
   role: UserRole;
   name?: string;
- 
   password?: string;
- 
   resetPassword?: boolean;
 }
 
@@ -38,12 +32,9 @@ export interface EnsureAccountResult {
   name: string;
   role: UserRole;
   previousRole?: UserRole;
- 
   password?: string;
- 
   changes: string[];
 }
-
 
 export async function ensureAccount(input: EnsureAccountInput): Promise<EnsureAccountResult> {
   const email = input.email.trim().toLowerCase();

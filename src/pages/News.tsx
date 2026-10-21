@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { useArticles } from '../hooks/useContent';
-import { ARTICLE_CATEGORIES } from '../types';
+import { ARTICLE_CATEGORIES, ArticleCategory } from '../types';
 import ArticleCard from '../components/ui/ArticleCard';
 import PageHero from '../components/ui/PageHero';
 import NewsTicker from '../components/ui/NewsTicker';
@@ -27,7 +27,6 @@ const News: React.FC = () => {
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase();
     return articles.filter((article) => {
-      if (!article.image) return false;
       const matchesCategory = category === 'Toutes' || article.category === category;
       const matchesSearch =
         !needle ||
@@ -45,7 +44,6 @@ const News: React.FC = () => {
         description="Comptes rendus de match, mercato, vie du club et communiqués officiels."
       />
 
-      {/* Onglets de rubrique et recherche */}
       <section className="border-b border-white/10 bg-charcoal">
         <div className="site-container flex flex-col gap-4 py-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
@@ -80,9 +78,10 @@ const News: React.FC = () => {
         </div>
       </section>
 
-      <NewsTicker />
+      <NewsTicker
+        category={!isPotm && category !== 'Toutes' ? (category as ArticleCategory) : undefined}
+      />
 
-      {/* Grille d'articles, au gabarit de carte du site */}
       <section className="band-green py-12">
         <div className="site-container">
           {isPotm ? (

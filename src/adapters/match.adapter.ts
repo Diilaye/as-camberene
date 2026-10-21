@@ -1,28 +1,21 @@
-
-
 import { CLUB_ID } from '../config/env';
 import { Match } from '../types';
 import { FcMatch, FcMatchStatus, FcMatchTeamRef } from '../types/fconnect';
-import { isoDate } from './helpers';
 
+const isoDate = (value?: string | null): string => (value ? value.slice(0, 10) : '');
 
 const STATUS_LABELS: Record<FcMatchStatus, Match['status']> = {
   scheduled: 'À venir',
   live: 'En cours',
   halftime: 'En cours',
   finished: 'Terminé',
- 
- 
- 
   postponed: 'À venir',
   cancelled: 'À venir',
 };
 
 export interface ApiMatch extends Match {
   fcId: string;
- 
   rawStatus: FcMatchStatus;
- 
   opponentLogo?: string;
   isHome: boolean;
 }
@@ -30,9 +23,6 @@ export interface ApiMatch extends Match {
 const isClubSide = (side: FcMatchTeamRef): boolean => Boolean(CLUB_ID) && side.clubId === CLUB_ID;
 
 export const toMatch = (match: FcMatch): ApiMatch => {
- 
- 
- 
   const playingHome = isClubSide(match.homeTeam) || !isClubSide(match.awayTeam);
   const opponent = playingHome ? match.awayTeam : match.homeTeam;
   const finished = match.status === 'finished';

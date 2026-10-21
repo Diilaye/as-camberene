@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
@@ -24,12 +23,40 @@ const voteLimiter = rateLimit({
 
 const NOMINEE_FIELDS = 'name photo number line position team';
 
+const STAFF_SHARE = 0.5;
+
+interface VoteTally {
+  staff: number;
+  supporters: number;
+}
+
 const countVotes = async (pollId: mongoose.Types.ObjectId) => {
-  const rows = await PlayerOfMonthVote.aggregate<{ _id: mongoose.Types.ObjectId; votes: number }>([
+  const rows = await PlayerOfMonthVote.aggregate<{ _id: mongoose.Types.ObjectId; staff: number; supporters: number }>([
     { $match: { poll: pollId } },
-    { $group: { _id: '$player', votes: { $sum: 1 } } },
+    {
+      $lookup: {
+        from: 'site_users',
+        localField: 'user',
+        foreignField: '_id',
+        as: 'voter',
+      },
+    },
+    { $unwind: { path: '$voter', preserveNullAndEmptyArrays: true } },
+    {
+      $group: {
+        _id: '$player',
+        supporters: {
+          $sum: { $cond: [{ $eq: [{ $ifNull: ['$voter.role', 'subscriber'] }, 'subscriber'] }, 1, 0] },
+        },
+        staff: {
+          $sum: { $cond: [{ $eq: [{ $ifNull: ['$voter.role', 'subscriber'] }, 'subscriber'] }, 0, 1] },
+        },
+      },
+    },
   ]);
-  return new Map(rows.map((row) => [String(row._id), row.votes]));
+  return new Map<string, VoteTally>(
+    rows.map((row) => [String(row._id), { staff: row.staff, supporters: row.supporters }])
+  );
 };
 
 const shapeNominee = (player: { _id: unknown; name?: string; photo?: string; number?: number; line?: string; position?: string }) => ({
@@ -49,7 +76,6 @@ const assertNomineesExist = async (ids: string[]) => {
   if (found !== ids.length) throw new HttpError(400, 'Un joueur nommé ne fait pas partie de l’effectif');
 };
 
-
 router.get(
   '/current',
   optionalAuth,
@@ -62,22 +88,58 @@ router.get(
 
     const nominees = (poll.nominees as unknown as Parameters<typeof shapeNominee>[0][]).filter(Boolean).map(shapeNominee);
 
+    const counts = await countVotes(poll._id);
+    const totalSupporters = [...counts.values()].reduce((sum, tally) => sum + tally.supporters, 0);
+    const totalStaff = [...counts.values()].reduce((sum, tally) => sum + tally.staff, 0);
+
+    const percentOf = (tally: VoteTally | undefined): number => {
+      if (!tally) return 0;
+      const staffPart = totalStaff > 0 ? STAFF_SHARE * (tally.staff / totalStaff) : 0;
+      const supportersPart = totalSupporters > 0 ? (1 - (totalStaff > 0 ? STAFF_SHARE : 0)) * (tally.supporters / totalSupporters) : 0;
+      return Math.round((staffPart + supportersPart) * 100);
+    };
+
     let myVote: string | null = null;
     if (req.auth) {
       const vote = await PlayerOfMonthVote.findOne({ poll: poll._id, user: req.auth.userId }).lean();
       myVote = vote ? String(vote.player) : null;
     }
 
+    const revealResults = poll.status !== 'open' || myVote !== null;
+
+        const withVotes = nominees
+          .map((nominee) => {
+            const tally = counts.get(nominee.id);
+            const points = (tally?.supporters ?? 0) + (tally?.staff ?? 0);
+            return {
+              ...nominee,
+              votes: revealResults ? points : 0,
+              percent: revealResults ? percentOf(tally) : 0,
+            };
+          })
+          .sort((a, b) => b.percent - a.percent || b.votes - a.votes || a.name.localeCompare(b.name, 'fr'));
+
     let winner: string | null = null;
     if (poll.status === 'closed') {
-      const counts = await countVotes(poll._id);
-      const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+      const best = [...counts.entries()].sort(
+        (a, b) => percentOf(b[1]) - percentOf(a[1])
+      )[0];
       winner = best ? best[0] : null;
     }
 
     res.json({
       success: true,
-      data: { id: String(poll._id), month: poll.month, title: poll.title, status: poll.status, nominees, myVote, winner },
+      data: {
+        id: String(poll._id),
+        month: poll.month,
+        title: poll.title,
+        status: poll.status,
+        nominees: withVotes,
+        totalVotes: revealResults ? totalSupporters + totalStaff : 0,
+        resultsRevealed: revealResults,
+        myVote,
+        winner,
+      },
     });
   })
 );
@@ -108,7 +170,6 @@ router.post(
   })
 );
 
-
 router.get(
   '/',
   authenticate,
@@ -119,16 +180,31 @@ router.get(
     const data = await Promise.all(
       polls.map(async (poll) => {
         const counts = await countVotes(poll._id);
+        const totalSupporters = [...counts.values()].reduce((sum, tally) => sum + tally.supporters, 0);
+        const totalStaff = [...counts.values()].reduce((sum, tally) => sum + tally.staff, 0);
+        const percentOf = (tally: VoteTally | undefined): number => {
+          if (!tally) return 0;
+          const staffPart = totalStaff > 0 ? STAFF_SHARE * (tally.staff / totalStaff) : 0;
+          const supportersPart = totalSupporters > 0 ? (1 - (totalStaff > 0 ? STAFF_SHARE : 0)) * (tally.supporters / totalSupporters) : 0;
+          return Math.round((staffPart + supportersPart) * 100);
+        };
         const results = (poll.nominees as unknown as Parameters<typeof shapeNominee>[0][])
           .filter(Boolean)
-          .map((nominee) => ({ ...shapeNominee(nominee), votes: counts.get(String(nominee._id)) ?? 0 }))
-          .sort((a, b) => b.votes - a.votes || a.name.localeCompare(b.name));
+          .map((nominee) => {
+            const tally = counts.get(String(nominee._id));
+            return {
+              ...shapeNominee(nominee),
+              votes: (tally?.supporters ?? 0) + (tally?.staff ?? 0),
+              percent: percentOf(tally),
+            };
+          })
+          .sort((a, b) => b.percent - a.percent || b.votes - a.votes || a.name.localeCompare(b.name));
         return {
           id: String(poll._id),
           month: poll.month,
           title: poll.title,
           status: poll.status,
-          totalVotes: results.reduce((sum, row) => sum + row.votes, 0),
+          totalVotes: totalSupporters + totalStaff,
           results,
         };
       })

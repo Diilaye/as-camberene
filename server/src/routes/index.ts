@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import Article from '../models/Article.model';
 import Product from '../models/Product.model';
@@ -41,6 +40,7 @@ import shareRoutes from './share.routes';
 import settingsRoutes from './settings.routes';
 import playerOfMonthRoutes from './playerOfMonth.routes';
 import donationRoutes from './donations.routes';
+import albumRoutes from './albums.routes';
 
 const router = Router();
 
@@ -169,7 +169,7 @@ router.use(
     defaultSort: '-rank -date -created_at',
     publicFilter: { isVisible: true },
     searchable: ['title', 'description'],
-    filters: ['category', 'match'],
+    filters: ['category', 'match', 'album'],
   })
 );
 
@@ -182,6 +182,8 @@ router.use('/donations', donationRoutes);
 router.use('/settings', settingsRoutes);
 
 router.use('/player-of-month', playerOfMonthRoutes);
+
+router.use('/albums', albumRoutes);
 
 router.use('/share', shareRoutes);
 

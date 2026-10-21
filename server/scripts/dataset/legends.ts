@@ -1,4 +1,3 @@
-
 import { SeedLegend } from './types';
 
 const portrait = (id: string) =>

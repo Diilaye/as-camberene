@@ -4,12 +4,12 @@ import { uploadImage } from '../../services/site/content.service';
 import { siteMediaUrl } from '../../services/site/media';
 import { ApiError } from '../../lib/api';
 
-
 const ImageField: React.FC<{
   value: string;
   onChange: (value: string) => void;
   label?: string;
-}> = ({ value, onChange, label = 'Image' }) => {
+  hidePreview?: boolean;
+}> = ({ value, onChange, label = 'Image', hidePreview = false }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -25,7 +25,7 @@ const ImageField: React.FC<{
       setError(cause instanceof ApiError ? cause.fullMessage : 'Téléversement impossible');
     } finally {
       setUploading(false);
-     
+
       if (inputRef.current) inputRef.current.value = '';
     }
   };
@@ -59,12 +59,15 @@ const ImageField: React.FC<{
 
       {error && <p className="text-[11px] text-red-300">{error}</p>}
 
-      {value && (
-        <img
-          src={siteMediaUrl(value)}
-          alt=""
-          className="h-24 w-full rounded-lg border border-white/10 object-cover"
-        />
+      {value && !hidePreview && (
+        <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-2">
+          <img
+            src={siteMediaUrl(value)}
+            alt=""
+            className="h-16 w-16 shrink-0 rounded-md border border-white/10 object-cover"
+          />
+          <p className="min-w-0 flex-1 truncate text-[11px] text-white/50">{value}</p>
+        </div>
       )}
     </div>
   );

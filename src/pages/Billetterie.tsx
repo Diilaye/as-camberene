@@ -5,17 +5,10 @@ import { useMatches } from '../hooks/useContent';
 import { reserveTickets, ReservationConfirmation } from '../services/site/tickets.service';
 import { ApiError } from '../lib/api';
 import { handleImageError } from '../lib/imagePlaceholder';
+import { formatLongDateNoYear } from '../lib/dates';
 import PageHero from '../components/ui/PageHero';
 import ShareButtons from '../components/ui/ShareButtons';
 import ticketHero from '../../assets/img/asc-camberene-equipe-2025.webp';
-
-const formatDate = (value: string): string =>
-  new Date(`${value}T12:00:00`).toLocaleDateString('fr-FR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-
 
 const Billetterie: React.FC = () => {
   const [params] = useSearchParams();
@@ -26,8 +19,6 @@ const Billetterie: React.FC = () => {
     [matches]
   );
 
- 
- 
   const requested = params.get('match');
   const [selected, setSelected] = useState<string>('');
   const matchId = selected || (requested && upcoming.some((m) => String(m.id) === requested)
@@ -82,7 +73,6 @@ const Billetterie: React.FC = () => {
       />
 
       <section className="site-container grid gap-8 py-12 lg:grid-cols-[1fr_400px]">
-        {/* Prochaines rencontres */}
         <div>
           <h2 className="mb-4 text-lg font-extrabold uppercase text-white">Prochaines rencontres</h2>
 
@@ -123,7 +113,7 @@ const Billetterie: React.FC = () => {
                       <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/60">
                         <span className="flex items-center gap-1">
                           <Calendar size={13} />
-                          {formatDate(entry.date)}
+                          {formatLongDateNoYear(entry.date)}
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock size={13} />
@@ -142,11 +132,6 @@ const Billetterie: React.FC = () => {
             </div>
           )}
 
-          {/*
-            Le lien partagé porte l'identifiant du match : celui qui le reçoit
-            arrive sur cette page avec la bonne rencontre déjà sélectionnée, et
-            l'aperçu du réseau montre son affiche.
-          */}
           {match && (
             <div className="mt-6 border-t border-white/10 pt-6">
               <ShareButtons
@@ -166,7 +151,6 @@ const Billetterie: React.FC = () => {
           )}
         </div>
 
-        {/* Formulaire */}
         <div className="panel h-fit p-6">
           {confirmation ? (
             <div className="text-center">
@@ -174,7 +158,7 @@ const Billetterie: React.FC = () => {
               <h2 className="text-lg font-extrabold uppercase text-white">Places retenues</h2>
               <p className="mt-2 text-sm text-white/70">
                 {confirmation.seats} place(s) pour {confirmation.match.opponent}, le{' '}
-                {formatDate(confirmation.match.date)} à {confirmation.match.time}.
+                {formatLongDateNoYear(confirmation.match.date)} à {confirmation.match.time}.
               </p>
               <p className="mt-4 text-xs uppercase tracking-wide text-white/50">
                 Référence à présenter au guichet
@@ -223,7 +207,7 @@ const Billetterie: React.FC = () => {
                   type="tel"
                   value={form.phone}
                   onChange={(event) => setForm((f) => ({ ...f, phone: event.target.value }))}
-                  placeholder="77 123 45 67"
+                  placeholder="7X XX XX XX"
                   className={field}
                 />
               </div>

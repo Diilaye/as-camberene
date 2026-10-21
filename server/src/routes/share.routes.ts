@@ -1,5 +1,3 @@
-
-
 import { Router } from 'express';
 import Article from '../models/Article.model';
 import Match from '../models/Match.model';
@@ -7,7 +5,6 @@ import { handler } from '../lib/http';
 import config from '../config/env';
 
 const router = Router();
-
 
 const escapeHtml = (value: string): string =>
   value
@@ -17,14 +14,12 @@ const escapeHtml = (value: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-
 const absoluteImage = (value: string | undefined): string => {
   const trimmed = value?.trim();
   if (!trimmed) return `${config.siteUrl}/assets/img/asc-camberene-equipe-2025.webp`;
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `${config.siteUrl}${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
 };
-
 
 const summarize = (value: string, limit = 200): string => {
   const flat = value.replace(/\s+/g, ' ').trim();
@@ -35,7 +30,6 @@ interface Preview {
   title: string;
   description: string;
   image: string;
- 
   path: string;
   type: 'article' | 'website';
 }
@@ -78,7 +72,6 @@ const renderPreview = (preview: Preview): string => {
 </html>`;
 };
 
-
 const fallback = (): Preview => ({
   title: 'ASC Cambérène — Club officiel',
   description: 'Club officiel de football sénégalais, fondé en 1965.',
@@ -88,9 +81,6 @@ const fallback = (): Preview => ({
 });
 
 const send = (res: import('express').Response, preview: Preview): void => {
- 
- 
- 
   res.set('Cache-Control', 'public, max-age=300');
   res.type('html').send(renderPreview(preview));
 };
@@ -136,8 +126,6 @@ router.get(
       month: 'long',
     });
 
-   
-   
     const description = match.result
       ? `${affiche} · ${match.result.home} — ${match.result.away} · ${match.competition}`
       : `${date} à ${match.time} · ${match.competition} · ${match.venue}`;

@@ -1,4 +1,3 @@
-
 export const HOME_SECTIONS = [
   { key: 'hero', label: 'Carrousel de tête', manage: '/admin/carrousel' },
   { key: 'matchCenter', label: 'Centre de match', manage: '/admin/calendrier' },
@@ -25,7 +24,7 @@ export interface SiteSettings {
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  topBar: 'Club officiel · Fondé en 1965 · Ligue 2 Sénégal',
+  topBar: 'Club officiel · Fondé en 1965 · Ligue 1 Sénégal',
   socials: {
     facebook: 'https://www.facebook.com/p/Asc-camb%C3%A9r%C3%A8ne-officiel-100063673796089/',
     instagram: 'https://www.instagram.com/asc.camberene/',
@@ -40,7 +39,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   ],
   banner: {
     image: '/assets/img/asc-camberene-equipe-2025.webp',
-    kicker: 'Effectif 2025',
+    kicker: 'Effectif 2026',
     title: 'Le groupe qui a ramené le club en Ligue 1',
   },
   partners: [],
@@ -50,7 +49,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   },
   contact: {
     address: 'Stade Municipal de Cambérène\nCambérène, Dakar, Sénégal',
-    phone: '+221 33 123 45 67',
+    phone: '',
     email: 'contact@asccamberene.sn',
   },
   footerNote:

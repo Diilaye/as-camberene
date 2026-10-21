@@ -1,5 +1,3 @@
-
-
 import mongoose, { Document, Schema } from 'mongoose';
 
 export const PRODUCT_CATEGORIES = ['Maillots', 'Accessoires'] as const;
@@ -16,7 +14,6 @@ export interface IProduct extends Document {
   description: string;
   sizes: string[];
   inStock: boolean;
- 
   isVisible: boolean;
 }
 
@@ -46,8 +43,6 @@ const productSchema = new Schema<IProduct>(
     },
   }
 );
-
-
 
 productSchema.pre('save', function alignImages(next) {
   if (!this.image && this.images.length > 0) this.image = this.images[0];

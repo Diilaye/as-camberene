@@ -1,5 +1,3 @@
-
-
 import { Router } from 'express';
 import SiteUser from '../models/SiteUser.model';
 import { issueTokens, verify } from '../lib/tokens';
@@ -45,13 +43,10 @@ router.post(
   handler(async (req, res) => {
     const value = await loginSchema.validateAsync(req.body, { stripUnknown: true });
 
-   
     const user = await SiteUser.findOne({ email: value.email.toLowerCase() }).select(
       '+password_hash'
     );
 
-   
-   
     if (!user || !(await user.validatePassword(value.password))) {
       throw unauthorized('Email ou mot de passe incorrect');
     }
@@ -78,8 +73,6 @@ router.post(
     const value = await refreshSchema.validateAsync(req.body, { stripUnknown: true });
     const payload = verify(value.refresh_token, 'refresh');
 
-   
-   
     const user = await SiteUser.findById(payload.userId);
     if (!user || !user.is_active) throw unauthorized('Session invalide');
 
@@ -104,7 +97,6 @@ router.get(
     res.json({ success: true, data: { user, permissions: permissionsOf(user.role) } });
   })
 );
-
 
 router.post('/logout', (_req, res) => {
   res.json({ success: true, message: 'Déconnecté' });

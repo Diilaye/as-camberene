@@ -2,15 +2,12 @@ import React from 'react';
 import { handleImageError } from '../../lib/imagePlaceholder';
 
 interface PageHeroProps {
- 
   kicker?: string;
   title: string;
   description?: string;
- 
   image?: string;
   children?: React.ReactNode;
 }
-
 
 const PageHero: React.FC<PageHeroProps> = ({ kicker, title, description, image, children }) => (
   <section className={`page-hero ${image ? 'page-hero--image bg-graphite' : 'band-green'}`}>

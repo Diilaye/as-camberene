@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useAuth, AuthProvider } from './hooks/useAuth';
+import { useAuth } from './hooks/useAuth';
+import { AuthProvider } from './hooks/AuthProvider';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -11,7 +12,6 @@ import Calendrier from './pages/Calendrier';
 import MatchDetail from './pages/MatchDetail';
 import NewsDetail from './pages/NewsDetail';
 import Players from './pages/Players';
-import PlayerDetail from './pages/PlayerDetail';
 import Teams from './pages/Teams';
 import EquipeA from './pages/EquipeA';
 import TeamDetail from './pages/TeamDetail';
@@ -29,6 +29,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Subscriptions from './pages/Subscriptions';
 import Gallery from './pages/Gallery';
+import AlbumDetail from './pages/AlbumDetail';
 import Billetterie from './pages/Billetterie';
 import Dons from './pages/Dons';
 import DonMerci from './pages/DonMerci';
@@ -55,7 +56,7 @@ import ContenuSiteAdmin from './pages/admin/ContenuSiteAdmin';
 import JoueurDuMoisAdmin from './pages/admin/JoueurDuMoisAdmin';
 import DonsAdmin from './pages/admin/DonsAdmin';
 import NotFound from './pages/NotFound';
-import { CartProvider } from './hooks/useCart';
+import { CartProvider } from './hooks/CartProvider';
 
 const InnerApp: React.FC = () => {
   const { loading, isStaff } = useAuth();
@@ -83,7 +84,6 @@ const InnerApp: React.FC = () => {
             <Route path="/news" element={<News />} />
             <Route path="/news/:id" element={<NewsDetail />} />
             <Route path="/players" element={<Players />} />
-            <Route path="/players/:id" element={<PlayerDetail />} />
             <Route path="/teams" element={<Teams />} />
             <Route path="/teams/:teamId" element={<TeamDetail />} />
             <Route path="/equipe-a" element={<EquipeA />} />
@@ -101,22 +101,14 @@ const InnerApp: React.FC = () => {
             <Route path="/commande" element={<Checkout />} />
             <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/galerie" element={<Gallery />} />
+            <Route path="/galerie/:id" element={<AlbumDetail />} />
             <Route path="/billetterie" element={<Billetterie />} />
             <Route path="/dons" element={<Dons />} />
             <Route path="/dons/merci" element={<DonMerci />} />
             <Route path="/login" element={<Login />} />
             <Route path="/inscription" element={<Register />} />
-            {/*
-              Administration.
-
-              Le tableau de bord n'exige qu'un compte de l'administration : il
-              s'adapte ensuite au profil. Les rubriques, elles, nomment le droit
-              qu'elles demandent — et c'est le serveur qui refuse les écritures,
-              pas cette garde.
-            */}
             <Route path="/admin" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/dashboard" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
-            {/* Alias avec faute potentielle 'dashbord' pour tolérance utilisateur */}
             <Route path="/admin/dashbord" element={<ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/equipes" element={<ProtectedRoute permission="players:write"><AdminLayout><EquipesAdmin /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/joueurs" element={<ProtectedRoute permission="players:write"><AdminLayout><Joueurs /></AdminLayout></ProtectedRoute>} />

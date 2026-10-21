@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError } from '../lib/api';
 
-
-
 export type ResourceSource = 'api' | 'fallback';
 
 export interface ApiResource<T> {
@@ -10,14 +8,11 @@ export interface ApiResource<T> {
   loading: boolean;
   error: ApiError | null;
   source: ResourceSource;
- 
   reload: () => void;
 }
 
 export interface ResourceOptions {
- 
   enabled?: boolean;
- 
   deps?: readonly unknown[];
 }
 
@@ -32,9 +27,6 @@ export function useApiResource<T>(
   const [source, setSource] = useState<ResourceSource>('fallback');
   const [attempt, setAttempt] = useState(0);
 
- 
- 
- 
   const loaderRef = useRef(loader);
   loaderRef.current = loader;
 

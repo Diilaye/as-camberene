@@ -1,17 +1,13 @@
-
-
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IHistoryEvent extends Document {
   _id: mongoose.Types.ObjectId;
   year: number;
- 
   dateLabel?: string;
   title: string;
   description: string;
   tags: string[];
   image?: string;
- 
   phase?: string;
 }
 

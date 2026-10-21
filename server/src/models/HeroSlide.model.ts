@@ -1,23 +1,14 @@
-
-
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IHeroSlide extends Document {
   _id: mongoose.Types.ObjectId;
- 
   image?: string;
- 
   youtube?: string;
- 
   kicker: string;
- 
   title: string;
- 
   link: string;
   linkLabel: string;
- 
   rank: number;
- 
   isVisible: boolean;
 }
 

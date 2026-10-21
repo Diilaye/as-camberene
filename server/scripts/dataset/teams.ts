@@ -1,4 +1,3 @@
-
 import { SeedTeam } from './types';
 
 export const seedTeams: SeedTeam[] = [

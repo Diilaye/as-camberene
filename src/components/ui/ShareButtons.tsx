@@ -2,20 +2,15 @@ import React, { useState } from 'react';
 import { Check, Facebook, Link2, MessageCircle, Share2, Twitter } from 'lucide-react';
 
 interface Props {
- 
   url?: string;
- 
   title: string;
- 
   label?: string;
   className?: string;
 }
 
-
 const ShareButtons: React.FC<Props> = ({ url, title, label = 'Partager', className = '' }) => {
   const [copied, setCopied] = useState(false);
 
- 
   const shareUrl = url ?? (typeof window !== 'undefined' ? window.location.href : '');
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
@@ -44,8 +39,7 @@ const ShareButtons: React.FC<Props> = ({ url, title, label = 'Partager', classNa
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Presse-papier refusé — page non sécurisée, permission refusée : on ne
-      // bloque pas le partage pour autant, les boutons réseaux restent là.
+      setCopied(false);
     }
   };
 
@@ -53,7 +47,7 @@ const ShareButtons: React.FC<Props> = ({ url, title, label = 'Partager', classNa
     try {
       await navigator.share({ title, url: shareUrl });
     } catch {
-      /* partage annulé par la personne : rien à signaler */
+      return;
     }
   };
 
@@ -92,7 +86,6 @@ const ShareButtons: React.FC<Props> = ({ url, title, label = 'Partager', classNa
         {copied ? <Check size={16} /> : <Link2 size={16} />}
       </button>
 
-      {/* Feuille de partage du système : présente surtout sur mobile. */}
       {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
         <button
           type="button"

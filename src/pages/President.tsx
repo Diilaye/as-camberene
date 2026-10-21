@@ -5,7 +5,6 @@ import PageHero from '../components/ui/PageHero';
 import { president, presidentAxes } from '../data/president';
 import { handleImageError } from '../lib/imagePlaceholder';
 
-
 const President: React.FC = () => (
   <div className="bg-graphite">
     <PageHero
@@ -17,7 +16,6 @@ const President: React.FC = () => (
     <section className="band-charcoal py-14">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="grid gap-10 lg:grid-cols-[320px_1fr] lg:gap-14">
-          {/* Colonne portrait : suit la lecture au défilement sur grand écran. */}
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.04]">
               <img
@@ -38,7 +36,6 @@ const President: React.FC = () => (
             </div>
           </aside>
 
-          {/* Colonne lettre */}
           <article className="max-w-3xl">
             <header className="border-l-2 border-club-yellow pl-5">
               <p className="text-lg font-extrabold uppercase leading-tight text-white md:text-xl">
@@ -81,7 +78,6 @@ const President: React.FC = () => (
       </div>
     </section>
 
-    {/* Les cinq axes du mandat */}
     <section className="band-green py-14">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <h2 className="section-title">Les cinq axes du mandat</h2>

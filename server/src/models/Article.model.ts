@@ -1,5 +1,3 @@
-
-
 import mongoose, { Document, Schema } from 'mongoose';
 
 export const ARTICLE_CATEGORIES = ['Matchs', 'Transferts', 'Équipe', 'Club'] as const;
@@ -18,7 +16,6 @@ export interface IArticle extends Document {
   content: string;
   excerpt: string;
   image: string;
- 
   imagePosition: string;
   category: ArticleCategory;
   publishedAt: Date;
@@ -53,8 +50,6 @@ const articleSchema = new Schema<IArticle>(
     image: { type: String, default: '', maxlength: 500 },
     imagePosition: { type: String, default: '50% 50%', maxlength: 20 },
     category: { type: String, enum: ARTICLE_CATEGORIES, default: 'Club', index: true },
-   
-   
     publishedAt: { type: Date, default: Date.now, index: true },
     author: { type: String, default: 'ASC Cambérène', trim: true, maxlength: 120 },
     status: { type: String, enum: ['draft', 'published'], default: 'draft', index: true },

@@ -1,4 +1,3 @@
-
 import { SeedHistoryEvent } from './types';
 
 export const seedHistoryEvents: SeedHistoryEvent[] = [

@@ -4,7 +4,6 @@ import { uploadImage } from '../../services/site/content.service';
 import { siteMediaUrl } from '../../services/site/media';
 import { ApiError } from '../../lib/api';
 
-
 const GalleryField: React.FC<{
   value: string[];
   onChange: (value: string[]) => void;
@@ -16,7 +15,7 @@ const GalleryField: React.FC<{
 
   const add = (image: string) => {
     const trimmed = image.trim();
-   
+
     if (!trimmed || value.includes(trimmed)) return;
     onChange([...value, trimmed]);
   };
@@ -27,7 +26,6 @@ const GalleryField: React.FC<{
     setUploading(true);
     setError('');
     try {
-     
       const uploaded: string[] = [];
       for (const file of Array.from(files)) {
         uploaded.push(await uploadImage(file));
@@ -37,7 +35,7 @@ const GalleryField: React.FC<{
       setError(cause instanceof ApiError ? cause.fullMessage : 'Téléversement impossible');
     } finally {
       setUploading(false);
-     
+
       if (inputRef.current) inputRef.current.value = '';
     }
   };
@@ -57,7 +55,6 @@ const GalleryField: React.FC<{
           value={url}
           onChange={(event) => setUrl(event.target.value)}
           onKeyDown={(event) => {
-           
             if (event.key !== 'Enter') return;
             event.preventDefault();
             add(url);

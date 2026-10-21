@@ -14,6 +14,8 @@ import {
   ReservationStatus,
   TicketReservation,
 } from '../../types';
+import AdminConfirmDelete from '../../components/admin/AdminConfirmDelete';
+import { formatDayMonth } from '../../lib/dates';
 
 const STATUS_STYLES: Record<ReservationStatus, string> = {
   nouvelle: 'bg-club-yellow/20 text-club-yellow',
@@ -21,16 +23,6 @@ const STATUS_STYLES: Record<ReservationStatus, string> = {
   honoree: 'bg-white/10 text-white/60',
   annulee: 'bg-red-500/20 text-red-300',
 };
-
-const formatDate = (value?: string): string =>
-  value
-    ? new Date(`${value}T12:00:00`).toLocaleDateString('fr-FR', {
-        weekday: 'short',
-        day: '2-digit',
-        month: 'short',
-      })
-    : '—';
-
 
 const BilletterieAdmin: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -78,15 +70,12 @@ const BilletterieAdmin: React.FC = () => {
     });
   }, [reservations, query, statusFilter]);
 
- 
   const groups = useMemo(() => {
     const byMatch = new Map<string, { label: string; date: string; rows: TicketReservation[] }>();
 
     filtered.forEach((reservation) => {
       const match = reservation.match;
-     
-     
-     
+
       const key = match?.id ? String(match.id) : 'sans-match';
       const label = match
         ? match.venue === 'Domicile'
@@ -109,13 +98,17 @@ const BilletterieAdmin: React.FC = () => {
     };
   }, [reservations]);
 
- 
   const saveNote = async (reservation: TicketReservation) => {
     if (!noteDraft || noteDraft.id !== reservation.id) return;
     const value = noteDraft.value;
     setNoteDraft(null);
     if (value === reservation.note) return;
     await run(() => updateReservation(reservation.id, { note: value }));
+  };
+
+  const confirmRemoval = async () => {
+    if (!confirmDelete) return;
+    if (await run(() => deleteReservation(confirmDelete))) setConfirmDelete(null);
   };
 
   return (
@@ -184,7 +177,7 @@ const BilletterieAdmin: React.FC = () => {
                   <h3 className="text-sm font-bold uppercase tracking-wide text-white">
                     {group.label}
                     <span className="ml-2 font-normal normal-case text-white/40">
-                      {formatDate(group.date)}
+                      {formatDayMonth(group.date, '—')}
                     </span>
                   </h3>
                   <p className="flex items-center gap-1.5 text-xs text-club-yellow">
@@ -290,38 +283,14 @@ const BilletterieAdmin: React.FC = () => {
       )}
 
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-graphite/90 backdrop-blur-sm"
-            onClick={() => setConfirmDelete(null)}
-          />
-          <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.05] p-6">
-            <h4 className="mb-2 text-sm font-semibold text-white">Supprimer la réservation</h4>
-            <p className="mb-4 text-xs text-white/60">
-              Le supporter n’en sera pas averti. Pour garder la trace d’un désistement, préférez
-              l’état « Annulée ».
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(null)}
-                className="rounded-full bg-white/5 px-4 py-1.5 text-xs text-white/70 hover:bg-white/10"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  if (await run(() => deleteReservation(confirmDelete))) setConfirmDelete(null);
-                }}
-                disabled={saving}
-                className="rounded-full bg-red-500/30 px-4 py-1.5 text-xs text-red-200 hover:bg-red-500/40 disabled:opacity-60"
-              >
-                {saving ? 'Suppression…' : 'Supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminConfirmDelete
+          title="Supprimer la réservation"
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={confirmRemoval}
+          saving={saving}
+        >
+          Le supporter n’en sera pas averti. Pour garder la trace d’un désistement, préférez l’état « Annulée ».
+        </AdminConfirmDelete>
       )}
     </div>
   );

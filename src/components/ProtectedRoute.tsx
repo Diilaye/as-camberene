@@ -6,10 +6,8 @@ import LoadingSpinner from './LoadingSpinner';
 
 interface Props {
   children: React.ReactNode;
- 
   permission?: Permission;
 }
-
 
 const ProtectedRoute: React.FC<Props> = ({ children, permission }) => {
   const { user, loading } = useAuth();
@@ -23,11 +21,8 @@ const ProtectedRoute: React.FC<Props> = ({ children, permission }) => {
     );
   }
 
- 
- 
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
 
- 
   if (!isStaffRole(user.role)) return <Navigate to="/" replace />;
 
   if (permission && !user.permissions.includes(permission)) {

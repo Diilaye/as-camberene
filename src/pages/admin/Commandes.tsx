@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronDown, Package, Phone, Search, Store, Truck } from 'lucide-react';
 import { ApiError } from '../../lib/api';
 import { formatCFA } from '../../lib/currency';
+import { formatDateTime } from '../../lib/dates';
 import { Order, ORDER_STATUSES, OrderStatus } from '../../types';
 import {
   FULFILMENT_LABELS,
@@ -18,16 +19,6 @@ const STATUS_BADGE: Record<OrderStatus, string> = {
   remise: 'bg-club-green text-white',
   annulee: 'bg-red-500/20 text-red-200',
 };
-
-const formatDate = (value: string) =>
-  new Date(value).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
 
 const Commandes: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -53,7 +44,6 @@ const Commandes: React.FC = () => {
     [search, statusFilter]
   );
 
- 
   useEffect(() => {
     const controller = new AbortController();
     const timer = setTimeout(() => void load(controller.signal), 250);
@@ -63,7 +53,6 @@ const Commandes: React.FC = () => {
     };
   }, [load]);
 
- 
   const counts = useMemo(() => {
     const byStatus = {} as Record<OrderStatus, number>;
     orders.forEach((order) => {
@@ -72,7 +61,6 @@ const Commandes: React.FC = () => {
     return byStatus;
   }, [orders]);
 
- 
   const revenue = useMemo(
     () => orders.filter((order) => order.status !== 'annulee').reduce((sum, o) => sum + o.total, 0),
     [orders]
@@ -105,7 +93,6 @@ const Commandes: React.FC = () => {
 
       <AdminError error={error} onRetry={() => void load()} />
 
-      {/* Filtres */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
@@ -147,7 +134,6 @@ const Commandes: React.FC = () => {
         </div>
       </div>
 
-      {/* Liste */}
       {loading ? (
         <AdminLoading label="Chargement des commandes…" />
       ) : orders.length === 0 ? (
@@ -190,7 +176,7 @@ const Commandes: React.FC = () => {
                           {order.fulfilment === 'retrait' ? <Store size={11} /> : <Truck size={11} />}
                           {FULFILMENT_LABELS[order.fulfilment]}
                         </span>
-                        <span className="hidden sm:inline">{formatDate(order.created_at)}</span>
+                        <span className="hidden sm:inline">{formatDateTime(order.created_at)}</span>
                       </p>
                     </div>
                   </button>

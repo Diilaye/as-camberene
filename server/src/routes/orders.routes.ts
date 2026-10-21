@@ -1,5 +1,3 @@
-
-
 import { Router } from 'express';
 import Order, { generateReference, ORDER_STATUSES } from '../models/Order.model';
 import Product from '../models/Product.model';
@@ -12,14 +10,12 @@ const router = Router();
 
 const requireShop = requirePermission('orders:manage');
 
-
 router.post(
   '/',
   optionalAuth,
   handler(async (req, res) => {
     const value = await createOrderSchema.validateAsync(req.body, { stripUnknown: true });
 
-   
     const ids = value.items.map((item: { product_id: string }) => item.product_id);
     const products = await Product.find({ _id: { $in: ids } });
     const byId = new Map(products.map((product) => [String(product._id), product]));
@@ -27,8 +23,6 @@ router.post(
     const items = value.items.map((line: { product_id: string; size: string; quantity: number }) => {
       const product = byId.get(line.product_id);
 
-     
-     
       if (!product || product.isVisible === false) {
         throw new HttpError(409, "Un article du panier n'est plus disponible", [
           product ? `${product.name} a été retiré de la boutique` : 'Article introuvable',
@@ -77,7 +71,6 @@ router.post(
     res.status(201).json({ success: true, data: order });
   })
 );
-
 
 router.get(
   '/',
@@ -133,9 +126,6 @@ router.put(
     const order = await Order.findById(req.params.id);
     if (!order) throw notFound('Commande introuvable');
 
-   
-   
-   
     if (value.status !== undefined) order.status = value.status;
     if (value.note !== undefined) order.note = value.note;
     await order.save();

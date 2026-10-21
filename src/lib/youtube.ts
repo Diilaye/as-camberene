@@ -1,5 +1,3 @@
-
-
 const ID_PATTERN = /^[\w-]{11}$/;
 
 export const youtubeId = (input: string): string | null => {
@@ -20,18 +18,16 @@ export const youtubeId = (input: string): string | null => {
       const param = url.searchParams.get('v');
       if (param && ID_PATTERN.test(param)) return param;
 
-     
       const segments = url.pathname.split('/').filter(Boolean);
       const last = segments[segments.length - 1];
       if (last && ID_PATTERN.test(last)) return last;
     }
   } catch {
-    // Chaîne qui n'est ni un identifiant ni une URL : on le dit à l'appelant.
+    return null;
   }
 
   return null;
 };
-
 
 export const formatVideoTime = (seconds: number): string => {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
@@ -42,8 +38,6 @@ export const formatVideoTime = (seconds: number): string => {
   const pad = (value: number) => String(value).padStart(2, '0');
   return hours > 0 ? `${hours}:${pad(minutes)}:${pad(rest)}` : `${minutes}:${pad(rest)}`;
 };
-
-
 
 interface YouTubePlayer {
   playVideo(): void;
@@ -70,7 +64,6 @@ declare global {
 export type { YouTubePlayer };
 
 let pending: Promise<YouTubeApi> | null = null;
-
 
 export const loadYouTubeApi = (): Promise<YouTubeApi> => {
   if (pending) return pending;

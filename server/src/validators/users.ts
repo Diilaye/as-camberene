@@ -18,7 +18,7 @@ export const createUserSchema = Joi.object({
     .valid(...ASSIGNABLE_ROLES)
     .required()
     .messages({ 'any.only': 'Profil inconnu', 'any.required': 'Profil requis' }),
- 
+
   password: password.optional(),
   is_active: Joi.boolean().default(true),
 });

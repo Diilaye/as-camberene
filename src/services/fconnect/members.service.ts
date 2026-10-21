@@ -1,15 +1,11 @@
-
-
 import { FcTeam, FcTeamPlayerRef } from '../../types/fconnect';
 import { getTeams, TeamFilters } from './teams.service';
 
 const isPopulated = (value: FcTeamPlayerRef | string): value is FcTeamPlayerRef =>
   typeof value === 'object' && value !== null;
 
-
-export const rosterOf = (team: FcTeam): FcTeamPlayerRef[] =>
+const rosterOf = (team: FcTeam): FcTeamPlayerRef[] =>
   (team.players ?? []).filter(isPopulated);
-
 
 export const getClubRoster = async (
   filters: TeamFilters = {},

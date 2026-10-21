@@ -1,5 +1,3 @@
-
-
 import { NextFunction, Request, Response } from 'express';
 import SiteUser from '../models/SiteUser.model';
 import { TokenPayload, verify } from '../lib/tokens';
@@ -20,16 +18,20 @@ const bearerToken = (req: Request): string | null => {
   return header?.startsWith('Bearer ') ? header.slice(7) : null;
 };
 
+const verifyOptional = (token: string): TokenPayload | null => {
+  try {
+    return verify(token, 'access');
+  } catch {
+    return null;
+  }
+};
+
 export const optionalAuth = (req: Request, _res: Response, next: NextFunction): void => {
   const token = bearerToken(req);
   if (!token) return next();
 
-  try {
-    req.auth = verify(token, 'access');
-  } catch {
-    // Jeton absent, expiré ou douteux : la requête continue en anonyme. Les
-    // routes qui exigent un compte le refuseront elles-mêmes.
-  }
+  const payload = verifyOptional(token);
+  if (payload) req.auth = payload;
   next();
 };
 
@@ -44,8 +46,6 @@ export const authenticate = (req: Request, _res: Response, next: NextFunction): 
     return next(error);
   }
 
- 
- 
   SiteUser.findById(payload.userId)
     .select('role is_active')
     .then((account) => {
@@ -55,7 +55,6 @@ export const authenticate = (req: Request, _res: Response, next: NextFunction): 
     })
     .catch(next);
 };
-
 
 export const requirePermission =
   (permission: Permission) =>
@@ -68,14 +67,6 @@ export const requirePermission =
     }
     next();
   };
-
-
-export const requireStaff = (req: Request, _res: Response, next: NextFunction): void => {
-  if (!req.auth) return next(unauthorized());
-  if (!isStaffRole(req.auth.role)) return next(forbidden("Réservé à l'administration du site"));
-  next();
-};
-
 
 export const canPreviewDrafts = (req: Request): boolean =>
   Boolean(req.auth && isStaffRole(req.auth.role));

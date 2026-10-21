@@ -1,5 +1,3 @@
-
-
 import { fconnectApi } from '../../lib/api';
 import { CLUB_ID } from '../../config/env';
 import { FcDataResponse, FcTeam, FcTeamCategory } from '../../types/fconnect';
@@ -18,8 +16,6 @@ export const getTeams = async (
 ): Promise<FcTeam[]> => {
   const response = await fconnectApi.get<FcDataResponse<FcTeam[]>>(`/clubs/${CLUB_ID}/teams`, {
     query: {
-     
-     
       status: filters.status ?? 'active',
       category: filters.category,
       season: filters.season,
@@ -28,11 +24,5 @@ export const getTeams = async (
     },
     signal,
   });
-  return response.data;
-};
-
-
-export const getTeam = async (teamId: string, signal?: AbortSignal): Promise<FcTeam> => {
-  const response = await fconnectApi.get<FcDataResponse<FcTeam>>(`/clubs/teams/${teamId}`, { signal });
   return response.data;
 };

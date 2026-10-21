@@ -10,6 +10,7 @@ import { getClubRoster } from '../../services/fconnect/members.service';
 import { isFconnectConfigured } from '../../config/env';
 import { AdminError } from '../../components/admin/AdminFeedback';
 import { formatCFA } from '../../lib/currency';
+import { formatDate } from '../../lib/dates';
 import { ROLE_LABELS } from '../../lib/roles';
 
 const Card: React.FC<{ title: string; value: string | number; sub: string }>=({title,value,sub})=> (
@@ -121,7 +122,6 @@ const Dashboard: React.FC = () => {
         onRetry={() => { articlesResource.reload(); productsResource.reload(); ordersResource.reload(); }}
       />
 
-      {/* Cartes principales */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         <Card title="Joueurs" value={players.length} sub={isFconnectConfigured() ? 'Effectif fconnect' : 'fconnect non relié'} />
         {canArticles && (
@@ -141,7 +141,6 @@ const Dashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Distribution & Résumé */}
       <div className="grid xl:grid-cols-3 gap-8">
         <div className="xl:col-span-2 grid md:grid-cols-2 gap-8">
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6">
@@ -167,7 +166,6 @@ const Dashboard: React.FC = () => {
         </div>
         <div className="bg-gradient-to-br from-club-yellow/10 to-transparent border border-club-yellow/20 rounded-2xl p-6">
           <h3 className="font-semibold text-white mb-4 flex items-center gap-2 text-sm uppercase tracking-wide"><Sparkles size={14}/>Actions rapides</h3>
-          {/* Chaque raccourci n'apparaît que pour le profil qui peut le suivre. */}
           <div className="space-y-3 text-sm">
             {canArticles && (
               <a href="/admin/articles" className="flex items-center gap-2 group text-white/70 hover:text-white"><Plus size={14} className="text-club-yellow"/>Nouvelle actualité</a>
@@ -192,7 +190,6 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Listes récentes — chacune n'apparaît que pour qui peut agir dessus */}
       <div className="grid lg:grid-cols-2 gap-8">
         {canArticles && (
         <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6">
@@ -204,7 +201,7 @@ const Dashboard: React.FC = () => {
                   <p className="text-white/85 font-medium line-clamp-1">{a.title}</p>
                   <p className="text-[10px] text-white/40 line-clamp-1">{a.category}</p>
                 </div>
-                <span className="text-[10px] text-white/40">{new Date(a.publishedAt).toLocaleDateString('fr-FR')}</span>
+                <span className="text-[10px] text-white/40">{formatDate(a.publishedAt)}</span>
               </li>
             ))}
             {lastArticles.length===0 && <li className="text-white/40">Aucun article</li>}
@@ -248,7 +245,6 @@ const Dashboard: React.FC = () => {
         </div>
         )}
       </div>
-      {/* Confirm Logout */}
       {confirm && (
         <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-graphite/90 backdrop-blur-sm" onClick={()=>setConfirm(false)} />

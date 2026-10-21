@@ -1,6 +1,4 @@
-
 import { SeedMatch } from './types';
-
 
 const day = (offset: number): string => {
   const date = new Date();

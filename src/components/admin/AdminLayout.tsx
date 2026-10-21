@@ -37,8 +37,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex bg-graphite text-white/85">
-      {/* Sidebar */}
-      <div className={`${open ? 'w-60' : 'w-20'} transition-all duration-300 bg-graphite/90 backdrop-blur-xl border-r border-white/10 flex flex-col relative`}>        
+      <div className={`${open ? 'w-60' : 'w-20'} transition-all duration-300 bg-graphite/90 backdrop-blur-xl border-r border-white/10 flex flex-col relative`}>
         <div className="p-5 flex items-center gap-3 border-b border-white/5">
           <div className="w-11 h-11 rounded-xl bg-club-yellow flex items-center justify-center"><Shield size={22} className="text-black" /></div>
           {open && <div className="leading-tight">
@@ -67,7 +66,6 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
         </nav>
         <div className="px-4 py-3 border-t border-white/5 text-[10px] text-white/40">© {new Date().getFullYear()} ASC Cambérène</div>
       </div>
-      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-graphite/70 backdrop-blur-xl">
           <h1 className="text-lg font-semibold text-white">Espace administration</h1>

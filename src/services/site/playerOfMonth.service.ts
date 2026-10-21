@@ -1,4 +1,5 @@
 import { siteApi } from '../../lib/api';
+import { formatMonthYear } from '../../lib/dates';
 import { siteMediaUrl } from './media';
 
 export interface PotmNominee {
@@ -10,12 +11,19 @@ export interface PotmNominee {
   position: string;
 }
 
+export interface PotmCurrentNominee extends PotmNominee {
+  votes: number;
+  percent: number;
+}
+
 export interface PotmCurrent {
   id: string;
   month: string;
   title: string;
   status: 'open' | 'closed';
-  nominees: PotmNominee[];
+  nominees: PotmCurrentNominee[];
+  totalVotes: number;
+  resultsRevealed: boolean;
   myVote: string | null;
   winner: string | null;
 }
@@ -26,7 +34,7 @@ export interface PotmAdmin {
   title: string;
   status: 'open' | 'closed';
   totalVotes: number;
-  results: (PotmNominee & { votes: number })[];
+  results: (PotmNominee & { votes: number; percent: number })[];
 }
 
 const withPhoto = <T extends PotmNominee>(nominee: T): T => ({ ...nominee, photo: siteMediaUrl(nominee.photo) });
@@ -54,6 +62,6 @@ export const updatePotm = (id: string, payload: Partial<{ title: string; nominee
 export const deletePotm = (id: string) => siteApi.del(`/player-of-month/${id}`, { auth: true });
 
 export const monthName = (month: string): string => {
-  const label = new Date(`${month}-15T12:00:00`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  const label = formatMonthYear(`${month}-15`);
   return label.charAt(0).toUpperCase() + label.slice(1);
 };

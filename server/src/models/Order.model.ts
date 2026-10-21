@@ -1,5 +1,3 @@
-
-
 import crypto from 'crypto';
 import mongoose, { Document, Schema } from 'mongoose';
 
@@ -30,10 +28,8 @@ export interface IOrder extends Document {
   payment_method: (typeof PAYMENT_METHODS)[number];
   status: OrderStatus;
   note?: string;
- 
   placed_by?: mongoose.Types.ObjectId;
 }
-
 
 export const generateReference = (): string => {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

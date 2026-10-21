@@ -2,34 +2,9 @@ import type { Permission, UserRole } from '../lib/roles';
 
 export type { Permission, UserRole };
 
-
 export type EntityId = string | number;
 
-export interface Player {
-  id: EntityId;
-  name: string;
-  number: number;
-  position: string;
-  nationality: string;
-  age: number;
-  photo: string;
-  stats: {
-    matches: number;
-    goals: number;
-    assists: number;
-  };
-  biography: string;
-  joinedYear: number;
-}
-
-
-
-
-export const PLAYER_TEAMS = ['equipe-a', 'equipe-u19', 'equipe-u17', 'equipe-u15', 'equipe-u12'] as const;
-
-
 export type PlayerTeam = string;
-
 
 export const PLAYER_TEAM_LABELS: Record<string, string> = {
   'equipe-a': 'Équipe A',
@@ -38,7 +13,6 @@ export const PLAYER_TEAM_LABELS: Record<string, string> = {
   'equipe-u15': 'U15',
   'equipe-u12': 'U12',
 };
-
 
 export const PLAYER_LINES = ['Gardien', 'Défenseur', 'Milieu', 'Attaquant'] as const;
 export type PlayerLine = (typeof PLAYER_LINES)[number];
@@ -52,7 +26,6 @@ export type PlayerStatus = (typeof PLAYER_STATUSES)[number];
 export const STRONG_FEET = ['droit', 'gauche', 'les deux'] as const;
 export type StrongFoot = (typeof STRONG_FEET)[number];
 
-
 export interface TeamMember {
   id: string;
   kind: PlayerKind;
@@ -65,7 +38,6 @@ export interface TeamMember {
   photo: string;
   status: PlayerStatus;
   birthDate: string | null;
- 
   age: number;
   nationality: string;
   height: number;
@@ -76,7 +48,6 @@ export interface TeamMember {
   joinedYear: number;
   rank: number;
   isVisible: boolean;
- 
   isFeatured?: boolean;
 }
 
@@ -98,7 +69,6 @@ export interface Article {
   content: string;
   excerpt: string;
   image: string;
- 
   imagePosition?: string;
   category: ArticleCategory;
   publishedAt: string;
@@ -125,11 +95,8 @@ export interface Product {
   description: string;
   sizes: string[];
   inStock: boolean;
- 
   isVisible?: boolean;
 }
-
-
 
 export const ORDER_STATUSES = ['recue', 'preparee', 'remise', 'annulee'] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
@@ -137,9 +104,7 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export const FULFILMENTS = ['retrait', 'livraison'] as const;
 export type Fulfilment = (typeof FULFILMENTS)[number];
 
-export const PAYMENT_METHODS = ['a_la_remise', 'mobile_money'] as const;
-export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
-
+export type PaymentMethod = 'a_la_remise' | 'mobile_money';
 
 export interface OrderItem {
   product?: string;
@@ -174,13 +139,11 @@ export interface CartItem {
 export const GALLERY_CATEGORIES = ['match', 'entrainement', 'club'] as const;
 export type GalleryCategory = (typeof GALLERY_CATEGORIES)[number];
 
-
 export const GALLERY_CATEGORY_LABELS: Record<GalleryCategory, string> = {
   match: 'Matchs',
   entrainement: 'Entraînements',
   club: 'Vie du club',
 };
-
 
 export interface GalleryItem {
   id: EntityId;
@@ -188,13 +151,26 @@ export interface GalleryItem {
   title: string;
   description: string;
   category: GalleryCategory;
- 
   match?: string | null;
- 
+  album?: string | null;
   date?: string;
   rank?: number;
   isVisible?: boolean;
- 
+  createdAt?: string;
+}
+
+export interface Album {
+  id: EntityId;
+  title: string;
+  description: string;
+  cover: string;
+  category: GalleryCategory;
+  match?: string | null;
+  date?: string;
+  rank?: number;
+  isVisible?: boolean;
+  photoCount?: number;
+  photos?: GalleryItem[];
   createdAt?: string;
 }
 
@@ -207,7 +183,6 @@ export const RESERVATION_STATUS_LABELS: Record<ReservationStatus, string> = {
   honoree: 'Retirée au guichet',
   annulee: 'Annulée',
 };
-
 
 export interface TicketReservation {
   id: string;
@@ -226,13 +201,11 @@ export interface TicketReservation {
 export const TEAM_CATEGORIES = ['senior', 'youth'] as const;
 export type TeamCategory = (typeof TEAM_CATEGORIES)[number];
 
-
 export interface Team {
   id: EntityId;
   slug: string;
   name: string;
   category: TeamCategory;
- 
   ageRange: string;
   subtitle: string;
   description: string;
@@ -247,25 +220,20 @@ export interface Team {
   isVisible?: boolean;
 }
 
-
 export const MATCH_VENUES = ['Domicile', 'Extérieur'] as const;
 export type MatchVenue = (typeof MATCH_VENUES)[number];
 
 export const MATCH_STATUSES = ['À venir', 'En cours', 'Terminé'] as const;
 export type MatchStatus = (typeof MATCH_STATUSES)[number];
 
-
 export const SCORER_SIDES = ['club', 'opponent'] as const;
 export type ScorerSide = (typeof SCORER_SIDES)[number];
-
 
 export interface MatchScorer {
   player?: string | null;
   name: string;
- 
   minute: number;
   side: ScorerSide;
- 
   assistName?: string;
   assistPlayer?: string | null;
 }
@@ -273,21 +241,17 @@ export interface MatchScorer {
 export interface Match {
   id: EntityId;
   opponent: string;
- 
   date: string;
- 
   time: string;
   venue: MatchVenue;
   competition: string;
- 
   result?: {
     home: number;
     away: number;
   } | null;
   status: MatchStatus;
- 
   scorers?: MatchScorer[];
- 
+  liveTime?: string;
   image?: string;
 }
 
@@ -304,7 +268,6 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
- 
   permissions: Permission[];
   subscription?: Subscription;
   favoriteTeam?: string;
@@ -329,39 +292,29 @@ export interface Legend {
   jerseyNumber: number;
   era: LegendEra;
   isHallOfFame: boolean;
- 
   rank?: number;
 }
 
-
 export interface HeroSlide {
   id: EntityId;
- 
   image?: string;
- 
   youtube?: string;
- 
   kicker: string;
- 
   title: string;
   link: string;
   linkLabel: string;
- 
   rank?: number;
   isVisible?: boolean;
 }
 
 export interface HistoryEvent {
   id: EntityId;
- 
   year: number;
- 
   dateLabel?: string;
   title: string;
   description: string;
   tags?: string[];
   image?: string;
- 
   phase?: string;
 }
 

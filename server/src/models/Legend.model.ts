@@ -1,5 +1,3 @@
-
-
 import mongoose, { Document, Schema } from 'mongoose';
 
 export const LEGEND_ERAS = ['Golden Age', 'Modern Era', 'Classic Era'] as const;
@@ -18,7 +16,6 @@ export interface ILegend extends Document {
   jerseyNumber: number;
   era: (typeof LEGEND_ERAS)[number];
   isHallOfFame: boolean;
- 
   rank: number;
 }
 

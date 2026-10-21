@@ -90,7 +90,6 @@ const PAYMENT_METHODS = [
   { value: 'installments', label: 'Paiement en trois fois' },
 ];
 
-
 const Subscriptions: React.FC = () => {
   const [planId, setPlanId] = useState<Plan['id'] | ''>('');
   const [seatId, setSeatId] = useState('');
@@ -112,7 +111,6 @@ const Subscriptions: React.FC = () => {
         description="Prenez votre place au stade municipal de Cambérène pour toute la saison."
       />
 
-      {/* Avantages */}
       <section className="border-b border-white/10 bg-charcoal">
         <div className="site-container grid gap-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
           {BENEFITS.map(({ icon: Icon, title, description }) => (
@@ -125,7 +123,6 @@ const Subscriptions: React.FC = () => {
         </div>
       </section>
 
-      {/* Formules */}
       <section className="band-green py-12">
         <div className="site-container">
           <h2 className="section-title mb-8">Choisissez votre formule</h2>
@@ -178,7 +175,6 @@ const Subscriptions: React.FC = () => {
         </div>
       </section>
 
-      {/* Emplacement dans le stade */}
       {selectedPlan && (
         <section className="band-charcoal py-12">
           <div className="site-container">
@@ -212,7 +208,6 @@ const Subscriptions: React.FC = () => {
         </section>
       )}
 
-      {/* Coordonnées et paiement */}
       {selectedPlan && seatId && (
         <section className="band-graphite py-12">
           <div className="mx-auto max-w-3xl px-4 sm:px-6">

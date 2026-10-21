@@ -4,15 +4,13 @@ import { ArrowLeft, Calendar, Clock, MapPin, Ticket, Trophy } from 'lucide-react
 import { useMatch, useMatchGallery } from '../hooks/useContent';
 import { isOver } from '../lib/matches';
 import { handleImageError } from '../lib/imagePlaceholder';
+import { formatLongDate } from '../lib/dates';
 import { siteMediaUrl } from '../services/site/media';
 import { Match, MatchScorer } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const CLUB = 'ASC Cambérène';
 const CLUB_LOGO = '/assets/img/asc-camberene-logo-officiel.png';
-
-const dateLabel = (date: string) =>
-  new Date(`${date}T12:00:00`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 const scoreOf = (match: Match) => {
   if (!match.result) return null;
@@ -114,7 +112,6 @@ const MatchDetail: React.FC = () => {
 
   return (
     <div className="bg-graphite">
-      {/* Tableau de score */}
       <section className="band-green pb-12 pt-32">
         <div className="site-container max-w-4xl">
           <Link to="/calendrier" className="mb-8 inline-flex items-center gap-2 text-sm font-bold uppercase text-white/70 transition-colors hover:text-club-yellow">
@@ -123,7 +120,7 @@ const MatchDetail: React.FC = () => {
 
           <div className="mb-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/70">
             <span className="flex items-center gap-1.5 font-bold uppercase text-club-yellow"><Trophy size={15} /> {match.competition}</span>
-            <span className="flex items-center gap-1.5 capitalize"><Calendar size={15} /> {dateLabel(match.date)}</span>
+            <span className="flex items-center gap-1.5 capitalize"><Calendar size={15} /> {formatLongDate(match.date)}</span>
             <span className="flex items-center gap-1.5"><Clock size={15} /> {match.time}</span>
             <span className="flex items-center gap-1.5"><MapPin size={15} /> {match.venue}</span>
           </div>
@@ -168,7 +165,6 @@ const MatchDetail: React.FC = () => {
 
       <section className="band-charcoal py-12">
         <div className="site-container grid max-w-5xl gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
-          {/* Feuille de match */}
           <div>
             <h2 className="section-title mb-6">Feuille de match</h2>
             {goals.length > 0 ? (
@@ -182,7 +178,7 @@ const MatchDetail: React.FC = () => {
                         {goal.minute ? `${goal.minute}’` : '—'}
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate font-extrabold uppercase text-white">⚽ {goal.name}</p>
+                        <p className="truncate font-extrabold uppercase text-white">{goal.name}</p>
                         <p className="text-xs text-white/50">
                           {ours ? CLUB : match.opponent}
                           {ours && goal.assistName ? ` · passe décisive de ${goal.assistName}` : ''}
@@ -199,7 +195,6 @@ const MatchDetail: React.FC = () => {
             )}
           </div>
 
-          {/* Statistiques */}
           <aside>
             <h2 className="section-title mb-6">Statistiques</h2>
             {score ? (
@@ -218,7 +213,6 @@ const MatchDetail: React.FC = () => {
         </div>
       </section>
 
-      {/* Affiche et photos du match */}
       {(match.image || photos.length > 0) && (
         <section className="band-graphite py-12">
           <div className="site-container max-w-5xl">

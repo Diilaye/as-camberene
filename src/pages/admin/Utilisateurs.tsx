@@ -12,6 +12,8 @@ import {
   updateUser,
 } from '../../services/site/users.service';
 import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
+import AdminConfirmDelete from '../../components/admin/AdminConfirmDelete';
+import { formatShortDate } from '../../lib/dates';
 
 const ROLE_BADGE: Record<UserRole, string> = {
   superadmin: 'bg-club-yellow text-black',
@@ -22,7 +24,6 @@ const ROLE_BADGE: Record<UserRole, string> = {
 };
 
 const EMPTY_FORM = { name: '', email: '', role: 'journalist' as UserRole, password: '' };
-
 
 const Utilisateurs: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -39,7 +40,6 @@ const Utilisateurs: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
- 
   const [revealed, setRevealed] = useState<{ email: string; password: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -60,7 +60,6 @@ const Utilisateurs: React.FC = () => {
     [search, roleFilter]
   );
 
- 
   useEffect(() => {
     const controller = new AbortController();
     const timer = setTimeout(() => void load(controller.signal), 250);
@@ -100,7 +99,6 @@ const Utilisateurs: React.FC = () => {
     }
   };
 
- 
   const patch = async (entry: SiteUser, payload: { role?: UserRole; is_active?: boolean }) => {
     setError(null);
     try {
@@ -140,8 +138,7 @@ const Utilisateurs: React.FC = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Presse-papiers refusé (contexte non sécurisé) : le mot de passe reste
-      // affiché, il suffit de le sélectionner.
+      setCopied(false);
     }
   };
 
@@ -172,7 +169,6 @@ const Utilisateurs: React.FC = () => {
 
       <AdminError error={error} onRetry={() => void load()} />
 
-      {/* Mot de passe généré : visible une seule fois */}
       {revealed && (
         <div className="rounded-2xl border border-club-yellow/40 bg-club-yellow/10 p-5">
           <p className="text-sm font-bold uppercase text-club-yellow">
@@ -204,7 +200,6 @@ const Utilisateurs: React.FC = () => {
         </div>
       )}
 
-      {/* Création */}
       {formOpen && (
         <form
           onSubmit={handleCreate}
@@ -287,7 +282,6 @@ const Utilisateurs: React.FC = () => {
         </form>
       )}
 
-      {/* Filtres */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
@@ -320,7 +314,6 @@ const Utilisateurs: React.FC = () => {
         </div>
       </div>
 
-      {/* Liste */}
       {loading ? (
         <AdminLoading label="Chargement des comptes…" />
       ) : users.length === 0 ? (
@@ -352,8 +345,7 @@ const Utilisateurs: React.FC = () => {
 
                     <td className="px-5 py-4">
                       {isSelf ? (
-                       
-                       
+
                         <span className={`inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase ${ROLE_BADGE[entry.role]}`}>
                           {ROLE_LABELS[entry.role]}
                         </span>
@@ -387,13 +379,7 @@ const Utilisateurs: React.FC = () => {
                     </td>
 
                     <td className="px-5 py-4 text-xs text-white/50">
-                      {entry.last_login_at
-                        ? new Date(entry.last_login_at).toLocaleDateString('fr-FR', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                          })
-                        : 'Jamais'}
+                      {formatShortDate(entry.last_login_at, 'Jamais')}
                     </td>
 
                     <td className="px-5 py-4">
@@ -425,34 +411,21 @@ const Utilisateurs: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation de suppression */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70" onClick={() => setConfirmDelete(null)} />
-          <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-graphite p-6">
-            <h4 className="mb-2 text-sm font-semibold text-white">Supprimer ce compte ?</h4>
-            <p className="mb-5 text-xs text-white/60">
-              {confirmDelete.name} ({confirmDelete.email}) perdra son accès immédiatement. Pour un
-              retrait temporaire, préférez la désactivation.
-            </p>
-            <div className="flex justify-end gap-3 text-xs">
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(null)}
-                className="rounded-full bg-white/5 px-4 py-2 text-white/70 hover:bg-white/10"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleDelete(confirmDelete)}
-                className="rounded-full bg-red-500 px-4 py-2 font-semibold text-white hover:bg-red-600"
-              >
-                Supprimer
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminConfirmDelete
+          title="Supprimer ce compte ?"
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={() => void handleDelete(confirmDelete)}
+          backdropClassName="absolute inset-0 bg-black/70"
+          cardClassName="relative w-full max-w-sm rounded-2xl border border-white/10 bg-graphite p-6"
+          cancelClassName="rounded-full bg-white/5 px-4 py-2 text-white/70 hover:bg-white/10"
+          confirmClassName="rounded-full bg-red-500 px-4 py-2 font-semibold text-white hover:bg-red-600"
+        >
+          <p className="mb-5 text-xs text-white/60">
+            {confirmDelete.name} ({confirmDelete.email}) perdra son accès immédiatement. Pour un
+            retrait temporaire, préférez la désactivation.
+          </p>
+        </AdminConfirmDelete>
       )}
     </div>
   );

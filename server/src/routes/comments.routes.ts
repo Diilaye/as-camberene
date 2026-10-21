@@ -1,5 +1,3 @@
-
-
 import { Router } from 'express';
 import Article from '../models/Article.model';
 import { handler, notFound } from '../lib/http';
@@ -23,7 +21,6 @@ router.post(
   handler(async (req, res) => {
     const value = await commentSchema.validateAsync(req.body, { stripUnknown: true });
 
-   
     const article = await Article.findOne({ _id: req.params.articleId, status: 'published' });
     if (!article) throw notFound('Article introuvable');
 

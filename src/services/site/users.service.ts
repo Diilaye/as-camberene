@@ -1,8 +1,7 @@
-
-
 import { siteApi } from '../../lib/api';
-import { Permission, UserRole } from '../../lib/roles';
+import { UserRole } from '../../lib/roles';
 import { SiteUser } from './auth.service';
+import { ListResponse } from './content.service';
 
 export interface UserListParams {
   search?: string;
@@ -16,7 +15,6 @@ export interface CreateUserPayload {
   name: string;
   email: string;
   role: UserRole;
- 
   password?: string;
   is_active?: boolean;
 }
@@ -27,13 +25,6 @@ export interface UpdateUserPayload {
   is_active?: boolean;
 }
 
-interface ListResponse {
-  success: boolean;
-  data: SiteUser[];
-  pagination: { page: number; limit: number; total: number; totalPages: number };
-}
-
-
 interface MutationResponse {
   success: boolean;
   data: { user: SiteUser; generated_password?: string };
@@ -43,21 +34,11 @@ export const listUsers = async (
   params: UserListParams = {},
   signal?: AbortSignal
 ): Promise<SiteUser[]> => {
-  const response = await siteApi.get<ListResponse>('/users', {
+  const response = await siteApi.get<ListResponse<SiteUser>>('/users', {
     query: { ...params },
     auth: true,
     signal,
   });
-  return response.data;
-};
-
-export const listRoles = async (
-  signal?: AbortSignal
-): Promise<{ value: UserRole; label: string; permissions: Permission[] }[]> => {
-  const response = await siteApi.get<{
-    success: boolean;
-    data: { value: UserRole; label: string; permissions: Permission[] }[];
-  }>('/users/roles', { auth: true, signal });
   return response.data;
 };
 

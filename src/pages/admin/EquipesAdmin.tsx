@@ -7,17 +7,16 @@ import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/Adm
 import ImageField from '../../components/admin/ImageField';
 import { handleImageError } from '../../lib/imagePlaceholder';
 import { TEAM_CATEGORIES, TeamCategory } from '../../types';
+import AdminConfirmDelete from '../../components/admin/AdminConfirmDelete';
 
 const CATEGORY_LABELS: Record<TeamCategory, string> = {
   senior: 'Équipe première',
   youth: 'Formation',
 };
 
-
 const toLines = (values: string[] = []): string => values.join('\n');
 const fromLines = (value: string): string[] =>
   value.split('\n').map((line) => line.trim()).filter(Boolean);
-
 
 const slugify = (value: string): string =>
   value
@@ -47,7 +46,6 @@ const EMPTY_FORM = {
   isVisible: true,
 };
 
-
 const EquipesAdmin: React.FC = () => {
   const {
     items: teams,
@@ -67,7 +65,7 @@ const EquipesAdmin: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
- 
+
   const [slugTouched, setSlugTouched] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<TeamRecord | null>(null);
 
@@ -124,8 +122,6 @@ const EquipesAdmin: React.FC = () => {
     setForm((f) => ({
       ...f,
       name: value,
-     
-     
       slug: editingId || slugTouched ? f.slug : slugify(value),
     }));
   };
@@ -154,8 +150,6 @@ const EquipesAdmin: React.FC = () => {
       isVisible: form.isVisible,
     };
 
-   
-   
     const saved = editingId
       ? await update(editingId, common)
       : await create({ ...common, slug: form.slug });
@@ -171,7 +165,6 @@ const EquipesAdmin: React.FC = () => {
   const field =
     'w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-club-yellow outline-none';
 
- 
   const orphansOf = (team: TeamRecord) => countByTeam.get(team.slug) ?? 0;
 
   return (
@@ -281,7 +274,6 @@ const EquipesAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* Formulaire */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -541,46 +533,26 @@ const EquipesAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation de suppression */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-graphite/90 backdrop-blur-sm"
-            onClick={() => setConfirmDelete(null)}
-          />
-          <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.05] p-6">
-            <h4 className="mb-2 text-sm font-semibold text-white">Supprimer {confirmDelete.name}</h4>
-            {orphansOf(confirmDelete) > 0 ? (
-              <p className="mb-4 text-xs text-amber-200">
-                {orphansOf(confirmDelete)} fiche(s) de l’effectif sont rattachées à cette équipe.
-                Elles ne seront pas supprimées, mais se retrouveront sans équipe : il faudra les
-                réaffecter depuis l’Effectif. Pour retirer l’équipe du site sans y toucher,
-                décochez « Visible sur le site ».
-              </p>
-            ) : (
-              <p className="mb-4 text-xs text-white/60">
-                Aucune fiche n’y est rattachée. Cette action est définitive.
-              </p>
-            )}
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(null)}
-                className="rounded-full bg-white/5 px-4 py-1.5 text-xs text-white/70 hover:bg-white/10"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={confirmRemoval}
-                disabled={saving}
-                className="rounded-full bg-red-500/30 px-4 py-1.5 text-xs text-red-200 hover:bg-red-500/40 disabled:opacity-60"
-              >
-                {saving ? 'Suppression…' : 'Supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminConfirmDelete
+          title={<>Supprimer {confirmDelete.name}</>}
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={confirmRemoval}
+          saving={saving}
+        >
+          {orphansOf(confirmDelete) > 0 ? (
+            <p className="mb-4 text-xs text-amber-200">
+              {orphansOf(confirmDelete)} fiche(s) de l’effectif sont rattachées à cette équipe.
+              Elles ne seront pas supprimées, mais se retrouveront sans équipe : il faudra les
+              réaffecter depuis l’Effectif. Pour retirer l’équipe du site sans y toucher,
+              décochez « Visible sur le site ».
+            </p>
+          ) : (
+            <p className="mb-4 text-xs text-white/60">
+              Aucune fiche n’y est rattachée. Cette action est définitive.
+            </p>
+          )}
+        </AdminConfirmDelete>
       )}
     </div>
   );

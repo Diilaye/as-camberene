@@ -1,5 +1,3 @@
-
-
 import { siteApi } from '../../lib/api';
 import { Fulfilment, Order, OrderStatus, PaymentMethod } from '../../types';
 
@@ -19,7 +17,6 @@ export interface OrderListParams {
   limit?: number;
 }
 
-
 export const STATUS_LABELS: Record<OrderStatus, string> = {
   recue: 'Reçue',
   preparee: 'Préparée',
@@ -38,8 +35,6 @@ export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
 };
 
 export const placeOrder = async (payload: PlaceOrderPayload): Promise<Order> => {
- 
- 
   const response = await siteApi.post<{ success: boolean; data: Order }>('/orders', payload, {
     auth: true,
   });

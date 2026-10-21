@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useArticles, useHeroSlides, useLegends, useMatches, useProducts } from '../hooks/useContent';
 import { formatCFA } from '../lib/currency';
+import { formatDayMonth } from '../lib/dates';
 import { formatVideoTime, youtubeId } from '../lib/youtube';
 import { handleImageError } from '../lib/imagePlaceholder';
 import ArticleCard from '../components/ui/ArticleCard';
@@ -22,12 +23,9 @@ import SectionHeader from '../components/ui/SectionHeader';
 import NewsTicker from '../components/ui/NewsTicker';
 import TeamGallery from '../components/TeamGallery';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import { recentResults, upcomingMatches } from '../lib/matches';
+import { kickoff } from '../lib/matches';
 import { safeHref, socialLinks } from '../lib/socials';
 import { settingsImage } from '../services/site/settings.service';
-
-const formatMatchDate = (value: string) =>
-  new Date(value).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
 
 const Home: React.FC = () => {
   const settings = useSiteSettings();
@@ -74,19 +72,18 @@ const Home: React.FC = () => {
   }, []);
 
   const { data: allArticles } = useArticles({ limit: 30 });
-  const articles = allArticles.filter((article) => article.image).slice(0, 9);
+  const articles = allArticles.slice(0, 9);
   const { data: products } = useProducts({ limit: 8 });
   const { data: legends } = useLegends({ limit: 8 });
   const { data: matches } = useMatches();
 
-  const upcoming = upcomingMatches(matches, 3);
-  const recent = recentResults(matches, 3);
+  const orderedMatches = useMemo(() => [...matches].sort((a, b) => kickoff(a) - kickoff(b)), [matches]);
+  const liveMatch = orderedMatches.find((match) => match.status === 'En cours');
+  const upcoming = orderedMatches.filter((match) => match.status === 'À venir').slice(0, 3);
+  const recent = orderedMatches.filter((match) => match.status === 'Terminé').sort((a, b) => kickoff(b) - kickoff(a)).slice(0, 3);
 
   return (
     <div className="bg-graphite">
-      {/* ------------------------------------------------------------------ *
-       * Carrousel de tête
-       * ------------------------------------------------------------------ */}
       {show.hero && (
       <section className="relative h-[95vh] min-h-[520px] overflow-hidden bg-graphite xl:h-[56.25vw] xl:max-h-none">
         {slides.map((item, index) => (
@@ -126,10 +123,6 @@ const Home: React.FC = () => {
           </div>
         ))}
 
-        {/*
-          Double dégradé du modèle : un voile latéral pour détacher le texte, un
-          fondu vertical vers le bas pour raccorder l'image au corps de page.
-        */}
         <div
           className="pointer-events-none absolute inset-0 z-10"
           style={{
@@ -139,7 +132,6 @@ const Home: React.FC = () => {
           }}
         />
 
-        {/* Colonne de réseaux sociaux, contre le bord droit */}
         <div className="absolute right-5 top-5 z-20 hidden flex-col items-center justify-center gap-[15px] md:flex lg:right-10">
           {HERO_SOCIALS.map(({ label, icon: Icon, href }) => (
             <a
@@ -158,7 +150,6 @@ const Home: React.FC = () => {
           </span>
         </div>
 
-        {/* Légende : surtitre jaune au-dessus du titre, calés à gauche */}
         <div className="absolute bottom-[3.25rem] left-5 z-20 flex h-[70vh] max-w-[40rem] flex-col justify-center pr-5 lg:left-10">
           <p className="text-shadow-hero text-xl font-bold uppercase leading-tight text-club-yellow md:text-[26px] lg:text-[32px] lg:leading-10">
             {active.kicker}
@@ -172,7 +163,6 @@ const Home: React.FC = () => {
           </Link>
         </div>
 
-        {/* Lecture/pause au centre du cadre, pour les diapositives vidéo */}
         {isVideo && (
           <button
             type="button"
@@ -184,9 +174,6 @@ const Home: React.FC = () => {
           </button>
         )}
 
-        {/* -------------------------------------------------------------- *
-         * Bloc de contrôle bas : partenaires, flèches et pastilles
-         * -------------------------------------------------------------- */}
         <div className="absolute bottom-8 left-1/2 z-20 flex w-full max-w-3xl -translate-x-1/2 flex-col items-center gap-4 px-4 lg:bottom-[60px]">
           {partners.length > 0 && (
             <div className="flex w-[70%] justify-around">
@@ -243,11 +230,6 @@ const Home: React.FC = () => {
             </button>
           </div>
 
-          {/*
-            Ligne de lecture, sous les pastilles : le modèle n'affiche pas de
-            barre de progression sur son carrousel, mais la durée de la vidéo et
-            la coupure du son. Le lien ouvre la vidéo complète sur YouTube.
-          */}
           {isVideo ? (
             <div className="flex items-center gap-3 text-sm leading-[1.4] text-white">
               <button
@@ -289,13 +271,59 @@ const Home: React.FC = () => {
       </section>
       )}
 
-      {/* ------------------------------------------------------------------ *
-       * Centre de match : prochaines rencontres et derniers résultats
-       * ------------------------------------------------------------------ */}
       {show.matchCenter && (
       <section className="band-charcoal border-y border-white/5">
         <div className="site-container py-12">
           <SectionHeader title="Centre de match" linkLabel="Calendrier" linkTo="/calendrier" className="mb-8" />
+
+          {liveMatch && (
+            <div className="mb-6 overflow-hidden rounded-[24px] border border-club-green/70 bg-gradient-to-br from-club-green/30 via-graphite to-graphite shadow-[0_0_60px_-30px_rgba(34,197,94,0.5)]">
+              <div className="flex flex-col items-center gap-4 px-6 py-6 text-center md:flex-row md:justify-between md:text-left">
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-2 rounded-full bg-club-green px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.3em] text-black">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-black" /> Match en cours
+                  </span>
+                  <span className="text-xs uppercase tracking-wide text-white/60">
+                    {liveMatch.competition} · {liveMatch.venue}
+                  </span>
+                </div>
+                <Link to={`/calendrier/${liveMatch.id}`} className="btn-yellow px-5 py-2 text-xs">
+                  Voir le match
+                </Link>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-6 px-6 pb-8 md:flex-row md:items-center">
+                <div className="flex flex-1 items-center justify-center md:justify-end">
+                  <p className="text-lg font-extrabold uppercase text-white sm:text-2xl md:text-3xl">
+                    {liveMatch.venue === 'Domicile' ? 'ASC Cambérène' : liveMatch.opponent}
+                  </p>
+                </div>
+                <div className="flex items-center gap-6 text-white">
+                  <span className="text-5xl font-extrabold md:text-7xl">
+                    {liveMatch.venue === 'Domicile' ? liveMatch.result?.home ?? 0 : liveMatch.result?.away ?? 0}
+                  </span>
+                  <span className="text-3xl font-extrabold text-white/40">-</span>
+                  <span className="text-5xl font-extrabold md:text-7xl">
+                    {liveMatch.venue === 'Domicile' ? liveMatch.result?.away ?? 0 : liveMatch.result?.home ?? 0}
+                  </span>
+                </div>
+                <div className="flex flex-1 items-center justify-center md:justify-start">
+                  <p className="text-lg font-extrabold uppercase text-white sm:text-2xl md:text-3xl">
+                    {liveMatch.venue === 'Domicile' ? liveMatch.opponent : 'ASC Cambérène'}
+                  </p>
+                </div>
+              </div>
+              {(() => {
+                const clubScorersLive = (liveMatch.scorers ?? []).filter((scorer) => scorer.side === 'club');
+                return clubScorersLive.length > 0 ? (
+                  <div className="border-t border-white/10 px-6 py-4 text-center text-sm text-club-yellow">
+                    {clubScorersLive
+                      .map((scorer) => (scorer.minute ? `${scorer.name} ${scorer.minute}’` : scorer.name))
+                      .join(' · ')}
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          )}
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="min-w-0">
@@ -306,7 +334,7 @@ const Home: React.FC = () => {
                 {upcoming.map((match) => (
                   <article key={String(match.id)} className="panel panel-hover flex items-center gap-4 p-4">
                     <div className="w-16 shrink-0 text-center">
-                      <p className="text-xs uppercase text-white/50">{formatMatchDate(match.date)}</p>
+                      <p className="text-xs uppercase text-white/50">{formatDayMonth(match.date)}</p>
                       <p className="text-lg font-extrabold text-club-yellow">{match.time}</p>
                     </div>
                     {match.image && (
@@ -392,14 +420,8 @@ const Home: React.FC = () => {
                             : `${match.opponent} — ASC Cambérène`}
                         </h3>
                         <p className="mt-1 text-xs text-white/60">
-                          {match.competition} · {formatMatchDate(match.date)}
+                          {match.competition} · {formatDayMonth(match.date)}
                         </p>
-                        {/*
-                          Les buteurs du club seulement : la carte est étroite,
-                          et c'est le renseignement qu'on vient y chercher. La
-                          feuille complète, adversaire compris, appartient à la
-                          page du match le jour où elle existera.
-                        */}
                         {clubScorers.length > 0 && (
                           <p className="mt-1 truncate text-xs text-club-yellow/80">
                             {clubScorers
@@ -424,9 +446,6 @@ const Home: React.FC = () => {
       </section>
       )}
 
-      {/* ------------------------------------------------------------------ *
-       * Actualités : le rail éditorial, sur la bande du club
-       * ------------------------------------------------------------------ */}
       {show.news && (
       <section className="band-green py-8">
         <div className="site-container">
@@ -452,9 +471,6 @@ const Home: React.FC = () => {
       </section>
       )}
 
-      {/* ------------------------------------------------------------------ *
-       * Chiffres du club
-       * ------------------------------------------------------------------ */}
       {show.facts && (
       <section className="band-graphite">
         <div className="site-container grid grid-cols-2 gap-6 py-12 md:grid-cols-4">
@@ -468,9 +484,6 @@ const Home: React.FC = () => {
       </section>
       )}
 
-      {/* ------------------------------------------------------------------ *
-       * Boutique
-       * ------------------------------------------------------------------ */}
       {show.shop && (
       <section className="band-charcoal py-8">
         <div className="site-container">
@@ -492,9 +505,6 @@ const Home: React.FC = () => {
       </section>
       )}
 
-      {/* ------------------------------------------------------------------ *
-       * Bannière image : l'équipe de la saison
-       * ------------------------------------------------------------------ */}
       {show.banner && (
       <section className="relative overflow-hidden">
         <img
@@ -527,9 +537,6 @@ const Home: React.FC = () => {
       </section>
       )}
 
-      {/* ------------------------------------------------------------------ *
-       * Légendes
-       * ------------------------------------------------------------------ */}
       {show.legends && (
       <section className="band-green py-8">
         <div className="site-container">
@@ -551,7 +558,6 @@ const Home: React.FC = () => {
       </section>
       )}
 
-      {/* Galerie de l'équipe */}
       {show.gallery && (
       <TeamGallery />
       )}

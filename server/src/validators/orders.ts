@@ -1,7 +1,6 @@
 import Joi from 'joi';
 import { FULFILMENTS, ORDER_STATUSES, PAYMENT_METHODS } from '../models/Order.model';
 
-
 export const createOrderSchema = Joi.object({
   customer: Joi.object({
     name: Joi.string().trim().min(2).max(120).required().messages({
@@ -35,14 +34,6 @@ export const createOrderSchema = Joi.object({
   payment_method: Joi.string().valid(...PAYMENT_METHODS).default('a_la_remise'),
   note: Joi.string().trim().max(1000).allow('', null),
 })
-  /*
-   * Une livraison sans adresse n'est pas livrable : la règle vaut mieux ici
-   * qu'un rappel téléphonique au client.
-   *
-   * `required()` sur la condition est indispensable : sans lui, `valid()`
-   * accepte aussi la clé absente, et toute commande qui ne précise pas son mode
-   * de remise se voit réclamer une adresse alors qu'elle sera retirée au club.
-   */
   .when(Joi.object({ fulfilment: Joi.string().valid('livraison').required() }).unknown(), {
     then: Joi.object({
       address: Joi.string().trim().min(5).max(300).required().messages({

@@ -3,18 +3,13 @@ import { YouTubePlayer, loadYouTubeApi } from '../../lib/youtube';
 
 interface HeroVideoProps {
   videoId: string;
- 
   active: boolean;
   playing: boolean;
   muted: boolean;
- 
   onTime?: (current: number, duration: number) => void;
- 
   onEnded?: () => void;
- 
   onUnavailable?: () => void;
 }
-
 
 const HeroVideo: React.FC<HeroVideoProps> = ({
   videoId,
@@ -29,8 +24,6 @@ const HeroVideo: React.FC<HeroVideoProps> = ({
   const playerRef = useRef<YouTubePlayer | null>(null);
   const [ready, setReady] = useState(false);
 
- 
- 
   const onTimeRef = useRef(onTime);
   const onEndedRef = useRef(onEnded);
   const onUnavailableRef = useRef(onUnavailable);
@@ -59,27 +52,20 @@ const HeroVideo: React.FC<HeroVideoProps> = ({
           modestbranding: 1,
           playsinline: 1,
           rel: 0,
-         
           loop: 1,
           playlist: videoId,
         },
         events: {
           onReady: (event: { target: YouTubePlayer }) => {
-           
-           
-           
             event.target.mute();
             if (stateRef.current.active && stateRef.current.playing) event.target.playVideo();
             setReady(true);
           },
-         
-         
+
           onError: () => {
             onUnavailableRef.current?.();
           },
           onStateChange: (event: { data: number }) => {
-           
-           
             if (event.data === 0) onEndedRef.current?.();
           },
         },
@@ -94,7 +80,6 @@ const HeroVideo: React.FC<HeroVideoProps> = ({
     };
   }, [videoId]);
 
- 
   useEffect(() => {
     const player = playerRef.current;
     if (!player || !ready) return;
@@ -106,7 +91,6 @@ const HeroVideo: React.FC<HeroVideoProps> = ({
     else player.pauseVideo();
   }, [ready, active, playing, muted]);
 
- 
   useEffect(() => {
     if (!active || !onTime) return undefined;
 
@@ -121,11 +105,6 @@ const HeroVideo: React.FC<HeroVideoProps> = ({
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {/*
-        Le conteneur est remplacé par l'iframe au montage du lecteur. Il couvre
-        le cadre en conservant le ratio 16/9 : la plus grande des deux
-        dimensions déborde, aucune bande noire n'apparaît.
-      */}
       <div
         ref={mountRef}
         className="absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full -translate-x-1/2 -translate-y-1/2"

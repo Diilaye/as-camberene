@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import SiteSettings from '../models/SiteSettings.model';
 import { handler } from '../lib/http';

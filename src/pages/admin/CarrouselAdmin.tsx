@@ -7,6 +7,7 @@ import ImageField from '../../components/admin/ImageField';
 import { ApiError } from '../../lib/api';
 import { youtubeId } from '../../lib/youtube';
 import { handleImageError } from '../../lib/imagePlaceholder';
+import AdminConfirmDelete from '../../components/admin/AdminConfirmDelete';
 
 const EMPTY_FORM = {
   kicker: '',
@@ -17,7 +18,6 @@ const EMPTY_FORM = {
   linkLabel: 'En savoir plus',
   isVisible: true,
 };
-
 
 const CarrouselAdmin: React.FC = () => {
   const {
@@ -39,7 +39,6 @@ const CarrouselAdmin: React.FC = () => {
   const [reordering, setReordering] = useState(false);
   const [reorderError, setReorderError] = useState<ApiError | null>(null);
 
- 
   const detectedVideo = useMemo(() => youtubeId(form.youtube), [form.youtube]);
 
   const openCreate = () => {
@@ -73,8 +72,7 @@ const CarrouselAdmin: React.FC = () => {
       link: form.link,
       linkLabel: form.linkLabel,
       isVisible: form.isVisible,
-     
-     
+
       ...(editingId ? {} : { rank: slides.length }),
     };
 
@@ -82,7 +80,6 @@ const CarrouselAdmin: React.FC = () => {
     if (saved) setModalOpen(false);
   };
 
- 
   const move = async (index: number, direction: -1 | 1) => {
     const target = index + direction;
     if (target < 0 || target >= slides.length) return;
@@ -147,7 +144,7 @@ const CarrouselAdmin: React.FC = () => {
       {loading ? (
         <AdminLoading label="Chargement du carrousel…" />
       ) : slides.length === 0 ? (
-        <AdminEmpty label="Aucune diapositive en base — l’accueil affiche celles d’origine" />
+        <AdminEmpty label="Aucune diapositive enregistrée pour le moment." />
       ) : (
         <div className="space-y-3">
           {slides.map((slide, index) => {
@@ -161,7 +158,6 @@ const CarrouselAdmin: React.FC = () => {
                   visible ? '' : 'opacity-60'
                 }`}
               >
-                {/* Aperçu : la vignette YouTube quand c'est une vidéo, la photo sinon. */}
                 <div className="relative h-20 w-full shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/5 sm:w-36">
                   {videoId ? (
                     <img
@@ -254,7 +250,6 @@ const CarrouselAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* Formulaire */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -321,10 +316,6 @@ const CarrouselAdmin: React.FC = () => {
                   placeholder="https://youtu.be/… ou l’identifiant de la vidéo"
                   className={field}
                 />
-                {/*
-                  Le lien est vérifié pendant la saisie : une faute de copie se
-                  voit ici, et non le lendemain sur la page d'accueil.
-                */}
                 {form.youtube.trim() && (
                   detectedVideo ? (
                     <div className="mt-2 flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-2">
@@ -404,38 +395,15 @@ const CarrouselAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation de suppression */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-graphite/90 backdrop-blur-sm"
-            onClick={() => setConfirmDelete(null)}
-          />
-          <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.05] p-6">
-            <h4 className="mb-2 text-sm font-semibold text-white">Supprimer la diapositive</h4>
-            <p className="mb-4 text-xs text-white/60">
-              Confirmez-vous la suppression ? Pour la retirer de l’accueil sans perdre sa saisie,
-              préférez « Masquée ».
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(null)}
-                className="rounded-full bg-white/5 px-4 py-1.5 text-xs text-white/70 hover:bg-white/10"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={confirmRemoval}
-                disabled={saving}
-                className="rounded-full bg-red-500/30 px-4 py-1.5 text-xs text-red-200 hover:bg-red-500/40 disabled:opacity-60"
-              >
-                {saving ? 'Suppression…' : 'Supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminConfirmDelete
+          title="Supprimer la diapositive"
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={confirmRemoval}
+          saving={saving}
+        >
+          Confirmez-vous la suppression ? Pour la retirer de l’accueil sans perdre sa saisie, préférez « Masquée ».
+        </AdminConfirmDelete>
       )}
     </div>
   );

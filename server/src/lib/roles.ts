@@ -1,4 +1,3 @@
-
 export const ROLES = ['superadmin', 'admin', 'journalist', 'shop-admin', 'subscriber'] as const;
 export type UserRole = (typeof ROLES)[number];
 

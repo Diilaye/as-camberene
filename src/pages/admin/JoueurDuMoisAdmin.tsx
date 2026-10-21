@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Crown, Lock, Pencil, Plus, Trash2, Unlock, X } from 'lucide-react';
+import { Check, Crown, Lock, Pencil, Plus, Trash2, Unlock, Vote, X } from 'lucide-react';
 import useApiResource from '../../hooks/useApiResource';
 import useEditableResource from '../../hooks/useEditableResource';
 import { useTeams } from '../../hooks/useContent';
@@ -7,10 +7,13 @@ import { teamMembers as teamMembersApi, TeamMemberRecord } from '../../services/
 import {
   createPotm,
   deletePotm,
+  getCurrentPotm,
   listPotm,
   monthName,
   PotmAdmin,
+  PotmCurrent,
   updatePotm,
+  votePotm,
 } from '../../services/site/playerOfMonth.service';
 import { AdminEmpty, AdminError, AdminLoading } from '../../components/admin/AdminFeedback';
 import { ApiError } from '../../lib/api';
@@ -29,6 +32,28 @@ const JoueurDuMoisAdmin: React.FC = () => {
   const [form, setForm] = useState({ month: currentMonth(), title: '', nominees: [] as string[] });
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<ApiError | null>(null);
+
+  const { data: current, reload: reloadCurrent } = useApiResource<PotmCurrent | null>((signal) => getCurrentPotm(signal), null);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [voting, setVoting] = useState(false);
+  const [voteError, setVoteError] = useState('');
+
+  const castVote = async () => {
+    if (!current || !picked) return;
+    setVoting(true);
+    setVoteError('');
+    try {
+      await votePotm(current.id, picked);
+      setPicked(null);
+      reloadCurrent();
+      reload();
+    } catch (cause) {
+      setVoteError(cause instanceof ApiError ? cause.fullMessage : 'Vote non enregistré.');
+      reloadCurrent();
+    } finally {
+      setVoting(false);
+    }
+  };
 
   const teamName = (slug: string) => teams.find((team) => team.slug === slug)?.name ?? PLAYER_TEAM_LABELS[slug] ?? slug;
 
@@ -125,6 +150,73 @@ const JoueurDuMoisAdmin: React.FC = () => {
 
       <AdminError error={error ?? (modalOpen ? null : actionError)} onRetry={reload} />
 
+      {current && current.status === 'open' && (
+        <section className="mb-8 rounded-2xl border border-club-yellow/40 bg-club-yellow/[0.06] p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-white">
+                <Vote size={18} className="text-club-yellow" /> Voter — {monthName(current.month)}
+              </h3>
+            </div>
+            {current.myVote && (
+              <span className="flex items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1 text-xs font-semibold text-green-300">
+                <Check size={13} /> Vote enregistré
+              </span>
+            )}
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            {current.nominees.map((nominee) => {
+              const isMine = current.myVote === nominee.id;
+              const isPicked = picked === nominee.id;
+              const canPick = !current.myVote;
+              return (
+                <button
+                  key={nominee.id}
+                  type="button"
+                  disabled={!canPick}
+                  onClick={() => setPicked(nominee.id)}
+                  aria-pressed={isPicked}
+                  className={`flex items-center gap-3 rounded-xl border-2 bg-black/20 p-2.5 text-left transition ${
+                    isMine || isPicked ? 'border-club-yellow' : 'border-white/10'
+                  } ${canPick ? 'cursor-pointer hover:border-club-yellow/60' : 'cursor-default opacity-90'}`}
+                >
+                  <img src={nominee.photo || IMAGE_PLACEHOLDER} onError={handleImageError} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover object-top" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-bold uppercase text-club-yellow">
+                      {nominee.number > 0 ? `N°${nominee.number} · ` : ''}{nominee.position || nominee.line}
+                    </span>
+                    <span className="block truncate text-sm font-semibold text-white">{nominee.name}</span>
+                    {isMine && <span className="text-[11px] text-club-yellow">Votre vote</span>}
+                  </span>
+                  {(isMine || isPicked) && (
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-club-yellow text-black">
+                      <Check size={15} />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {voteError && <p className="mt-3 text-xs text-red-300">{voteError}</p>}
+
+          {!current.myVote && (
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => void castVote()}
+                disabled={!picked || voting}
+                className="flex items-center gap-2 rounded-full bg-club-yellow px-5 py-2.5 text-xs font-semibold text-black shadow disabled:opacity-50"
+              >
+                <Vote size={14} />
+                {voting ? 'Enregistrement…' : picked ? 'Valider mon vote' : 'Choisissez un joueur'}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
       {loading && polls.length === 0 ? (
         <AdminLoading label="Chargement des élections…" />
       ) : polls.length === 0 ? (
@@ -161,10 +253,9 @@ const JoueurDuMoisAdmin: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Résultats : classement, votes, part des voix */}
                 <ol className="space-y-2">
                   {poll.results.map((row, index) => {
-                    const share = poll.totalVotes > 0 ? Math.round((row.votes / poll.totalVotes) * 100) : 0;
+                    const share = row.percent ?? (poll.totalVotes > 0 ? Math.round((row.votes / poll.totalVotes) * 100) : 0);
                     const leading = row.votes > 0 && row.votes === top;
                     return (
                       <li key={row.id} className="flex items-center gap-3">

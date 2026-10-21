@@ -15,7 +15,6 @@ const Legends: React.FC = () => {
     [legends, era]
   );
 
- 
   const featured = useMemo(
     () => legends.find((legend) => legend.isHallOfFame) ?? legends[0],
     [legends]
@@ -31,8 +30,6 @@ const Legends: React.FC = () => {
     [legends]
   );
 
- 
- 
   if (!featured) {
     return (
       <div className="band-green flex min-h-screen items-center justify-center px-6 text-center">
@@ -55,7 +52,6 @@ const Legends: React.FC = () => {
         image={featured.photo}
       />
 
-      {/* Totaux */}
       <section className="border-b border-white/10 bg-charcoal">
         <div className="site-container grid grid-cols-2 gap-6 py-8 md:grid-cols-4">
           {[
@@ -73,7 +69,6 @@ const Legends: React.FC = () => {
         </div>
       </section>
 
-      {/* Portrait mis en avant */}
       <section className="band-charcoal py-12">
         <div className="site-container grid items-center gap-10 lg:grid-cols-[minmax(0,420px)_1fr]">
           <div className="relative overflow-hidden rounded-[20px] border border-white/10">
@@ -112,7 +107,6 @@ const Legends: React.FC = () => {
         </div>
       </section>
 
-      {/* Filtre par époque */}
       <section className="border-y border-white/10 bg-charcoal">
         <div className="site-container flex flex-wrap gap-2 py-5">
           {ERAS.map((item) => (
@@ -133,7 +127,6 @@ const Legends: React.FC = () => {
         </div>
       </section>
 
-      {/* Galerie */}
       <section className="band-green py-12">
         <div className="site-container">
           {filtered.length > 0 ? (

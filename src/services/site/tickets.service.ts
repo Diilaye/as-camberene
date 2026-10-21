@@ -1,5 +1,3 @@
-
-
 import { siteApi } from '../../lib/api';
 import { ReservationStatus, TicketReservation } from '../../types';
 import { ItemResponse, ListResponse } from './content.service';
@@ -12,7 +10,6 @@ export interface ReservationRequest {
   seats: number;
   message?: string;
 }
-
 
 export interface ReservationConfirmation {
   reference: string;

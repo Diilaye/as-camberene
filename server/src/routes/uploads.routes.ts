@@ -1,5 +1,3 @@
-
-
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -24,8 +22,6 @@ const ALLOWED = new Map([
 const storage = multer.diskStorage({
   destination: (_req, _file, done) => done(null, config.upload.dir),
   filename: (_req, file, done) => {
-   
-   
     const extension = ALLOWED.get(file.mimetype) ?? path.extname(file.originalname).toLowerCase();
     done(null, `${crypto.randomBytes(16).toString('hex')}${extension}`);
   },
@@ -49,8 +45,6 @@ router.post('/', authenticate, requirePermission('media:upload'), upload.single(
   res.status(201).json({
     success: true,
     data: {
-     
-     
       url: `/uploads/${req.file.filename}`,
       size: req.file.size,
       mimetype: req.file.mimetype,

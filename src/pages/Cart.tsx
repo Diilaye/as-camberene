@@ -11,7 +11,7 @@ const Cart: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
 
   const totalQuantity = useMemo(() => cart.reduce((acc, item) => acc + item.quantity, 0), [cart]);
-  const subTotal = useMemo(() => getCartTotal(), [cart, getCartTotal]);
+  const subTotal = useMemo(() => getCartTotal(), [getCartTotal]);
   const shippingCost = subTotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   const taxAmount = subTotal * TAX_RATE;
   const total = subTotal + shippingCost + taxAmount;
@@ -46,7 +46,6 @@ const Cart: React.FC = () => {
       </section>
 
       <div className="site-container grid gap-8 py-12 lg:grid-cols-[1fr_360px]">
-        {/* Lignes du panier */}
         <section className="space-y-3">
           {cart.map((item) => (
             <article
@@ -116,7 +115,6 @@ const Cart: React.FC = () => {
           </div>
         </section>
 
-        {/* Récapitulatif */}
         <aside className="panel sticky top-28 h-fit space-y-6 p-6">
           <div>
             <h2 className="text-lg font-extrabold uppercase text-white">Récapitulatif</h2>
@@ -142,7 +140,6 @@ const Cart: React.FC = () => {
             </div>
           </dl>
 
-          {/* Progression vers la livraison offerte */}
           {shippingCost > 0 ? (
             <div className="space-y-2">
               <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">

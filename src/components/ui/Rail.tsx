@@ -3,10 +3,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface RailProps {
   children: React.ReactNode;
- 
   className?: string;
 }
-
 
 const Rail: React.FC<RailProps> = ({ children, className = '' }) => {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -26,7 +24,6 @@ const Rail: React.FC<RailProps> = ({ children, className = '' }) => {
     return () => window.removeEventListener('resize', sync);
   }, [sync, children]);
 
- 
   const scrollBy = (direction: 1 | -1) => {
     const track = trackRef.current;
     if (!track) return;

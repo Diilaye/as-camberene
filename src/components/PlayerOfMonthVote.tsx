@@ -35,6 +35,7 @@ const PlayerOfMonthVote: React.FC = () => {
   const open = poll.status === 'open';
   const voted = poll.myVote;
   const winner = poll.nominees.find((nominee) => nominee.id === poll.winner);
+  const reveal = poll.resultsRevealed;
 
   const submit = async () => {
     if (!selected) return;
@@ -60,16 +61,14 @@ const PlayerOfMonthVote: React.FC = () => {
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-sm text-white/60">
           {!open
-            ? 'Le vote est clos. Merci à tous les supporters qui ont participé.'
+            ? 'Le vote est clos. Voici le résultat officiel, basé sur les votes des supporters.'
             : voted
-              ? 'Merci, votre vote est enregistré. Résultat à la clôture du vote.'
+              ? 'Merci, votre vote est enregistré. Voici le score actuel du vote.'
               : user
-                ? 'Choisissez votre joueur puis validez. Un seul vote par supporter.'
+                ? 'Choisissez votre joueur puis validez. Un seul vote par supporter. Le score s’affiche après votre vote.'
                 : 'Connectez-vous pour voter. Un seul vote par supporter.'}
-        </p>
-      </div>
+        </p>      </div>
 
-      {/* Vainqueur, une fois le vote clos */}
       {!open && winner && (
         <div className="mx-auto flex max-w-md items-center gap-5 rounded-[20px] border border-club-yellow/60 bg-club-yellow/10 p-5">
           <img src={winner.photo || IMAGE_PLACEHOLDER} onError={handleImageError} alt="" className="h-20 w-20 rounded-full border-2 border-club-yellow object-cover object-top" />
@@ -82,11 +81,12 @@ const PlayerOfMonthVote: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {poll.nominees.map((nominee) => {
+      <div className="mx-auto max-w-3xl space-y-3">
+        {poll.nominees.map((nominee, index) => {
           const isMine = voted === nominee.id;
           const isPicked = selected === nominee.id;
           const canPick = open && !voted && Boolean(user);
+          const leading = reveal && nominee.votes > 0 && index === 0;
           return (
             <button
               key={nominee.id}
@@ -94,31 +94,49 @@ const PlayerOfMonthVote: React.FC = () => {
               disabled={!canPick}
               onClick={() => setSelected(nominee.id)}
               aria-pressed={isPicked}
-              className={`group relative overflow-hidden rounded-[20px] border-2 bg-black/30 text-left transition ${
-                isMine || isPicked
-                  ? 'border-club-yellow'
-                  : 'border-white/10'
+              className={`group relative flex items-center gap-4 overflow-hidden rounded-[20px] border-2 bg-black/30 p-3 pl-4 text-left transition ${
+                isMine || isPicked ? 'border-club-yellow' : 'border-white/10'
               } ${canPick ? 'cursor-pointer hover:border-club-yellow/60' : 'cursor-default'}`}
             >
+              <span className="flex w-6 shrink-0 items-center justify-center text-sm font-extrabold text-white/40">
+                {reveal ? (leading ? <Crown size={16} className="text-club-yellow" /> : index + 1) : ''}
+              </span>
+
               <img
                 src={nominee.photo || IMAGE_PLACEHOLDER}
                 onError={handleImageError}
                 alt=""
-                className="aspect-[4/5] w-full object-cover object-top"
+                className="h-16 w-16 shrink-0 rounded-xl object-cover object-top"
               />
-              {(isMine || isPicked) && (
-                <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-club-yellow text-black">
-                  <Check size={18} />
-                </span>
-              )}
-              <div className="p-3">
+
+              <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold uppercase text-club-yellow">
                   {nominee.number > 0 ? `N°${nominee.number} · ` : ''}
                   {nominee.position || nominee.line}
                 </p>
                 <p className="truncate text-lg font-extrabold uppercase text-white">{nominee.name}</p>
                 {isMine && <p className="text-xs text-club-yellow">Votre vote</p>}
+                {reveal && (
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className={`h-full rounded-full ${leading ? 'bg-club-yellow' : 'bg-white/40'}`}
+                      style={{ width: `${nominee.percent}%` }}
+                    />
+                  </div>
+                )}
               </div>
+
+              {(isMine || isPicked) && (
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-club-yellow text-black">
+                  <Check size={18} />
+                </span>
+              )}
+
+              {reveal && (
+                <div className="flex shrink-0 flex-col items-end">
+                  <span className="text-2xl font-extrabold text-club-yellow">{nominee.percent}%</span>
+                </div>
+              )}
             </button>
           );
         })}

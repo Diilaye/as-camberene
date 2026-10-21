@@ -1,9 +1,6 @@
-
-
 export interface AuthTokens {
   access_token: string;
   refresh_token: string;
- 
   expires_in?: number;
 }
 
@@ -18,7 +15,6 @@ const read = (key: string): string | null => {
   try {
     return localStorage.getItem(key);
   } catch {
-   
     return null;
   }
 };
@@ -28,7 +24,7 @@ const write = (key: string, value: string | null): void => {
     if (value === null) localStorage.removeItem(key);
     else localStorage.setItem(key, value);
   } catch {
-    /* ignoré : l'absence de stockage ne doit pas casser la navigation */
+    return;
   }
 };
 
@@ -50,8 +46,6 @@ export const createTokenStore = (prefix: string): TokenStore => {
   };
 };
 
-
 export const siteTokens = createTokenStore('asc_camberene_site');
-
 
 export const fconnectTokens = createTokenStore('asc_camberene_fconnect');
